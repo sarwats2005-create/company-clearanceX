@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { balanceSide, daysText, formatDate, formatDateLong, formatMoney, formatNumber, containersText, iraqiMonth, todayISO, tradersText } from "@/lib/format";
+import { balanceSide, containersText, daysText, formatDate, formatDateLong, formatMoney, formatNumber, iraqiMonth, todayISO, tradersText } from "@/lib/format";
 
 describe("formatMoney", () => {
     it("formats IQD with separators, no decimals, symbol after", () => {
@@ -14,8 +14,10 @@ describe("formatMoney", () => {
     it("can leave out the symbol", () => {
         expect(formatMoney("1157.89", "USD", { symbol: false })).toBe("1,157.89");
     });
-    it("formats negatives with a leading minus", () => {
-        expect(formatMoney("-130000", "IQD")).toBe("-130,000 د.ع");
+    it("formats negatives with a leading minus that stays left of the digits in Arabic text", () => {
+        // A left-to-right mark keeps the minus attached to the number inside a right-to-left line.
+        expect(formatMoney("-130000", "IQD")).toBe("\u200E-130,000 د.ع");
+        expect(formatMoney("-0.001", "USD")).toBe("0 $");
     });
 });
 

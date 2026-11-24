@@ -41,3 +41,14 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - The live split preview and the saved split use the same function (`allocateCharge`), so what the owner sees is exactly what is posted.
 - Editing a charge = cancel it with a reason, then add it again. "إلغاء وإضافة بدلاً منه" does both and reopens the sheet with the old values.
 - After shares change, "إعادة توزيع المصاريف" cancels and re-posts the affected charges in one transaction, dated today. Manual and one-trader splits are left alone while those traders are still on the container.
+
+## Money, receipts and printing (Task 8)
+- One form handles the nine money actions (`/money/new/<action>`); it only shows what that action needs. Defaults: today, the Settings vault for the chosen currency, and the last exchange rate used (unless the rate in Settings was changed after it).
+- "الدفع بعملة أخرى": the paid amount, the rate and the debt amount stay in step. Typing the amount or the rate recomputes the debt; typing the debt recomputes the rate. Exchange works the same way between "ما يخرج" and "ما يدخل".
+- Every action asks for confirmation with the full sentence. If a vault would go below zero, the dialog says by how much and the button becomes "نعم، احفظ رغم ذلك"; the server refuses without that confirmation.
+- Receipts keep the names they were printed with (stored on the entry), so renaming a trader or vault later never changes an old receipt.
+- Cancelling a receipt posts a reversal with its own number of the same letter. Cancelling the receipt of a container charge goes through the charge, so the container page stays right. A cancellation itself cannot be cancelled.
+- The journal (سجل المعاملات) lists receipts only, meaning every movement of cash. Charges paid by a party and company fees move no cash, so they appear on the container page and in statements instead.
+- Print pages live outside the app layout: `/print/receipt/[id]` (A5) and `/print/container/[id]` (A4). `?autoprint=1` opens the print dialog; "حفظ PDF" uses the browser's "Save as PDF". WhatsApp opens `wa.me` with a text summary, addressed to the trader or party when they have a phone (0770… becomes 964770…).
+- Negative amounts carry a left-to-right mark before the minus so "-50,000 د.ع" reads correctly inside Arabic text.
+- Deferred: tagging containers on a receipt (optional in the PRD) and the journal's Excel export (Task 11).

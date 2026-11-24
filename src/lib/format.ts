@@ -22,7 +22,7 @@ export function formatMoney(amount: string | Decimal, currency: Currency, opts: 
     if (currency === "USD" && fixed.endsWith(".00")) fixed = fixed.slice(0, -3);
     const [int, frac] = fixed.split(".");
     const negative = d.isNeg() && !d.toDecimalPlaces(dp).isZero();
-    const text = `${negative ? "-" : ""}${groupThousands(int)}${frac ? `.${frac}` : ""}`;
+    const text = `${negative ? "\u200E-" : ""}${groupThousands(int)}${frac ? `.${frac}` : ""}`;
     return opts.symbol === false ? text : `${text} ${SYMBOL[currency]}`;
 }
 
@@ -88,7 +88,7 @@ export function daysBetween(a: string, b: string): number {
 
 /** "منذ" column: 0 → اليوم, 1 → يوم واحد, 2 → يومان, 3–10 → n أيام, 11–99 → n يوماً, 100 → n يوم. */
 /** Arabic counted noun: 1 and 2 have their own words, 3–10 take the plural, 11–99 the accusative singular, the rest the singular. */
-function countAr(n: number, f: { one: string; two: string; few: string; many: string; other: string }): string {
+export function countAr(n: number, f: { one: string; two: string; few: string; many: string; other: string }): string {
     if (n === 1) return f.one;
     if (n === 2) return f.two;
     const r = n % 100;

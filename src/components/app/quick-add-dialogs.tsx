@@ -10,7 +10,17 @@ import { saveSimpleItemAction } from "@/features/settings/actions";
 import { useAction } from "@/hooks/use-action";
 
 /** Small modal behind "+ إضافة تاجر جديد" (PRD §5.2): name required, phone optional. Selects the new trader. */
-export function NewTraderDialog({ initialName, isOpen, onOpenChange, onCreated }: { initialName: string; isOpen: boolean; onOpenChange: (open: boolean) => void; onCreated: (trader: { id: string; name: string }) => void }) {
+export function NewTraderDialog({
+    initialName,
+    isOpen,
+    onOpenChange,
+    onCreated,
+}: {
+    initialName: string;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    onCreated: (trader: { id: string; name: string }) => void;
+}) {
     const [name, setName] = useState(initialName);
     const [phone, setPhone] = useState("");
     useEffect(() => {
@@ -52,8 +62,26 @@ export function NewTraderDialog({ initialName, isOpen, onOpenChange, onCreated }
                     save.run({ name, phone });
                 }}
             >
-                <Input label="اسم التاجر" size="lg" isRequired autoFocus value={name} onChange={setName} isInvalid={!!save.fieldErrors.name} hint={save.fieldErrors.name} />
-                <Input label={optionalLabel("رقم الهاتف")} size="lg" type="tel" inputClassName="[direction:ltr] text-end" value={phone} onChange={setPhone} isInvalid={!!save.fieldErrors.phone} hint={save.fieldErrors.phone} />
+                <Input
+                    label="اسم التاجر"
+                    size="lg"
+                    isRequired
+                    autoFocus
+                    value={name}
+                    onChange={setName}
+                    isInvalid={!!save.fieldErrors.name}
+                    hint={save.fieldErrors.name}
+                />
+                <Input
+                    label={optionalLabel("رقم الهاتف")}
+                    size="lg"
+                    type="tel"
+                    inputClassName="[direction:ltr] text-end"
+                    value={phone}
+                    onChange={setPhone}
+                    isInvalid={!!save.fieldErrors.phone}
+                    hint={save.fieldErrors.phone}
+                />
                 <button type="submit" hidden />
             </form>
         </AppDialog>
@@ -63,6 +91,7 @@ export function NewTraderDialog({ initialName, isOpen, onOpenChange, onCreated }
 const SIMPLE_COPY = {
     shipping_lines: { title: "خط شحن جديد", field: "اسم الخط", button: "إضافة الخط", done: "تمت إضافة الخط" },
     ports_of_loading: { title: "ميناء تحميل جديد", field: "اسم الميناء", button: "إضافة الميناء", done: "تمت إضافة الميناء" },
+    expense_categories: { title: "تصنيف مصاريف جديد", field: "اسم التصنيف", button: "إضافة التصنيف", done: "تمت إضافة التصنيف" },
 } as const;
 
 /** "+ إضافة خط جديد" / "+ إضافة ميناء": one name, saved to the Settings list, then selected. */
@@ -116,7 +145,16 @@ export function QuickAddDialog({
                     save.run(name);
                 }}
             >
-                <Input label={copy.field} size="lg" isRequired autoFocus value={name} onChange={setName} isInvalid={!!save.fieldErrors.name} hint={save.fieldErrors.name} />
+                <Input
+                    label={copy.field}
+                    size="lg"
+                    isRequired
+                    autoFocus
+                    value={name}
+                    onChange={setName}
+                    isInvalid={!!save.fieldErrors.name}
+                    hint={save.fieldErrors.name}
+                />
                 <button type="submit" hidden />
             </form>
         </AppDialog>

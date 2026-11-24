@@ -1,5 +1,5 @@
-import "server-only";
 import { eq } from "drizzle-orm";
+import "server-only";
 import type { DbOrTx } from "@/db";
 import { accounts, entryContainers, journalEntries, journalLines } from "@/db/schema";
 import { LedgerError, postEntry } from "./post-entry";
@@ -16,7 +16,14 @@ export async function reverseEntry(tx: DbOrTx, entryId: string, reason: string, 
     if (orig.type === "reversal") throw new LedgerError("cannot_reverse");
 
     const lines = await tx
-        .select({ kind: accounts.kind, refId: accounts.refId, currency: journalLines.currency, debit: journalLines.debit, credit: journalLines.credit, memo: journalLines.memo })
+        .select({
+            kind: accounts.kind,
+            refId: accounts.refId,
+            currency: journalLines.currency,
+            debit: journalLines.debit,
+            credit: journalLines.credit,
+            memo: journalLines.memo,
+        })
         .from(journalLines)
         .innerJoin(accounts, eq(accounts.id, journalLines.accountId))
         .where(eq(journalLines.entryId, entryId));
@@ -33,7 +40,7 @@ export async function reverseEntry(tx: DbOrTx, entryId: string, reason: string, 
         containerId: orig.containerId,
         containerTags: tags.map((t) => t.containerId),
         fxRate: orig.fxRate,
-        meta: { ...orig.meta, reason, reversesReceiptNo: orig.receiptNo },
+        meta: { ...orig.meta, reason, reversesReceiptNo: orig.receiptNo, reversesType: orig.type },
         userId,
         reversesEntryId: orig.id,
         lines: lines.map((l) => ({

@@ -8,8 +8,18 @@ import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { archiveContainerAction } from "@/features/containers/actions";
 import { useAction } from "@/hooks/use-action";
 
-/** "⋯" on the container page: WhatsApp summary and cancel container (PRD §8.6). */
-export function ContainerMenu({ containerId, containerNumber, shareText, canArchive }: { containerId: string; containerNumber: string; shareText: string; canArchive: boolean }) {
+/** "⋯" on the container page: print sheet, WhatsApp summary and cancel container (PRD §8.6, §8.11). */
+export function ContainerMenu({
+    containerId,
+    containerNumber,
+    shareText,
+    canArchive,
+}: {
+    containerId: string;
+    containerNumber: string;
+    shareText: string;
+    canArchive: boolean;
+}) {
     const router = useRouter();
     const [confirm, setConfirm] = useState(false);
     const archive = useAction(archiveContainerAction, {
@@ -24,10 +34,12 @@ export function ContainerMenu({ containerId, containerNumber, shareText, canArch
                 <Dropdown.Popover className="w-64">
                     <Dropdown.Menu
                         onAction={(key) => {
+                            if (key === "print") window.open(`/print/container/${containerId}?autoprint=1`, "_blank", "noopener");
                             if (key === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank", "noopener,noreferrer");
                             if (key === "archive") setConfirm(true);
                         }}
                     >
+                        <Dropdown.Item id="print" label="طباعة كشف الحاوية" />
                         <Dropdown.Item id="whatsapp" label="مشاركة واتساب" />
                         <Dropdown.Item id="archive" label="إلغاء الحاوية" isDisabled={!canArchive} />
                     </Dropdown.Menu>
