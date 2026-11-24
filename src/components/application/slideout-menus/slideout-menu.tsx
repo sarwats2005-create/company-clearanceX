@@ -52,7 +52,7 @@ interface DialogProps extends AriaDialogProps, RefAttributes<HTMLElement> {}
 export const Dialog = (props: DialogProps) => (
     <AriaDialog
         role="dialog"
-        aria-label="Slideout menu"
+        aria-label="نافذة جانبية"
         {...props}
         className={cx(
             "relative flex size-full flex-col items-start gap-6 overflow-y-auto bg-primary ring-1 ring-secondary_alt outline-hidden",
@@ -65,14 +65,18 @@ Dialog.displayName = "Dialog";
 interface SlideoutMenuProps extends Omit<AriaModalOverlayProps, "children">, RefAttributes<HTMLDivElement> {
     children: ReactNode | ((children: AriaModalRenderProps & { close: () => void }) => ReactNode);
     dialogClassName?: string;
+    /** Screen-reader name of the sheet (Arabic). */
+    dialogLabel?: string;
+    /** Classes for the panel only (e.g. a wider max-width); `className` also reaches the backdrop. */
+    sheetClassName?: string;
 }
 
-const Menu = ({ children, dialogClassName, ...props }: SlideoutMenuProps) => {
+const Menu = ({ children, dialogClassName, dialogLabel, sheetClassName, ...props }: SlideoutMenuProps) => {
     return (
         <ModalOverlay {...props}>
-            <Modal className={(state) => cx(typeof props.className === "function" ? props.className(state) : props.className)}>
+            <Modal className={(state) => cx(typeof props.className === "function" ? props.className(state) : props.className, sheetClassName)}>
                 {(state) => (
-                    <Dialog className={dialogClassName}>
+                    <Dialog className={dialogClassName} aria-label={dialogLabel ?? "نافذة جانبية"}>
                         {({ close }) => {
                             return typeof children === "function" ? children({ ...state, close }) : children;
                         }}
@@ -97,7 +101,7 @@ const Header = ({ className, children, onClose, ...props }: SlideoutHeaderProps)
     return (
         <header {...props} className={cx("relative z-1 w-full px-4 pt-6 md:px-6", className)}>
             {children}
-            <CloseButton size="sm" className="absolute top-3 end-3 shrink-0" onClick={onClose} />
+            <CloseButton size="sm" className="absolute end-3 top-3 shrink-0" onClick={onClose} />
         </header>
     );
 };

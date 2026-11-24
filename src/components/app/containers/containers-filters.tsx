@@ -127,7 +127,7 @@ export function ContainersFilters({ filters, traders, lines }: Props) {
                 </button>
             )}
 
-            <SlideoutMenu isOpen={sheet} onOpenChange={setSheet} isDismissable>
+            <SlideoutMenu isOpen={sheet} onOpenChange={setSheet} isDismissable dialogLabel="تصفية الحاويات">
                 <SlideoutMenu.Header onClose={() => setSheet(false)}>
                     <h2 className="text-lg font-semibold text-primary">تصفية الحاويات</h2>
                 </SlideoutMenu.Header>

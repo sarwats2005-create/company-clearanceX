@@ -34,3 +34,10 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - Counts follow Arabic number agreement (`countAr` in `src/lib/format.ts`): حاويتان، 3 تجار، 11 تاجراً.
 - Shipping icon is `Anchor` (`Ship01` is not in the free icon set).
 - Cancelled (archived) containers are read-only.
+
+## Charges (Task 7)
+- The "إضافة مصاريف" sheet has one date for the whole batch (today by default), because charges are often entered after the day they were paid.
+- A charge paid by "شركتنا" comes out of a vault chosen on the row and gets an out receipt (ص). If a vault would go below zero, the confirmation says so and the owner must confirm again.
+- The live split preview and the saved split use the same function (`allocateCharge`), so what the owner sees is exactly what is posted.
+- Editing a charge = cancel it with a reason, then add it again. "إلغاء وإضافة بدلاً منه" does both and reopens the sheet with the old values.
+- After shares change, "إعادة توزيع المصاريف" cancels and re-posts the affected charges in one transaction, dated today. Manual and one-trader splits are left alone while those traders are still on the container.

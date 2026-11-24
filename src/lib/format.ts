@@ -106,3 +106,9 @@ export function daysText(n: number): string {
 export const containersText = (n: number) => countAr(n, { one: "حاوية واحدة", two: "حاويتان", few: "حاويات", many: "حاوية", other: "حاوية" });
 
 export const tradersText = (n: number) => countAr(n, { one: "تاجر واحد", two: "تاجران", few: "تجار", many: "تاجراً", other: "تاجر" });
+
+/** How a debit − credit balance reads to the owner (PRD §6.1): عليه (owes us), له (we owe), مسدد. Rounded first. */
+export function balanceSide(balance: string | Decimal, currency: Currency): "owesUs" | "weOwe" | "settled" {
+    const d = new Decimal(balance).toDecimalPlaces(currency === "IQD" ? 0 : 2, Decimal.ROUND_HALF_UP);
+    return d.isZero() ? "settled" : d.isPos() ? "owesUs" : "weOwe";
+}

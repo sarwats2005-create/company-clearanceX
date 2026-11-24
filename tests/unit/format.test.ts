@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysText, formatDate, formatDateLong, formatMoney, formatNumber, containersText, iraqiMonth, todayISO, tradersText } from "@/lib/format";
+import { balanceSide, daysText, formatDate, formatDateLong, formatMoney, formatNumber, containersText, iraqiMonth, todayISO, tradersText } from "@/lib/format";
 
 describe("formatMoney", () => {
     it("formats IQD with separators, no decimals, symbol after", () => {
@@ -82,5 +82,15 @@ describe("containersText", () => {
         expect(containersText(7)).toBe("7 حاويات");
         expect(containersText(25)).toBe("25 حاوية");
         expect(containersText(1200)).toBe("1,200 حاوية");
+    });
+});
+
+describe("balanceSide", () => {
+    it("reads a debit − credit balance as عليه / له / مسدد", () => {
+        expect(balanceSide("2400.00", "USD")).toBe("owesUs");
+        expect(balanceSide("-100", "IQD")).toBe("weOwe");
+        expect(balanceSide("0.00", "USD")).toBe("settled");
+        expect(balanceSide("0.004", "USD")).toBe("settled");
+        expect(balanceSide("0.4", "IQD")).toBe("settled");
     });
 });
