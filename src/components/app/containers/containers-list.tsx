@@ -39,7 +39,14 @@ function Since({ row }: { row: ContainerRow }) {
     return <span className={cx("whitespace-nowrap", row.isLate ? "font-semibold text-warning-primary" : "text-tertiary")}>{daysText(row.daysInStatus)}</span>;
 }
 
-function SortHeader({ filters, sort, children, className }: { filters: ContainerFilters; sort: ContainerSort; children: React.ReactNode; className?: string }) {
+function SortHeader({ filters, sort, children, className }: { filters: ContainerFilters | null; sort: ContainerSort; children: React.ReactNode; className?: string }) {
+    if (!filters) {
+        return (
+            <th scope="col" className={cx("px-3 py-3 font-medium", className)}>
+                {children}
+            </th>
+        );
+    }
     const active = filters.sort === sort || (!filters.sort && sort === "registered");
     const dir = active ? (filters.dir ?? (sort === "registered" ? "desc" : "asc")) : null;
     const nextDir = dir === "asc" ? "desc" : "asc";
@@ -54,8 +61,8 @@ function SortHeader({ filters, sort, children, className }: { filters: Container
     );
 }
 
-/** Containers as a hairline table on desktop and cards on phones (PRD §8.3, §8.4). */
-export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filters: ContainerFilters }) {
+/** Containers as a hairline table on desktop and cards on phones (PRD §8.3, §8.4). Without filters the headers don't sort. */
+export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filters: ContainerFilters | null }) {
     return (
         <>
             <div className="hidden md:block">

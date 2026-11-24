@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { SearchLg } from "@untitledui/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { DateField } from "@/components/app/date-field";
+import { FilterChip } from "@/components/app/filter-chip";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import type { ReceiptKind } from "@/db/schema";
@@ -51,21 +52,10 @@ export function JournalFilters({ params }: { params: JournalParams }) {
                     {KINDS.map((k) => {
                         const on = params.kind === k.value;
                         return (
-                            <button
-                                key={k.label}
-                                type="button"
-                                aria-pressed={on}
-                                onClick={() => go({ kind: k.value })}
-                                className={cx(
-                                    "inline-flex h-10 cursor-pointer items-center gap-2 rounded-full px-3.5 text-sm ring-1 outline-focus-ring transition-[background-color,color,transform] duration-150 ease-smooth ring-inset focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]",
-                                    on
-                                        ? "bg-brand-primary_alt font-semibold text-brand-secondary ring-brand-300"
-                                        : "bg-primary text-secondary ring-primary hover:bg-primary_hover",
-                                )}
-                            >
+                            <FilterChip key={k.label} pressed={on} onClick={() => go({ kind: k.value })}>
                                 {k.value && <span aria-hidden="true" className={cx("size-2 rounded-full", GROUP_COLOR[RECEIPT_KIND_GROUP[k.value]])} />}
                                 {k.label}
-                            </button>
+                            </FilterChip>
                         );
                     })}
                 </div>

@@ -4,10 +4,10 @@ import { alias } from "drizzle-orm/pg-core";
 import "server-only";
 import type { DbOrTx } from "@/db";
 import { type Currency, type EntryType, type ReceiptKind, containers, expenseCategories, journalEntries, parties, traders, vaults } from "@/db/schema";
+import { folded, likePattern } from "@/db/search";
 import { getBalancesMany } from "@/features/ledger/balances";
 import { getSettingsRow } from "@/features/settings/service";
 import { toArabicWords } from "@/lib/tafqeet";
-import { normalizeArabic } from "@/lib/text";
 import { type MoneyMeta, type ReceiptLine, entryFlow, receiptLines, receiptTitle } from "./describe";
 import type { MoneyFormOptions } from "./form-model";
 
@@ -44,9 +44,6 @@ export interface JournalRow {
     cancelReason: string | null;
 }
 
-/** Arabic-forgiving lower-case text for search (same letters folded as normalizeArabic). */
-const folded = (col: SQL | unknown) => sql`translate(lower(coalesce(${col}, '')), 'أإآٱةىؤئ', 'ااااهيوي')`;
-
 /** Every receipt, newest first, with filters and search (PRD §8.7 سجل المعاملات). */
 export async function listJournal(db: DbOrTx, f: JournalFilter): Promise<{ rows: JournalRow[]; total: number; pageSize: number }> {
     // Receipts only: every movement of cash. Debts with no cash (a charge a party paid, a fee) live on the container and statements.
@@ -56,9 +53,8 @@ export async function listJournal(db: DbOrTx, f: JournalFilter): Promise<{ rows:
     if (f.currency) where.push(eq(journalEntries.currency, f.currency));
     if (f.from) where.push(gte(journalEntries.entryDate, f.from));
     if (f.to) where.push(lte(journalEntries.entryDate, f.to));
-    const q = f.q ? normalizeArabic(f.q).replace(/[\\%_]/g, (c) => `\\${c}`) : "";
-    if (q) {
-        const like = `%${q}%`;
+    const like = likePattern(f.q);
+    if (like) {
         where.push(
             sql`(${folded(journalEntries.receiptNo)} LIKE ${like}
                  OR ${folded(journalEntries.description)} LIKE ${like}

@@ -11,11 +11,10 @@ import { Input } from "@/components/base/input/input";
 import { TextArea } from "@/components/base/textarea/textarea";
 import { Toggle } from "@/components/base/toggle/toggle";
 import type { PartyKind } from "@/db/schema";
+import { PARTY_KIND_LABEL } from "@/features/accounts/model";
 import { savePartyAction } from "@/features/settings/actions";
 import { useAction } from "@/hooks/use-action";
 import { cx } from "@/utils/cx";
-
-export const PARTY_KIND_LABEL: Record<PartyKind, string> = { self: "شركتنا", clearance_company: "شركة تخليص", partner: "شريك", other: "أخرى" };
 
 interface Party {
     id: string;

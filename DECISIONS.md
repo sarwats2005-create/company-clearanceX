@@ -52,3 +52,14 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - Print pages live outside the app layout: `/print/receipt/[id]` (A5) and `/print/container/[id]` (A4). `?autoprint=1` opens the print dialog; "حفظ PDF" uses the browser's "Save as PDF". WhatsApp opens `wa.me` with a text summary, addressed to the trader or party when they have a phone (0770… becomes 964770…).
 - Negative amounts carry a left-to-right mark before the minus so "-50,000 د.ع" reads correctly inside Arabic text.
 - Deferred: tagging containers on a receipt (optional in the PRD) and the journal's Excel export (Task 11).
+
+## Accounts and statements (Task 9)
+- الحسابات has three tabs: التجار, الجهات, القاصات (`/accounts/traders|parties|vaults`). Each list shows totals per currency at the top.
+- Traders and parties are sorted by debt. The two currencies are compared in dinars at the default rate from Settings (dollars × rate + dinars). Traders: largest debt first. Parties: what we owe them most first. Our own company (شركتنا) has no account page; its money is the vaults.
+- Party wording follows PRD §6.2: "له" in green means we owe them. The party page says "المستحق لهم علينا" or "المستحق لنا عليهم".
+- A statement opens on "الكل" (every movement) in the currency that holds a balance (dollars first). Presets: هذا الشهر, الشهر الماضي, هذه السنة, الكل, or any two dates. Everything lives in the URL, so a statement can be bookmarked or printed as shown.
+- With a start date the statement opens with "الرصيد في بداية الفترة" and ends with the totals and the closing balance. Cancelled receipts stay in the statement, marked "ملغى", next to the line that cancels them.
+- Printing: `/print/statement/<traders|parties|vaults>/<id>` on A4 with both signature lines. WhatsApp (traders and parties) sends the name, the period and the closing balance in both currencies at the end of the period.
+- Vaults: the main vault is the wide navy card. A new vault has a name, a kind (شخص، محل صيرفة، تاجر، أخرى), one or both currencies, and notes. A currency the vault has already used, or that it is the Settings default for, can't be removed. A vault can be stopped only when it is empty, is not one of the two built-in vaults, and is not a Settings default.
+- From a trader's containers tab, "حاوية جديدة" opens the container form with that trader already picked.
+- Deferred to Task 11: the statement's Excel export and the Settings "القاصات" section (default vault per currency). Not built: the per-container breakdown on a party page (optional in the PRD).

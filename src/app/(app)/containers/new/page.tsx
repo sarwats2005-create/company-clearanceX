@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ContainerForm } from "@/components/app/container-form/container-form";
-import { emptyValues } from "@/components/app/container-form/values";
+import { emptyShare, emptyValues } from "@/components/app/container-form/values";
 import { FormPageHeader } from "@/components/app/form-page-header";
 import { db } from "@/db";
 import { getContainerFormOptions } from "@/features/containers/queries";
@@ -9,14 +9,18 @@ import { todayISO } from "@/lib/format";
 
 export const metadata: Metadata = { title: "حاوية جديدة" };
 
-export default async function NewContainerPage() {
+/** ?trader=<id> (from a trader's page) starts the form with that trader picked. */
+export default async function NewContainerPage({ searchParams }: { searchParams: Promise<{ trader?: string | string[] }> }) {
     await requireSession();
     const options = await getContainerFormOptions(db);
     const today = todayISO();
+    const { trader } = await searchParams;
+    const initial = emptyValues({ ...options.defaults, registeredOn: today });
+    if (typeof trader === "string" && options.traders.some((t) => t.id === trader)) initial.shares = [emptyShare(trader)];
     return (
         <>
             <FormPageHeader parent={{ href: "/containers", label: "الحاويات" }} title="حاوية جديدة" description="أدخل الأساسيات الثلاثة. باقي التفاصيل اختيارية ويمكن إضافتها لاحقاً." />
-            <ContainerForm mode="create" initial={emptyValues({ ...options.defaults, registeredOn: today })} options={options} today={today} />
+            <ContainerForm mode="create" initial={initial} options={options} today={today} />
         </>
     );
 }

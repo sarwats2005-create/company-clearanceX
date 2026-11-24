@@ -22,3 +22,14 @@ export function BalanceText({ amounts, className }: { amounts: Record<Currency, 
         </span>
     );
 }
+
+/** One currency in a table cell: "عليه 2,400 $" in red, "له 100 $" in green, or a quiet dash when settled. */
+export function SideAmount({ amount, currency, className }: { amount: string; currency: Currency; className?: string }) {
+    const side = balanceSide(amount, currency);
+    if (side === "settled") return <span className={cx("text-quaternary", className)}>—</span>;
+    return (
+        <span className={cx("whitespace-nowrap", TONE[side], className)}>
+            {t(`balance.${side}`)} <bdi className="num">{formatMoney(amount.replace(/^-/, ""), currency)}</bdi>
+        </span>
+    );
+}

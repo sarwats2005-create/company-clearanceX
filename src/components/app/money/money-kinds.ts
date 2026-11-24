@@ -1,9 +1,7 @@
 import type { FC, SVGProps } from "react";
 import { ArrowCircleDown, ArrowCircleUp, Building07, CoinsSwap01, Receipt, SwitchHorizontal01, User01 } from "@untitledui/icons";
-import type { Currency, EntryType, ReceiptKind } from "@/db/schema";
+import type { EntryType, ReceiptKind } from "@/db/schema";
 import type { MoneyKind } from "@/features/money/schemas";
-import { balanceSide, formatMoney } from "@/lib/format";
-import { t } from "@/lib/i18n";
 
 export type MoneyGroup = "in" | "out" | "internal";
 
@@ -47,10 +45,5 @@ export const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
     reversal: "إلغاء",
 };
 
-/** A balance as plain words for a picker's second line: "عليه 2,400 $ · له 50,000 د.ع" or "مسدد". */
-export function balanceWords(b: Record<Currency, string>): string {
-    const parts = (["USD", "IQD"] as Currency[])
-        .filter((c) => balanceSide(b[c], c) !== "settled")
-        .map((c) => `${t(`balance.${balanceSide(b[c], c)}`)} ${formatMoney(b[c].replace(/^-/, ""), c)}`);
-    return parts.length ? parts.join(" · ") : t("balance.settled");
-}
+/** A balance as plain words for a picker's second line (shared with statements). */
+export { balanceWords } from "@/features/accounts/model";

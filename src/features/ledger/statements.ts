@@ -2,7 +2,7 @@ import "server-only";
 import Decimal from "decimal.js";
 import { and, asc, eq, gte, isNull, lt, lte, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
-import { type Currency, type EntryType, accounts, journalEntries, journalLines } from "@/db/schema";
+import { type Currency, type EntryType, accounts, containers, journalEntries, journalLines } from "@/db/schema";
 import { roundTo } from "@/lib/money";
 import type { AccountRef } from "./types";
 
@@ -15,6 +15,7 @@ export interface StatementRow {
     description: string;
     memo: string | null;
     containerId: string | null;
+    containerNumber: string | null;
     cancelled: boolean;
     debit: string;
     credit: string;
@@ -55,6 +56,7 @@ export async function getStatement(db: DbOrTx, ref: AccountRef, currency: Curren
             description: journalEntries.description,
             memo: journalLines.memo,
             containerId: journalEntries.containerId,
+            containerNumber: containers.containerNumber,
             cancelledAt: journalEntries.cancelledAt,
             debit: journalLines.debit,
             credit: journalLines.credit,
@@ -62,6 +64,7 @@ export async function getStatement(db: DbOrTx, ref: AccountRef, currency: Curren
         .from(journalLines)
         .innerJoin(accounts, eq(accounts.id, journalLines.accountId))
         .innerJoin(journalEntries, eq(journalEntries.id, journalLines.entryId))
+        .leftJoin(containers, eq(containers.id, journalEntries.containerId))
         .where(and(accountWhere, from ? gte(journalEntries.entryDate, from) : undefined, to ? lte(journalEntries.entryDate, to) : undefined))
         .orderBy(asc(journalEntries.entryDate), asc(journalEntries.createdAt), asc(journalLines.createdAt));
 
@@ -81,6 +84,7 @@ export async function getStatement(db: DbOrTx, ref: AccountRef, currency: Curren
             description: l.description,
             memo: l.memo,
             containerId: l.containerId,
+            containerNumber: l.containerNumber,
             cancelled: l.cancelledAt !== null || l.type === "reversal",
             debit: roundTo(l.debit, currency),
             credit: roundTo(l.credit, currency),
