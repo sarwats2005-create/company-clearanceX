@@ -97,13 +97,13 @@ export const NavAccountMenu = ({
                             <button
                                 key={account.id}
                                 className={cx(
-                                    "relative w-full cursor-pointer rounded-md px-2 py-1.5 text-left outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover focus:z-10 focus-visible:outline-2 focus-visible:outline-offset-2",
+                                    "relative w-full cursor-pointer rounded-md px-2 py-1.5 text-start outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover focus:z-10 focus-visible:outline-2 focus-visible:outline-offset-2",
                                     account.id === selectedAccountId && "bg-primary_hover",
                                 )}
                             >
                                 <AvatarLabelGroup status="online" size="md" src={account.avatar} title={account.name} subtitle={account.email} />
 
-                                <RadioButtonBase isSelected={account.id === selectedAccountId} className="absolute top-2 right-2" />
+                                <RadioButtonBase isSelected={account.id === selectedAccountId} className="absolute top-2 end-2" />
                             </button>
                         ))}
                     </div>
@@ -186,7 +186,7 @@ export const NavAccountCard = ({
             />
 
             <AriaDialogTrigger>
-                <AriaButton className="absolute top-2 right-2 flex cursor-pointer items-center justify-center rounded-md p-1.5 text-fg-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2 pressed:bg-primary_hover pressed:text-fg-quaternary_hover">
+                <AriaButton className="absolute top-2 end-2 flex cursor-pointer items-center justify-center rounded-md p-1.5 text-fg-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2 pressed:bg-primary_hover pressed:text-fg-quaternary_hover">
                     <ChevronSelectorVertical className="size-4 shrink-0 stroke-[2.25px]" />
                 </AriaButton>
                 <AriaPopover
@@ -199,7 +199,7 @@ export const NavAccountCard = ({
                             isEntering &&
                                 "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                             isExiting &&
-                                "duration-100 ease-in animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
+                                "duration-100 ease-smooth animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
                         )
                     }
                 >

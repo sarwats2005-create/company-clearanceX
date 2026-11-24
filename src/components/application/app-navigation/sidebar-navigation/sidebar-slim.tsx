@@ -46,7 +46,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
                 width: MAIN_SIDEBAR_WIDTH,
             }}
             className={cx(
-                "group flex h-full max-h-full max-w-full overflow-y-auto py-1 pl-1 transition duration-100 ease-linear",
+                "group flex h-full max-h-full max-w-full overflow-y-auto py-1 ps-1 transition duration-100 ease-linear",
                 isSecondarySidebarVisible && "bg-primary",
             )}
         >
@@ -114,7 +114,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
                                     isEntering &&
                                         "duration-300 ease-out animate-in fade-in placement-right:slide-in-from-left-2 placement-top:slide-in-from-bottom-2 placement-bottom:slide-in-from-top-2",
                                     isExiting &&
-                                        "duration-150 ease-in animate-out fade-out placement-right:slide-out-to-left-2 placement-top:slide-out-to-bottom-2 placement-bottom:slide-out-to-top-2",
+                                        "duration-150 ease-smooth animate-out fade-out placement-right:slide-out-to-left-2 placement-top:slide-out-to-bottom-2 placement-bottom:slide-out-to-top-2",
                                 )
                             }
                         >
@@ -136,7 +136,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
                     transition={{ type: "spring", damping: 26, stiffness: 220, bounce: 0 }}
                     className={cx(
                         "relative h-full overflow-x-hidden overflow-y-auto bg-primary",
-                        !(hideBorder || hideRightBorder) && "box-content border-r-[1.5px]",
+                        !(hideBorder || hideRightBorder) && "box-content border-e-[1.5px]",
                     )}
                 >
                     <div style={{ width: SECONDARY_SIDEBAR_WIDTH }} className="flex h-full flex-col px-4 pt-6">
@@ -155,7 +155,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
                                 <p className="text-sm font-semibold text-primary">Olivia Rhye</p>
                                 <p className="text-sm text-tertiary">olivia@untitledui.com</p>
                             </div>
-                            <div className="absolute -top-1 right-0">
+                            <div className="absolute -top-1 end-0">
                                 <ButtonUtility size="xs" color="tertiary" tooltip="Log out" icon={DotsVertical} />
                             </div>
                         </div>
@@ -169,7 +169,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
         <>
             {/* Desktop sidebar navigation */}
             <div
-                className="z-50 hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex"
+                className="z-50 hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex"
                 onPointerEnter={() => setIsHovering(true)}
                 onPointerLeave={() => setIsHovering(false)}
             >
@@ -182,7 +182,7 @@ export const SidebarNavigationSlim = ({ activeUrl, items, footerItems = [], hide
                 style={{
                     paddingLeft: MAIN_SIDEBAR_WIDTH,
                 }}
-                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:left-0 lg:block"
+                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:start-0 lg:block"
             />
 
             {/* Mobile header navigation */}

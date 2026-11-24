@@ -173,7 +173,7 @@ export const CreditCard = ({
                     width: `${originalWidth}px`,
                     height: `${originalHeight}px`,
                 }}
-                className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4", styles[type].root)}
+                className={cx("absolute top-0 start-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4", styles[type].root)}
             >
                 {/* Horizontal strip */}
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
@@ -181,15 +181,15 @@ export const CreditCard = ({
                 )}
                 {/* Vertical stripe */}
                 {VERTICAL_STRIP_TYPES.includes(type as (typeof VERTICAL_STRIP_TYPES)[number]) && (
-                    <div className="pointer-events-none absolute inset-y-0 right-22 left-0 z-0 bg-neutral-800"></div>
+                    <div className="pointer-events-none absolute inset-y-0 end-22 start-0 z-0 bg-neutral-800"></div>
                 )}
                 {/* Gradient diffusor */}
                 {type === "transparent-gradient" && (
-                    <div className="absolute -top-4 -left-4 grid grid-cols-2 blur-3xl">
-                        <div className="size-20 rounded-tl-full bg-pink-500 opacity-30 mix-blend-normal" />
-                        <div className="size-20 rounded-tr-full bg-orange-500 opacity-50 mix-blend-normal" />
-                        <div className="size-20 rounded-bl-full bg-blue-500 opacity-30 mix-blend-normal" />
-                        <div className="size-20 rounded-br-full bg-green-500 opacity-30 mix-blend-normal" />
+                    <div className="absolute -top-4 -start-4 grid grid-cols-2 blur-3xl">
+                        <div className="size-20 rounded-ss-full bg-pink-500 opacity-30 mix-blend-normal" />
+                        <div className="size-20 rounded-se-full bg-orange-500 opacity-50 mix-blend-normal" />
+                        <div className="size-20 rounded-es-full bg-blue-500 opacity-30 mix-blend-normal" />
+                        <div className="size-20 rounded-ee-full bg-green-500 opacity-30 mix-blend-normal" />
                     </div>
                 )}
 
@@ -212,7 +212,7 @@ export const CreditCard = ({
                             </p>
                             <p
                                 className={cx(
-                                    "ml-auto text-right text-xs leading-[normal] font-semibold tracking-[0.6px] tabular-nums",
+                                    "ms-auto text-end text-xs leading-[normal] font-semibold tracking-[0.6px] tabular-nums",
                                     styles[type].footerText,
                                 )}
                             >

@@ -58,7 +58,7 @@ export const NavItemBase = (props: NavItemBaseProps) => {
         <Icon
             aria-hidden="true"
             className={cx(
-                "mr-2 size-5 shrink-0 text-fg-quaternary transition-inherit-all group-hover/item:text-fg-quaternary_hover",
+                "me-2 size-5 shrink-0 text-fg-quaternary transition-inherit-all group-hover/item:text-fg-quaternary_hover",
                 current && "text-fg-quaternary_hover",
             )}
         />
@@ -66,7 +66,7 @@ export const NavItemBase = (props: NavItemBaseProps) => {
 
     const badgeElement =
         badge && (typeof badge === "string" || typeof badge === "number") ? (
-            <Badge className="ml-3" color="gray" type="pill-color" size="sm">
+            <Badge className="ms-3" color="gray" type="pill-color" size="sm">
                 {badge}
             </Badge>
         ) : (
@@ -94,7 +94,7 @@ export const NavItemBase = (props: NavItemBaseProps) => {
 
                 {badgeElement}
 
-                <ChevronDown aria-hidden="true" className="ml-3 size-4 shrink-0 stroke-[2.5px] text-fg-quaternary in-open:-scale-y-100" />
+                <ChevronDown aria-hidden="true" className="ms-3 size-4 shrink-0 stroke-[2.5px] text-fg-quaternary in-open:-scale-y-100" />
             </summary>
         );
     }
@@ -116,7 +116,7 @@ export const NavItemBase = (props: NavItemBaseProps) => {
             isDisabled={isDisabled}
             onClick={onClick}
             className={cx(
-                type === "collapsible-child" ? "py-2 pr-3 pl-10" : "group/item p-2",
+                type === "collapsible-child" ? "py-2 pe-3 ps-10" : "group/item p-2",
                 styles.root,
                 current && styles.rootSelected,
                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",

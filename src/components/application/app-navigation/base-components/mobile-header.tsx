@@ -15,7 +15,7 @@ import { cx } from "@/utils/cx";
 export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
     return (
         <AriaDialogTrigger>
-            <header className="flex h-14 items-center justify-between border-b border-secondary bg-primary p-3 pl-4 lg:hidden">
+            <header className="flex h-14 items-center justify-between border-b border-secondary bg-primary p-3 ps-4 lg:hidden">
                 <UntitledLogo className="h-6" />
 
                 <AriaButton
@@ -31,7 +31,7 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
                 isDismissable
                 className={({ isEntering, isExiting }) =>
                     cx(
-                        "fixed inset-0 z-50 cursor-pointer bg-overlay/70 pr-16 backdrop-blur-md lg:hidden",
+                        "fixed inset-0 z-50 cursor-pointer bg-overlay/70 pe-16 backdrop-blur-md lg:hidden",
                         isEntering && "duration-300 ease-in-out animate-in fade-in",
                         isExiting && "duration-200 ease-in-out animate-out fade-out",
                     )
@@ -42,7 +42,7 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
                         <AriaButton
                             aria-label="Close navigation menu"
                             onPress={() => state.close()}
-                            className="fixed top-2.5 right-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
+                            className="fixed top-2.5 end-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                             <CloseIcon className="size-6" />
                         </AriaButton>

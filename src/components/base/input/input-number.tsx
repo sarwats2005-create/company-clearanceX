@@ -96,7 +96,7 @@ export const InputNumberBase = ({
             }
         >
             {orientation === "horizontal" && (
-                <Button size={size} iconLeading={Minus} slot="decrement" color="tertiary" className="static h-full rounded-r-none" />
+                <Button size={size} iconLeading={Minus} slot="decrement" color="tertiary" className="static h-full rounded-e-none" />
             )}
 
             {/* Input field */}
@@ -114,11 +114,11 @@ export const InputNumberBase = ({
             />
 
             {orientation === "horizontal" && (
-                <Button size={size} iconLeading={Plus} slot="increment" color="tertiary" className="static h-full rounded-l-none" />
+                <Button size={size} iconLeading={Plus} slot="increment" color="tertiary" className="static h-full rounded-s-none" />
             )}
 
             {orientation === "vertical" && (
-                <div className={cx("flex w-7 shrink-0 flex-col border-l border-primary", size === "lg" && "w-7.5")}>
+                <div className={cx("flex w-7 shrink-0 flex-col border-s border-primary", size === "lg" && "w-7.5")}>
                     <AriaButton
                         slot="increment"
                         className="flex flex-1 cursor-pointer items-center justify-center text-fg-quaternary outline-brand transition duration-100 ease-linear hover:bg-primary_hover hover:text-fg-quaternary_hover disabled:cursor-not-allowed disabled:opacity-50"

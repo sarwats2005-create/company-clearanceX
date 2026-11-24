@@ -92,14 +92,14 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                         isEntering &&
                             "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                         isExiting &&
-                            "duration-100 ease-in animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
+                            "duration-100 ease-smooth animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
                     )
                 }
             >
                 <AriaDialog aria-label="Date range picker" className="flex rounded-2xl bg-primary shadow-xl ring ring-secondary_alt focus:outline-hidden">
                     {({ close }) => (
                         <>
-                            <div className="hidden w-38 flex-col gap-0.5 border-r border-solid border-secondary p-3 lg:flex">
+                            <div className="hidden w-38 flex-col gap-0.5 border-e border-solid border-secondary p-3 lg:flex">
                                 {Object.values(presets).map((preset) => (
                                     <RangePresetButton
                                         key={preset.label}

@@ -18,9 +18,10 @@ export const ModalOverlay = (props: ModalOverlayProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "fixed inset-0 flex min-h-dvh w-full items-center justify-end bg-overlay/70 pl-6 outline-hidden ease-linear md:pl-10",
-                    state.isEntering && "duration-300 animate-in fade-in",
-                    state.isExiting && "duration-500 animate-out fade-out",
+                    // RTL: sheets open from the start side (right), PRD §5.4
+                    "fixed inset-0 z-50 flex min-h-dvh w-full items-center justify-start bg-overlay/70 pe-6 outline-hidden md:pe-10",
+                    state.isEntering && "duration-300 ease-smooth animate-in fade-in",
+                    state.isExiting && "duration-200 ease-smooth animate-out fade-out",
                     typeof props.className === "function" ? props.className(state) : props.className,
                 )
             }
@@ -36,9 +37,9 @@ export const Modal = (props: ModalProps) => (
         {...props}
         className={(state) =>
             cx(
-                "inset-y-0 right-0 h-full w-full max-w-100 shadow-xl transition",
-                state.isEntering && "duration-300 animate-in slide-in-from-right",
-                state.isExiting && "duration-500 animate-out slide-out-to-right",
+                "inset-y-0 start-0 h-full w-full max-w-100 shadow-xl transition",
+                state.isEntering && "duration-300 ease-drawer animate-in slide-in-from-right",
+                state.isExiting && "duration-200 ease-drawer animate-out slide-out-to-right",
                 typeof props.className === "function" ? props.className(state) : props.className,
             )
         }
@@ -96,7 +97,7 @@ const Header = ({ className, children, onClose, ...props }: SlideoutHeaderProps)
     return (
         <header {...props} className={cx("relative z-1 w-full px-4 pt-6 md:px-6", className)}>
             {children}
-            <CloseButton size="sm" className="absolute top-3 right-3 shrink-0" onClick={onClose} />
+            <CloseButton size="sm" className="absolute top-3 end-3 shrink-0" onClick={onClose} />
         </header>
     );
 };

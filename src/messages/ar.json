@@ -1,0 +1,146 @@
+{
+    "app": {
+        "name": "إدارة التخليص",
+        "tagline": "الحاويات والحسابات في مكان واحد"
+    },
+    "nav": {
+        "home": "الرئيسية",
+        "containers": "الحاويات",
+        "money": "المالية",
+        "accounts": "الحسابات",
+        "reports": "التقارير",
+        "settings": "الإعدادات",
+        "more": "المزيد",
+        "logout": "تسجيل الخروج",
+        "search": "ابحث برقم الحاوية أو اسم التاجر أو رقم الوصل",
+        "searchShort": "بحث",
+        "new": "جديد",
+        "menu": "القائمة"
+    },
+    "status": {
+        "confirmed": "تم التأكيد",
+        "on_the_way": "في الطريق إلى أم قصر",
+        "arrived": "وصلت أم قصر",
+        "delivered": "تم التسليم"
+    },
+    "statusShort": {
+        "confirmed": "تم التأكيد",
+        "on_the_way": "في الطريق",
+        "arrived": "وصلت أم قصر",
+        "delivered": "سُلّمت"
+    },
+    "balance": {
+        "owesUs": "عليه",
+        "weOwe": "له",
+        "settled": "مسدد"
+    },
+    "action": {
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "back": "رجوع",
+        "close": "إغلاق",
+        "confirmSave": "تأكيد وحفظ",
+        "print": "طباعة",
+        "pdf": "حفظ PDF",
+        "whatsapp": "مشاركة واتساب",
+        "exportExcel": "تصدير Excel",
+        "newContainer": "حاوية جديدة",
+        "addCharges": "إضافة مصاريف",
+        "usualCharges": "المصاريف المعتادة",
+        "receive": "قبض",
+        "pay": "صرف",
+        "edit": "تعديل",
+        "add": "إضافة",
+        "view": "عرض",
+        "resplit": "إعادة توزيع المصاريف",
+        "delete": "حذف",
+        "statement": "كشف حساب",
+        "showAll": "عرض الكل"
+    },
+    "money": {
+        "receiveFromTrader": "قبض من تاجر",
+        "payParty": "دفع لجهة",
+        "payTrader": "دفع لتاجر",
+        "receiveFromParty": "قبض من جهة",
+        "deposit": "إيداع",
+        "withdraw": "سحب",
+        "transfer": "تحويل بين القاصات",
+        "exchange": "تصريف عملة",
+        "generalExpense": "مصروف عام"
+    },
+    "currency": {
+        "IQD": "دينار عراقي",
+        "USD": "دولار أمريكي",
+        "symbol": {
+            "IQD": "د.ع",
+            "USD": "$"
+        }
+    },
+    "error": {
+        "required": "هذا الحقل مطلوب",
+        "duplicateContainer": "هذه الحاوية مسجلة مسبقاً",
+        "amountPositive": "يجب أن يكون المبلغ أكبر من صفر",
+        "amountInvalid": "اكتب المبلغ بالأرقام فقط، مثل 2400",
+        "vaultCurrency": "هذه القاصة لا تقبل هذه العملة",
+        "server": "حدث خطأ. لم يتم حفظ أي شيء. حاول مرة أخرى.",
+        "percentTotal": "مجموع النسب يجب أن يساوي 100%",
+        "manualSplitTotal": "مجموع المبالغ يجب أن يساوي {total}. المتبقي: {remaining}",
+        "shareZero": "الحصة يجب أن تكون أكبر من صفر",
+        "notFound": "لم نجد هذه الصفحة",
+        "unauthorized": "انتهت الجلسة. سجّل الدخول مرة أخرى."
+    },
+    "warn": {
+        "negativeVault": "رصيد القاصة سيصبح سالباً. هل تريد المتابعة؟",
+        "unsaved": "لديك تغييرات غير محفوظة. هل تريد الخروج؟",
+        "sharesOverCapacity": "مجموع الحصص أكبر من سعة الحاوية",
+        "containerFormat": "الرقم لا يطابق الشكل المعتاد (4 أحرف + 7 أرقام). تأكد منه"
+    },
+    "toast": {
+        "saved": "تم الحفظ",
+        "receiptSaved": "تم الحفظ · وصل رقم {number}"
+    },
+    "empty": {
+        "containers": "لا توجد حاويات بعد. اضغط \"حاوية جديدة\" للبدء."
+    },
+    "form": {
+        "required": "مطلوب",
+        "optional": "اختياري",
+        "containerAvailable": "متاح",
+        "sharedSwitch": "حاوية مشتركة (لأكثر من تاجر)",
+        "addTrader": "إضافة تاجر آخر",
+        "saveAndNew": "حفظ وإضافة أخرى",
+        "nextStep": "الخطوة التالية: إضافة المصاريف",
+        "draftFound": "لديك حاوية لم تُحفظ ({number})."
+    },
+    "splitUnit": {
+        "meters": "متر طولي",
+        "cbm": "متر مكعب",
+        "percent": "نسبة مئوية",
+        "equal": "بالتساوي"
+    },
+    "splitUnitShort": {
+        "meters": "م",
+        "cbm": "م³",
+        "percent": "%",
+        "equal": ""
+    },
+    "greeting": {
+        "morning": "صباح الخير",
+        "evening": "مساء الخير"
+    },
+    "months": [
+        "كانون الثاني",
+        "شباط",
+        "آذار",
+        "نيسان",
+        "أيار",
+        "حزيران",
+        "تموز",
+        "آب",
+        "أيلول",
+        "تشرين الأول",
+        "تشرين الثاني",
+        "كانون الأول"
+    ],
+    "weekdays": ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
+}

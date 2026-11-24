@@ -109,11 +109,11 @@ export const Header = ({ items = headerNavItems, isFullWidth, isFloating, classN
                 className,
             )}
         >
-            <div className="flex size-full max-w-container flex-1 items-center pr-3 pl-4 md:px-8">
+            <div className="flex size-full max-w-container flex-1 items-center pe-3 ps-4 md:px-8">
                 <div
                     className={cx(
                         "flex w-full justify-between gap-4",
-                        isFloating && "ring-secondary_alt md:rounded-2xl md:bg-primary md:py-3 md:pr-3 md:pl-4 md:shadow-xs md:ring-1",
+                        isFloating && "ring-secondary_alt md:rounded-2xl md:bg-primary md:py-3 md:pe-3 md:ps-4 md:shadow-xs md:ring-1",
                     )}
                 >
                     <div className="flex flex-1 items-center gap-5">
@@ -139,7 +139,7 @@ export const Header = ({ items = headerNavItems, isFullWidth, isFloating, classN
                                                             "hidden origin-top will-change-transform md:block",
                                                             isFullWidth && "w-full",
                                                             isEntering && "duration-200 ease-out animate-in fade-in slide-in-from-top-1",
-                                                            isExiting && "duration-150 ease-in animate-out fade-out slide-out-to-top-1",
+                                                            isExiting && "duration-150 ease-smooth animate-out fade-out slide-out-to-top-1",
                                                         )
                                                     }
                                                     offset={isFloating || isFullWidth ? 0 : 8}
@@ -154,7 +154,7 @@ export const Header = ({ items = headerNavItems, isFullWidth, isFloating, classN
                                                                 // Have to use the scale animation inside the popover to avoid
                                                                 // miscalculating the popover's position when opening.
                                                                 isEntering && !isFullWidth && "duration-200 ease-out animate-in zoom-in-95",
-                                                                isExiting && !isFullWidth && "duration-150 ease-in animate-out zoom-out-95",
+                                                                isExiting && !isFullWidth && "duration-150 ease-smooth animate-out zoom-out-95",
                                                             )}
                                                         >
                                                             {navItem.menu}
@@ -191,7 +191,7 @@ export const Header = ({ items = headerNavItems, isFullWidth, isFloating, classN
                             aria-label="Toggle navigation menu"
                             className={({ isFocusVisible, isHovered }) =>
                                 cx(
-                                    "group ml-auto cursor-pointer rounded-lg p-2 md:hidden",
+                                    "group ms-auto cursor-pointer rounded-lg p-2 md:hidden",
                                     isHovered && "bg-primary_hover",
                                     isFocusVisible && "outline-2 outline-offset-2 outline-focus-ring",
                                 )
