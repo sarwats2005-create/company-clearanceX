@@ -97,7 +97,7 @@ export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filter
                             <tr key={r.id} className="group relative border-b border-secondary transition-colors duration-100 hover:bg-primary_hover">
                                 <td className="px-3 py-3.5">
                                     <a href={`/containers/${r.id}`} className="flex flex-col outline-none after:absolute after:inset-0 focus-visible:after:outline-2 focus-visible:after:outline-focus-ring">
-                                        <bdi className="cn font-semibold text-primary">{r.containerNumber}</bdi>
+                                        <bdi className="cn self-start font-semibold text-primary">{r.containerNumber}</bdi>
                                         <span className="truncate text-sm text-tertiary">{r.shippingLineName}</span>
                                     </a>
                                 </td>

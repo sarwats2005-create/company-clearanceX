@@ -72,3 +72,8 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - "منذ" in container lists is the number of days in the current status for every status (amber once late).
 - Search (top bar, Ctrl/⌘+K, or the magnifier on phones) looks in containers (number or B/L, any case or spacing, part of it is enough), traders (name ignoring hamza, or phone), receipts (ق-12, ق12 or 12) and parties. Five per group, cancelled containers left out. Arrow keys and Enter work; the last five searches are remembered on the device.
 - `pnpm db:demo` adds sample data (10 traders, 30 containers in every status, some late and some shared, charges and payments in both currencies) to a database with no containers, for showing the app. It refuses to run on a database that already has containers.
+
+## Polish (Task 11)
+- Settings has a new "القاصات" section: the vault each money form picks first for dinars and for dollars. Only an active vault that holds that currency can be chosen; a vault set here can't be stopped.
+- "تصدير Excel" downloads the containers list (as filtered), the journal (as filtered) and any statement (same period and currency, from the "Excel" button next to طباعة). Each file is one right-to-left sheet with a title row, real dates and amounts in their currency format, and a totals row on statements. File names are in English (containers-2026-11-24.xlsx) because Chrome drops Arabic download names; the Arabic title is inside the sheet.
+- The kit's date pickers are translated (they are not used on any screen today; the app uses its own date field).

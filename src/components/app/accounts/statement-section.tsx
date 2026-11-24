@@ -1,4 +1,5 @@
 import { MessageChatCircle, Printer } from "@untitledui/icons";
+import { DownloadLink } from "@/components/app/download-link";
 import { Button } from "@/components/base/buttons/button";
 import { db } from "@/db";
 import { CURRENCY_IN, LEDGER_KIND, type StatementParams, defaultCurrency, rangeText, statementQuery, statementShareText } from "@/features/accounts/model";
@@ -36,6 +37,9 @@ export async function StatementSection({ target, params }: { target: StatementTa
                     <Button size="md" color="secondary" iconLeading={<Printer data-icon aria-hidden="true" />} href={printHref} target="_blank" rel="noopener">
                         طباعة
                     </Button>
+                    <DownloadLink size="md" href={`/export/statement/${target.segment}/${target.id}${query}`}>
+                        Excel
+                    </DownloadLink>
                     {share && (
                         <Button
                             size="md"

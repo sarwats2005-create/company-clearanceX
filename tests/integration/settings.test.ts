@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { db, withTx } from "@/db";
-import { chargeTypeDefaults, chargeTypes, containerSizes, parties, receiptSequences, shippingLines, users } from "@/db/schema";
+import { chargeTypeDefaults, chargeTypes, containerSizes, parties, receiptSequences, shippingLines, users, vaults } from "@/db/schema";
 import { seed } from "@/db/seed";
 import { nextReceiptNo } from "@/features/ledger/receipt-numbers";
 import * as settings from "@/features/settings/service";
@@ -117,5 +117,29 @@ describe("company, rate and password", () => {
         await withTx((tx) => settings.changePassword(tx, ownerId, "owner-pass-123", "new-pass-456"));
         const [u] = await db.select().from(users);
         expect(await verifyPassword("new-pass-456", u.passwordHash)).toBe(true);
+    });
+});
+
+describe("default vaults (PRD §8.10 item 4)", () => {
+    const newVault = async (name: string, allowedCurrencies: ("IQD" | "USD")[], isActive = true) =>
+        (await db.insert(vaults).values({ name, kind: "other", allowedCurrencies, isActive }).returning())[0].id;
+
+    it("sets the vault the money forms pick first for each currency", async () => {
+        const shop = await newVault("محل الصيرفة", ["IQD", "USD"]);
+        await withTx((tx) => settings.setDefaultVaults(tx, { IQD: shop, USD: shop }, ownerId));
+        const s = await settings.getSettingsRow(db);
+        expect([s.defaultVaultIqdId, s.defaultVaultUsdId]).toEqual([shop, shop]);
+    });
+
+    it("refuses a vault that doesn't hold that currency, or a stopped one", async () => {
+        const usdOnly = (await db.select().from(vaults).where(eq(vaults.kind, "usd")))[0].id;
+        const main = (await db.select().from(vaults).where(eq(vaults.kind, "main")))[0].id;
+        const stopped = await newVault("قاصة قديمة", ["IQD"], false);
+        await expect(withTx((tx) => settings.setDefaultVaults(tx, { IQD: usdOnly, USD: usdOnly }, ownerId))).rejects.toMatchObject({ field: "IQD" });
+        await expect(withTx((tx) => settings.setDefaultVaults(tx, { IQD: stopped, USD: usdOnly }, ownerId))).rejects.toMatchObject({ field: "IQD" });
+        await expect(withTx((tx) => settings.setDefaultVaults(tx, { IQD: main, USD: main }, ownerId))).rejects.toMatchObject({ field: "USD" });
+        await expect(withTx((tx) => settings.setDefaultVaults(tx, { IQD: "junk", USD: usdOnly }, ownerId))).rejects.toMatchObject({ field: "IQD" });
+        const s = await settings.getSettingsRow(db);
+        expect([s.defaultVaultIqdId, s.defaultVaultUsdId]).toEqual([main, usdOnly]);
     });
 });

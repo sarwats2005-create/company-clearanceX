@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus } from "@untitledui/icons";
 import { ContainersFilters } from "@/components/app/containers/containers-filters";
 import { ContainersList } from "@/components/app/containers/containers-list";
+import { DownloadLink } from "@/components/app/download-link";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/base/buttons/button";
 import { db } from "@/db";
@@ -26,9 +27,12 @@ export default async function ContainersPage({ searchParams }: { searchParams: P
                 title="الحاويات"
                 description={filtered ? `نتائج البحث: ${containersText(total)}` : containersText(total)}
                 actions={
-                    <Button size="lg" iconLeading={<Plus data-icon aria-hidden="true" />} href="/containers/new">
-                        {t("action.newContainer")}
-                    </Button>
+                    <>
+                        {total > 0 && <DownloadLink href={`/export/containers${listQuery({ ...filters, page: 1 })}`}>{t("action.exportExcel")}</DownloadLink>}
+                        <Button size="lg" iconLeading={<Plus data-icon aria-hidden="true" />} href="/containers/new">
+                            {t("action.newContainer")}
+                        </Button>
+                    </>
                 }
             />
 

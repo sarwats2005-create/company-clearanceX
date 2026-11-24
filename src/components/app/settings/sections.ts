@@ -14,6 +14,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     { slug: "sizes", title: "أحجام الحاويات", description: "الطول والحجم لتقسيم الحاويات المشتركة" },
     { slug: "expense-categories", title: "تصنيفات المصاريف العامة", description: "إيجار، رواتب، وقود…" },
     { slug: "receipts", title: "الوصولات", description: "حرف الوصل والرقم التالي" },
+    { slug: "vaults", title: "القاصات", description: "القاصة التي تُختار أولاً لكل عملة" },
     { slug: "currency", title: "سعر الصرف والتنبيهات", description: "سعر الدولار الافتراضي وأيام التنبيه" },
     { slug: "display", title: "العرض", description: "حجم الخط على هذا الجهاز" },
     { slug: "account", title: "الحساب", description: "تغيير كلمة المرور وتسجيل الخروج" },

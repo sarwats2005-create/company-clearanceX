@@ -41,7 +41,7 @@ function VaultCard({ v }: { v: VaultAccountRow }) {
                     <bdi
                         key={c}
                         className={cx(
-                            "num font-semibold",
+                            "num self-start font-semibold",
                             main ? "text-display-xs text-primary_on-brand md:text-display-sm" : "text-xl",
                             !main && (v.balance[c].startsWith("-") ? "text-error-primary" : "text-primary"),
                         )}

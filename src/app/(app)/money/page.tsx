@@ -46,7 +46,10 @@ export default async function MoneyPage() {
                         >
                             <span className="text-sm text-tertiary">{v.name}</span>
                             {(v.allowedCurrencies as Currency[]).map((c) => (
-                                <bdi key={c} className={cx("num text-xl font-medium", v.balance[c].startsWith("-") ? "text-error-primary" : "text-primary")}>
+                                <bdi
+                                    key={c}
+                                    className={cx("num self-start text-xl font-medium", v.balance[c].startsWith("-") ? "text-error-primary" : "text-primary")}
+                                >
                                     {formatMoney(v.balance[c], c)}
                                 </bdi>
                             ))}

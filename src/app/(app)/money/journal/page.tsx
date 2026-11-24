@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DownloadLink } from "@/components/app/download-link";
 import { JournalFilters } from "@/components/app/money/journal-filters";
 import { JournalList } from "@/components/app/money/journal-list";
 import { PageHeader } from "@/components/app/page-header";
@@ -8,6 +9,7 @@ import { journalQuery, parseJournalParams } from "@/features/money/journal-param
 import { listJournal } from "@/features/money/queries";
 import { requireSession } from "@/lib/auth";
 import { countAr } from "@/lib/format";
+import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = { title: "سجل المعاملات" };
 
@@ -31,6 +33,9 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
                 }
                 title="سجل المعاملات"
                 description={filtered ? `نتائج البحث: ${entriesText(total)}` : `كل ما دخل وخرج، الأحدث أولاً · ${entriesText(total)}`}
+                actions={
+                    total > 0 && <DownloadLink href={`/export/journal${journalQuery(params, { page: undefined })}`}>{t("action.exportExcel")}</DownloadLink>
+                }
             />
             {(total > 0 || filtered) && <JournalFilters params={params} />}
             <JournalList

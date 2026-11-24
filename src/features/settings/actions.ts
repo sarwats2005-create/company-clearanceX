@@ -94,6 +94,15 @@ export async function updateCurrencyAlertsAction(input: { defaultUsdIqdRate: str
     });
 }
 
+export async function setDefaultVaultsAction(input: { IQD: string; USD: string }) {
+    return runAction(async () => {
+        const s = await requireSession();
+        await withTx((tx) => service.setDefaultVaults(tx, input, s.userId));
+        done();
+        return null;
+    });
+}
+
 export async function changePasswordAction(input: { current: string; next: string }) {
     return runAction(async () => {
         const s = await requireSession();

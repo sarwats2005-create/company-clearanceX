@@ -13,10 +13,14 @@ import {
     receiptSequences,
     shippingLines,
     users,
+    vaults,
+    type Currency,
     type ReceiptKind,
 } from "@/db/schema";
 import { audit } from "@/features/audit/log";
 import { DomainError } from "@/lib/errors";
+import { t } from "@/lib/i18n";
+import { isUuid } from "@/lib/ids";
 import { parseAmount } from "@/lib/money";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { deleteUserSessions } from "@/lib/auth-core";
@@ -210,6 +214,19 @@ export async function updateCurrencyAndAlerts(tx: DbOrTx, input: unknown, userId
         .set({ defaultUsdIqdRate: data.defaultUsdIqdRate, arrivedWarningDays: data.arrivedWarningDays, ...(rateChanged ? { rateUpdatedAt: new Date() } : {}) })
         .where(eq(companySettings.id, 1));
     await audit(tx, { table: "company_settings", recordId: "1", action: "update", before, after: data, userId });
+}
+
+/** The vault each money form picks first, per currency (PRD §8.10 item 4). It must be active and hold that currency. */
+export async function setDefaultVaults(tx: DbOrTx, input: Record<Currency, string>, userId: string) {
+    const before = await getSettingsRow(tx);
+    for (const c of ["IQD", "USD"] as const) {
+        const [v] = isUuid(input[c]) ? await tx.select().from(vaults).where(eq(vaults.id, input[c])) : [];
+        if (!v || !v.isActive) throw new DomainError("اختر قاصة", c);
+        if (!v.allowedCurrencies.includes(c)) throw new DomainError(t("error.vaultCurrency"), c);
+    }
+    const after = { defaultVaultIqdId: input.IQD, defaultVaultUsdId: input.USD };
+    await tx.update(companySettings).set(after).where(eq(companySettings.id, 1));
+    await audit(tx, { table: "company_settings", recordId: "1", action: "update", before, after, userId });
 }
 
 /** Remembers the last rate typed in a money form, so the next form pre-fills it (PRD §10.5 item 4). */

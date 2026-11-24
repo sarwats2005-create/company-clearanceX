@@ -113,7 +113,7 @@ export default async function PrintStatementPage({ params, searchParams }: { par
                                     </td>
                                     <td className="py-2 pe-3">
                                         {r.receiptNo && <bdi className="num block">{r.receiptNo}</bdi>}
-                                        {r.containerNumber && <bdi className="cn block text-sm">{r.containerNumber}</bdi>}
+                                        {r.containerNumber && <bdi className="cn block w-fit text-sm">{r.containerNumber}</bdi>}
                                         {!r.receiptNo && !r.containerNumber && "—"}
                                     </td>
                                     <td className="py-2 pe-3">
