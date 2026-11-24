@@ -14,6 +14,7 @@ import {
     traders,
     users,
 } from "@/db/schema";
+import { compact } from "@/db/search";
 import { getSettingsRow } from "@/features/settings/service";
 import { isIso6346, normalizeContainerNumber } from "@/lib/container-number";
 import { daysBetween, todayISO } from "@/lib/format";
@@ -34,6 +35,8 @@ export interface ContainerFilters {
     current?: boolean;
     /** delivered on or after this date, yyyy-mm-dd (home "delivered this month") */
     deliveredFrom?: string;
+    /** Totals as this trader's own part of each container's charges (a trader's page), not the whole container. */
+    totalsOf?: string;
     sort?: ContainerSort;
     dir?: "asc" | "desc";
     /** 1-based */
@@ -66,6 +69,11 @@ const goodsSql = sql<string | null>`(select s.goods from ${containerShares} s wh
 const statusSinceSql = sql<string>`coalesce((select h.changed_on from ${containerStatusHistory} h where h.container_id = ${containers.id} order by h.created_at desc, h.to_status desc limit 1), ${containers.registeredOn})`;
 const totalsSql = sql<Partial<Record<Currency, string>> | null>`(select json_object_agg(x.currency, x.total) from (select c2.currency, sum(c2.amount)::text as total from container_charges c2 where c2.container_id = ${containers.id} and c2.cancelled_at is null group by c2.currency) x)`;
 
+/** One trader's part of each container's live charges, from the split allocations. */
+function traderTotalsSql(traderId: string) {
+    return sql<Partial<Record<Currency, string>> | null>`(select json_object_agg(x.currency, x.total) from (select c2.currency, sum(a.amount)::text as total from container_charges c2 join container_charge_allocations a on a.charge_id = c2.id where c2.container_id = ${containers.id} and c2.cancelled_at is null and a.trader_id = ${traderId} group by c2.currency) x)`;
+}
+
 /** Arrived and waiting more than N days, or on the way past the expected arrival (PRD §8.3). */
 function lateSql(today: string, warningDays: number) {
     return sql<boolean>`((${containers.status} = 'arrived' and ${containers.arrivedOn} < (${today}::date - ${warningDays}::int)) or (${containers.status} = 'on_the_way' and ${containers.expectedArrivalOn} < ${today}::date))`;
@@ -96,7 +104,7 @@ export async function listContainers(db: DbOrTx, f: ContainerFilters): Promise<{
         where.push(
             or(
                 number ? sql`${containers.containerNumber} like ${`%${number}%`}` : undefined,
-                number ? sql`upper(${containers.billOfLadingNumber}) like ${`%${number}%`}` : undefined,
+                number ? sql`${compact(containers.billOfLadingNumber)} like ${`%${number}%`}` : undefined,
                 sql`exists (select 1 from ${containerShares} s join ${traders} t on t.id = s.trader_id where s.container_id = ${containers.id} and t.name ilike ${text})`,
             ),
         );
@@ -136,7 +144,7 @@ export async function listContainers(db: DbOrTx, f: ContainerFilters): Promise<{
                 goods: goodsSql,
                 statusSince: statusSinceSql,
                 isLate: late,
-                totals: totalsSql,
+                totals: f.totalsOf ? traderTotalsSql(f.totalsOf) : totalsSql,
             })
             .from(containers)
             .innerJoin(shippingLines, eq(shippingLines.id, containers.shippingLineId))

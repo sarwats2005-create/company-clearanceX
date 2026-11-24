@@ -43,6 +43,22 @@ export function parseAmount(input: string, currency: Currency): string | null {
     return d.toDecimalPlaces(DECIMALS[currency], Decimal.ROUND_HALF_UP).toFixed(DECIMALS[currency]);
 }
 
+/**
+ * Parses a quantity the owner typed (a share in meters, a weight, a size): "4,5" and "٤٫٥" → "4.5",
+ * "1,250" and "٢٬٤٠٠" → "1250"/"2400", "1,250.5" → "1250.5". A comma is a thousands separator when a
+ * point is present or when it groups digits in threes; a single other comma is the decimal point.
+ * Returns null when the text is not a non-negative number. The form preview and the server both use it.
+ */
+export function parseTypedDecimal(input: string): string | null {
+    let s = normalizeDigits(input)
+        .replace(/[\s\u00a0\u200e\u200f٬]/g, "")
+        .replace(/،/g, ",")
+        .replace(/٫/g, ".");
+    if (s.includes(".") || /^\d{1,3}(,\d{3})+$/.test(s)) s = s.replace(/,/g, "");
+    else if ((s.match(/,/g) ?? []).length === 1) s = s.replace(",", ".");
+    return /^\d+(\.\d+)?$/.test(s) ? s : null;
+}
+
 /** Rounds an amount for its currency (half up) and returns it with fixed decimals. */
 export function roundTo(amount: string | Decimal, currency: Currency): string {
     return new Decimal(amount).toDecimalPlaces(DECIMALS[currency], Decimal.ROUND_HALF_UP).toFixed(DECIMALS[currency]);

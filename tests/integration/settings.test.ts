@@ -4,7 +4,9 @@ import { db, withTx } from "@/db";
 import { chargeTypeDefaults, chargeTypes, containerSizes, parties, receiptSequences, shippingLines, users, vaults } from "@/db/schema";
 import { seed } from "@/db/seed";
 import { nextReceiptNo } from "@/features/ledger/receipt-numbers";
+import * as money from "@/features/money/service";
 import * as settings from "@/features/settings/service";
+import { todayISO } from "@/lib/format";
 import { verifyPassword } from "@/lib/password";
 import { closeDb, resetDb } from "../helpers/db";
 
@@ -47,6 +49,21 @@ describe("parties", () => {
     it("never deactivates our own company (شركتنا)", async () => {
         const [self] = await db.select().from(parties).where(eq(parties.kind, "self"));
         await expect(withTx((tx) => settings.setItemActive(tx, "parties", self.id, false, ownerId))).rejects.toThrow();
+    });
+    it("refuses to stop a party while we still owe it (or it owes us), from the list or the edit form", async () => {
+        const [china] = await db.select().from(parties).where(eq(parties.name, "شركة التخليص - الصين"));
+        const [usd] = await db.select().from(vaults).where(eq(vaults.kind, "usd"));
+        await withTx((tx) =>
+            money.postMoney(tx, { kind: "pay_party", date: todayISO(), partyId: china.id, vaultId: usd.id, amount: "50", currency: "USD", allowNegative: true }, ownerId),
+        );
+        await expect(withTx((tx) => settings.setItemActive(tx, "parties", china.id, false, ownerId))).rejects.toThrow("سدّد رصيد الجهة أولاً");
+        const form = { id: china.id, name: china.name, kind: china.kind, phone: china.phone, notes: china.notes, isActive: false, isDefaultCompany: false };
+        await expect(withTx((tx) => settings.saveParty(tx, form, ownerId))).rejects.toThrow("سدّد رصيد الجهة أولاً");
+        expect((await db.select().from(parties).where(eq(parties.id, china.id)))[0].isActive).toBe(true);
+
+        const [other] = await db.select().from(parties).where(eq(parties.kind, "partner"));
+        await withTx((tx) => settings.setItemActive(tx, "parties", other.id, false, ownerId)); // nothing owed: allowed
+        expect((await db.select().from(parties).where(eq(parties.id, other.id)))[0].isActive).toBe(false);
     });
     it("saves a new party and can make it the default clearance company", async () => {
         const id = await withTx((tx) => settings.saveParty(tx, { name: "مكتب بغداد", kind: "other", phone: "07701234567", notes: "", isActive: true, isDefaultCompany: true }, ownerId));

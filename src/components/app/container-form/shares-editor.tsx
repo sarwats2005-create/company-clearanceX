@@ -9,18 +9,15 @@ import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import type { SplitUnit } from "@/db/schema";
 import { t } from "@/lib/i18n";
-import { normalizeDigits } from "@/lib/money";
+import { parseTypedDecimal } from "@/lib/money";
 import { FillBar } from "./fill-bar";
 import { type ShareRow, emptyShare } from "./values";
 
 const UNITS: SplitUnit[] = ["meters", "cbm", "percent", "equal"];
 const SHARE_LABEL: Record<SplitUnit, string> = { meters: "الحصة (متر)", cbm: "الحصة (م³)", percent: "النسبة (%)", equal: "" };
 
-/** "٤٫٥" / "4,5" → "4.5"; anything else → null. For the live preview only (the server validates again). */
-export function typedNumber(v: string): string | null {
-    const s = normalizeDigits(v).replace(/[\s٬]/g, "").replace(/[٫,]/g, ".");
-    return /^\d+(\.\d+)?$/.test(s) ? s : null;
-}
+/** "٤٫٥" / "4,5" → "4.5"; anything else → null. Same parser as the server, so the preview never disagrees. */
+export const typedNumber = (v: string): string | null => parseTypedDecimal(v);
 
 interface SharesEditorProps {
     unit: SplitUnit | null;

@@ -2,7 +2,7 @@ import { and, asc, eq, lte, ne, sql } from "drizzle-orm";
 import "server-only";
 import type { DbOrTx } from "@/db";
 import { type AccountKind, type Currency, type PartyKind, type VaultKind, accounts, journalEntries, journalLines, parties, traders, vaults } from "@/db/schema";
-import { folded, likePattern } from "@/db/search";
+import { compact, compactPattern, folded, likePattern } from "@/db/search";
 import { type Balances, getBalances, getBalancesMany } from "@/features/ledger/balances";
 import { getSettingsRow } from "@/features/settings/service";
 import { balanceSide } from "@/lib/format";
@@ -53,13 +53,16 @@ async function rateOf(db: DbOrTx) {
 /** Traders with both balances, largest debt first (US-16, PRD §8.8). USD is weighed at the default rate. */
 export async function listTraderAccounts(db: DbOrTx, f: { q?: string; debtsOnly?: boolean }): Promise<TraderAccountRow[]> {
     const like = likePattern(f.q);
+    const phone = compactPattern(f.q);
     const rows = await db
         .select({ id: traders.id, name: traders.name, phone: traders.phone, city: traders.city, activeContainers: activeContainersSql })
         .from(traders)
         .where(
             and(
                 eq(traders.isActive, true),
-                like ? sql`(${folded(traders.name)} LIKE ${like} OR ${folded(traders.phone)} LIKE ${like} OR ${folded(traders.city)} LIKE ${like})` : undefined,
+                like
+                    ? sql`(${folded(traders.name)} LIKE ${like} OR ${folded(traders.phone)} LIKE ${like} OR ${folded(traders.city)} LIKE ${like}${phone ? sql` OR ${compact(traders.phone)} LIKE ${phone}` : sql``})`
+                    : undefined,
             ),
         );
     const [balances, rate] = await Promise.all([

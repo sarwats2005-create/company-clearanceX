@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { addMoney, compareMoney, isPositive, negate, normalizeDigits, parseAmount, roundTo, subMoney } from "@/lib/money";
+import { typedNumber } from "@/components/app/container-form/shares-editor";
+import { shareSchema } from "@/features/containers/schemas";
+import { addMoney, compareMoney, isPositive, negate, normalizeDigits, parseAmount, parseTypedDecimal, roundTo, subMoney } from "@/lib/money";
 
 describe("normalizeDigits", () => {
     it("turns Arabic-Indic and Persian digits into Latin", () => {
@@ -61,5 +63,36 @@ describe("decimal helpers", () => {
         expect(compareMoney("1.0", "1")).toBe(0);
         expect(isPositive("0.00")).toBe(false);
         expect(isPositive("0.01")).toBe(true);
+    });
+});
+
+describe("parseTypedDecimal", () => {
+    it("reads a lone comma as the decimal point", () => {
+        expect(parseTypedDecimal("4,5")).toBe("4.5");
+    });
+    it("reads the Arabic decimal mark with Arabic-Indic digits", () => {
+        expect(parseTypedDecimal("٤٫٥")).toBe("4.5");
+    });
+    it("reads comma groups of three as thousands", () => {
+        expect(parseTypedDecimal("1,250")).toBe("1250");
+        expect(parseTypedDecimal("12,500,000")).toBe("12500000");
+    });
+    it("reads commas as thousands when a point is present", () => {
+        expect(parseTypedDecimal("1,250.5")).toBe("1250.5");
+        expect(parseTypedDecimal("٢٬٤٠٠٫٥")).toBe("2400.5");
+    });
+    it("rejects text, blanks and two decimal marks", () => {
+        expect(parseTypedDecimal("abc")).toBeNull();
+        expect(parseTypedDecimal("")).toBeNull();
+        expect(parseTypedDecimal("1,2,3")).toBeNull();
+        expect(parseTypedDecimal("1.2.3")).toBeNull();
+    });
+});
+
+describe("shareSchema", () => {
+    it("stores a share typed as 4,5 as 4.5 (same as the live preview)", () => {
+        const r = shareSchema.parse({ traderId: "00000000-0000-4000-8000-000000000000", shareValue: "4,5" });
+        expect(r.shareValue).toBe("4.5");
+        expect(typedNumber("4,5")).toBe(r.shareValue);
     });
 });

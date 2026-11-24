@@ -113,7 +113,7 @@ export default async function TraderAccountPage({ params, searchParams }: { para
 }
 
 async function TraderContainers({ traderId }: { traderId: string }) {
-    const { rows, total } = await listContainers(db, { traderId, pageSize: 200, sort: "registered", dir: "desc" });
+    const { rows, total } = await listContainers(db, { traderId, totalsOf: traderId, pageSize: 200, sort: "registered", dir: "desc" });
     return (
         <section aria-labelledby="containers-title" className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3">
@@ -126,7 +126,7 @@ async function TraderContainers({ traderId }: { traderId: string }) {
             </div>
             {rows.length ? (
                 <>
-                    <ContainersList rows={rows} filters={null} />
+                    <ContainersList rows={rows} filters={null} totalsLabel="حصته من المصاريف" />
                     {total > rows.length && (
                         <Button size="md" color="link-color" href={`/containers?trader=${traderId}`} className="self-start">
                             عرض كل الحاويات

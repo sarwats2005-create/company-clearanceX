@@ -17,6 +17,7 @@ import {
 import { seed } from "@/db/seed";
 import { getChargeSheetData, getContainerCharges, getContainerMoney } from "@/features/charges/queries";
 import * as charges from "@/features/charges/service";
+import { listContainers } from "@/features/containers/queries";
 import * as containers from "@/features/containers/service";
 import { getBalance, getBalances } from "@/features/ledger/balances";
 import { postEntry } from "@/features/ledger/post-entry";
@@ -423,5 +424,32 @@ describe("container charges view", () => {
             ["أحمد كاظم", { IQD: "54737", USD: "968.43" }, { IQD: "54737", USD: "968.43" }],
             ["حيدر عبد الله", { IQD: "75263", USD: "1331.57" }, { IQD: "75263", USD: "1331.57" }],
         ]);
+    });
+});
+
+describe("a trader's containers tab (PRD §8.8)", () => {
+    it("shows the trader's own part of each container's charges, not the whole container", async () => {
+        const c = await shared();
+        await add({
+            containerId: c.id,
+            date: "2026-11-20",
+            rows: [{ chargeTypeId: type["كمرك بصرة"], amount: "2000", currency: "USD", paidByPartyId: china }],
+        });
+        const fine = await add({
+            containerId: c.id,
+            date: "2026-11-20",
+            rows: [{ chargeTypeId: type["غرامة ميناء"], amount: "190000", currency: "IQD", paidByPartyId: ummQasr }],
+        });
+
+        const whole = await listContainers(db, { traderId: ahmed });
+        expect(whole.rows[0].totals).toEqual({ USD: "2000.00", IQD: "190000.00" });
+
+        const mine = await listContainers(db, { traderId: ahmed, totalsOf: ahmed });
+        const theirs = await listContainers(db, { traderId: haider, totalsOf: haider });
+        expect(mine.rows[0].totals).toEqual({ USD: "842.11", IQD: "80000.00" }); // shares 4 : 5.5
+        expect(theirs.rows[0].totals).toEqual({ USD: "1157.89", IQD: "110000.00" });
+
+        await withTx((tx) => charges.cancelCharge(tx, fine.charges[0].chargeId, "خطأ", ownerId));
+        expect((await listContainers(db, { traderId: ahmed, totalsOf: ahmed })).rows[0].totals).toEqual({ USD: "842.11" });
     });
 });

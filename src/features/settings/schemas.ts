@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { t } from "@/lib/i18n";
-import { normalizeDigits, parseAmount } from "@/lib/money";
+import { parseAmount, parseTypedDecimal } from "@/lib/money";
 
 export const requiredText = (max = 100) =>
     z
@@ -26,8 +26,8 @@ export const optionalDecimal = (max = 1_000_000) =>
         .nullable()
         .transform((v, ctx) => {
             if (v === null || v === undefined || String(v).trim() === "") return null;
-            const s = normalizeDigits(String(v)).replace(/[\s,٬]/g, "").replace(/٫/g, ".");
-            if (!/^\d+(\.\d+)?$/.test(s) || Number(s) > max) {
+            const s = parseTypedDecimal(String(v));
+            if (s === null || Number(s) > max) {
                 ctx.addIssue({ code: "custom", message: "اكتب رقماً صحيحاً" });
                 return z.NEVER;
             }

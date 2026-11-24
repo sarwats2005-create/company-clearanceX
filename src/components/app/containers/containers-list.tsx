@@ -61,8 +61,11 @@ function SortHeader({ filters, sort, children, className }: { filters: Container
     );
 }
 
-/** Containers as a hairline table on desktop and cards on phones (PRD §8.3, §8.4). Without filters the headers don't sort. */
-export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filters: ContainerFilters | null }) {
+/**
+ * Containers as a hairline table on desktop and cards on phones (PRD §8.3, §8.4). Without filters the headers don't sort.
+ * `totalsLabel` names the money column when it holds something other than the whole container (a trader's part).
+ */
+export function ContainersList({ rows, filters, totalsLabel = "المصاريف" }: { rows: ContainerRow[]; filters: ContainerFilters | null; totalsLabel?: string }) {
     return (
         <>
             <div className="hidden md:block">
@@ -88,7 +91,7 @@ export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filter
                                 التسجيل
                             </SortHeader>
                             <th scope="col" className="w-[15%] px-3 py-3 text-end font-medium">
-                                المصاريف
+                                {totalsLabel}
                             </th>
                         </tr>
                     </thead>

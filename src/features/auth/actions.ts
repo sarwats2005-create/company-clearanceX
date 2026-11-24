@@ -4,14 +4,10 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { audit } from "@/features/audit/log";
 import { clientIp, login, logout } from "@/lib/auth";
+import { safeNext } from "@/lib/safe-next";
 
 export interface LoginState {
     error?: string;
-}
-
-function safeNext(next: FormDataEntryValue | null) {
-    const s = typeof next === "string" ? next : "/";
-    return s.startsWith("/") && !s.startsWith("//") ? s : "/";
 }
 
 export async function loginAction(_prev: LoginState, form: FormData): Promise<LoginState> {

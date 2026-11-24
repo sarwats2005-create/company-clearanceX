@@ -106,6 +106,16 @@ describe("globalSearch (PRD §8.2)", () => {
         expect((await globalSearch(db, "7777")).containers).toEqual([]); // cancelled container
     });
 
+    it("finds a B/L or a phone that was saved with dashes or spaces, typed with or without them", async () => {
+        await make("TGHU2222222", {}, { billOfLadingNumber: "COSU-6012 3456" });
+        await db.update(traders).set({ phone: "0780 111-2233" }).where(eq(traders.name, "حيدر عبد الله"));
+        expect((await globalSearch(db, "cosu6012")).containers.map((c) => c.containerNumber)).toEqual(["TGHU2222222"]);
+        expect((await globalSearch(db, "6012 34")).containers.map((c) => c.containerNumber)).toEqual(["TGHU2222222"]);
+        expect((await listContainers(db, { q: "COSU60123456" })).rows.map((r) => r.containerNumber)).toEqual(["TGHU2222222"]);
+        expect((await globalSearch(db, "07801112233")).traders.map((t) => t.name)).toEqual(["حيدر عبد الله"]);
+        expect((await globalSearch(db, "0770-123")).traders.map((t) => t.name)).toEqual(["أحمد كاظم"]);
+    });
+
     it("finds traders by name (ignoring hamza) or phone, and parties except our company", async () => {
         expect((await globalSearch(db, "احمد")).traders.map((t) => t.name)).toEqual(["أحمد كاظم"]);
         expect((await globalSearch(db, "0770123")).traders.map((t) => t.name)).toEqual(["أحمد كاظم"]);

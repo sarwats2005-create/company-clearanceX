@@ -83,6 +83,7 @@ describe("listTraderAccounts (US-16)", () => {
         expect((await listTraderAccounts(db, { debtsOnly: true })).map((r) => r.name)).toEqual(["أحمد كاظم", "حيدر عبد الله"]);
         expect((await listTraderAccounts(db, { q: "احمد" })).map((r) => r.name)).toEqual(["أحمد كاظم"]);
         expect((await listTraderAccounts(db, { q: "0770" })).map((r) => r.name)).toEqual(["أحمد كاظم"]);
+        expect((await listTraderAccounts(db, { q: "0770 12" })).map((r) => r.name)).toEqual(["أحمد كاظم"]); // typed with a space
         expect(await listTraderAccounts(db, { q: "لا يوجد" })).toEqual([]);
     });
 

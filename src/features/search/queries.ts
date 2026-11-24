@@ -13,7 +13,7 @@ import {
     shippingLines,
     traders,
 } from "@/db/schema";
-import { folded, likePattern } from "@/db/search";
+import { compact, compactPattern, folded, likePattern } from "@/db/search";
 import { type Balances, getBalancesMany } from "@/features/ledger/balances";
 import { normalizeContainerNumber } from "@/lib/container-number";
 import { parseReceiptQuery } from "./model";
@@ -59,6 +59,7 @@ export async function globalSearch(db: DbOrTx, raw: string): Promise<SearchResul
     const number = normalizeContainerNumber(q);
     const byNumber = wide && /^[A-Z0-9]+$/.test(number);
     const like = wide ? likePattern(q) : "";
+    const phone = wide ? compactPattern(q) : "";
 
     const [cs, ts, ps, rs] = await Promise.all([
         byNumber
@@ -76,7 +77,7 @@ export async function globalSearch(db: DbOrTx, raw: string): Promise<SearchResul
                   .where(
                       and(
                           isNull(containers.archivedAt),
-                          sql`(${containers.containerNumber} like ${`%${escapeLike(number)}%`} or upper(${containers.billOfLadingNumber}) like ${`%${escapeLike(number)}%`})`,
+                          sql`(${containers.containerNumber} like ${`%${escapeLike(number)}%`} or ${compact(containers.billOfLadingNumber)} like ${`%${escapeLike(number)}%`})`,
                       ),
                   )
                   .orderBy(
@@ -90,7 +91,12 @@ export async function globalSearch(db: DbOrTx, raw: string): Promise<SearchResul
             ? db
                   .select({ id: traders.id, name: traders.name, phone: traders.phone })
                   .from(traders)
-                  .where(and(eq(traders.isActive, true), sql`(${folded(traders.name)} like ${like} or ${folded(traders.phone)} like ${like})`))
+                  .where(
+                      and(
+                          eq(traders.isActive, true),
+                          sql`(${folded(traders.name)} like ${like} or ${folded(traders.phone)} like ${like}${phone ? sql` or ${compact(traders.phone)} like ${phone}` : sql``})`,
+                      ),
+                  )
                   .orderBy(traders.name)
                   .limit(LIMIT)
             : [],

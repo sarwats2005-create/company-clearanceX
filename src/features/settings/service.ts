@@ -18,10 +18,12 @@ import {
     type ReceiptKind,
 } from "@/db/schema";
 import { audit } from "@/features/audit/log";
+import { getBalances } from "@/features/ledger/balances";
 import { DomainError } from "@/lib/errors";
+import { formatMoney } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { isUuid } from "@/lib/ids";
-import { parseAmount } from "@/lib/money";
+import { absMoney, isZero, parseAmount } from "@/lib/money";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { deleteUserSessions } from "@/lib/auth-core";
 import {
@@ -97,12 +99,23 @@ export async function moveItem(tx: DbOrTx, kind: OrderedKind, id: string, direct
     await tx.update(table).set({ sortOrder: current.sortOrder }).where(eq(table.id, neighbour.id));
 }
 
+/** A party can be stopped only once its account is settled; a stopped party can't be picked to pay or be paid. */
+async function assertPartySettled(tx: DbOrTx, id: string) {
+    const b = await getBalances(tx, "party", id);
+    const left = (["IQD", "USD"] as Currency[]).filter((c) => !isZero(b[c]));
+    if (left.length) {
+        const words = left.map((c) => `${b[c].startsWith("-") ? "لها" : "عليها"} ${formatMoney(absMoney(b[c]), c)}`).join(" و");
+        throw new DomainError(`سدّد رصيد الجهة أولاً ثم أوقفها (${words})`);
+    }
+}
+
 /** Records in use are never deleted, only deactivated (PRD §8.10). */
 export async function setItemActive(tx: DbOrTx, kind: ActivatableKind, id: string, isActive: boolean, userId: string) {
     const table = ACTIVE_TABLES[kind];
     if (kind === "parties" && !isActive) {
         const [p] = await tx.select().from(parties).where(eq(parties.id, id));
         if (p?.kind === "self" || p?.isSystem) throw new DomainError("لا يمكن إيقاف هذه الجهة لأنها شركتك");
+        if (p?.isActive) await assertPartySettled(tx, id);
     }
     await tx.update(table).set({ isActive }).where(eq(table.id, id));
     await audit(tx, { table: kind, recordId: id, action: "update", after: { isActive }, userId });
@@ -131,6 +144,7 @@ export async function saveParty(tx: DbOrTx, input: PartyInput, userId: string): 
         const [before] = await tx.select().from(parties).where(eq(parties.id, id));
         if (!before) throw new DomainError("لم نجد هذه الجهة");
         if ((before.kind === "self" || before.isSystem) && (!data.isActive || data.kind !== "self")) throw new DomainError("لا يمكن تغيير نوع جهة شركتك أو إيقافها");
+        if (before.isActive && !data.isActive) await assertPartySettled(tx, id);
         await tx.update(parties).set({ name: data.name, kind: data.kind, phone: data.phone, notes: data.notes, isActive: data.isActive }).where(eq(parties.id, id));
         await audit(tx, { table: "parties", recordId: id, action: "update", before, after: data, userId });
     } else {
