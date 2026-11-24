@@ -85,3 +85,24 @@ export function formatDateTime(value: Date): string {
 export function daysBetween(a: string, b: string): number {
     return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
 }
+
+/** "منذ" column: 0 → اليوم, 1 → يوم واحد, 2 → يومان, 3–10 → n أيام, 11–99 → n يوماً, 100 → n يوم. */
+/** Arabic counted noun: 1 and 2 have their own words, 3–10 take the plural, 11–99 the accusative singular, the rest the singular. */
+function countAr(n: number, f: { one: string; two: string; few: string; many: string; other: string }): string {
+    if (n === 1) return f.one;
+    if (n === 2) return f.two;
+    const r = n % 100;
+    const num = formatNumber(n);
+    if (r >= 3 && r <= 10) return `${num} ${f.few}`;
+    if (r >= 11) return `${num} ${f.many}`;
+    return `${num} ${f.other}`;
+}
+
+export function daysText(n: number): string {
+    if (n <= 0) return "اليوم";
+    return countAr(n, { one: "يوم واحد", two: "يومان", few: "أيام", many: "يوماً", other: "يوم" });
+}
+
+export const containersText = (n: number) => countAr(n, { one: "حاوية واحدة", two: "حاويتان", few: "حاويات", many: "حاوية", other: "حاوية" });
+
+export const tradersText = (n: number) => countAr(n, { one: "تاجر واحد", two: "تاجران", few: "تجار", many: "تاجراً", other: "تاجر" });

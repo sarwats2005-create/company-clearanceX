@@ -62,7 +62,7 @@ export const Calendar = ({ highlightedDates, className, children, ...props }: Ca
 
                         {children || (
                             <div className="flex gap-3">
-                                <InputDateBase aria-label="Date" size="sm" className="flex-1" />
+                                <InputDateBase aria-label="التاريخ" size="sm" className="flex-1" />
                                 <Button
                                     slot={null}
                                     size="sm"
@@ -72,16 +72,16 @@ export const Calendar = ({ highlightedDates, className, children, ...props }: Ca
                                         state.setFocusedDate(today(getLocalTimeZone()));
                                     }}
                                 >
-                                    Today
+                                    اليوم
                                 </Button>
                             </div>
                         )}
 
-                        <AriaCalendarGrid weekdayStyle="short" className="w-max">
+                        <AriaCalendarGrid weekdayStyle="narrow" className="w-max">
                             <AriaCalendarGridHeader className="border-b-4 border-transparent">
                                 {(day) => (
                                     <AriaCalendarHeaderCell className="p-0">
-                                        <div className="flex size-10 items-center justify-center text-sm font-medium text-secondary">{day.slice(0, 2)}</div>
+                                        <div className="flex size-10 items-center justify-center text-sm font-medium text-secondary">{day}</div>
                                     </AriaCalendarHeaderCell>
                                 )}
                             </AriaCalendarGridHeader>

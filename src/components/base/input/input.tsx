@@ -243,11 +243,13 @@ export interface InputProps
             | "tooltipClassName"
         > {
     /** Label text for the input */
-    label?: string;
+    label?: ReactNode;
     /** Helper text displayed below the input */
     hint?: ReactNode;
     /** Whether to hide required indicator from label */
     hideRequiredIndicator?: boolean;
+    /** id of a <datalist> with suggestions */
+    list?: string;
 }
 
 export const Input = ({
@@ -267,6 +269,7 @@ export const Input = ({
     wrapperClassName,
     tooltipClassName,
     type = "text",
+    list,
     ...props
 }: InputProps) => {
     return (
@@ -293,6 +296,7 @@ export const Input = ({
                             tooltipClassName,
                             tooltip,
                             type,
+                            list,
                         }}
                     />
 

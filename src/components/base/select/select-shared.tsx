@@ -20,9 +20,9 @@ export type SelectItemType = {
 
 export interface CommonProps {
     /** Helper text displayed below the input. */
-    hint?: string;
+    hint?: ReactNode;
     /** Field label displayed above the input. */
-    label?: string;
+    label?: ReactNode;
     /** Tooltip text for the help icon next to the label. */
     tooltip?: string;
     /**

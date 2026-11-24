@@ -9,6 +9,8 @@ import { t } from "@/lib/i18n";
 import { cx } from "@/utils/cx";
 
 const PRIMARY = NAV_ITEMS.slice(0, 4);
+/** Focused tasks hide the bottom navigation on phones (PRD §8.5.4); their own action bar replaces it. */
+const FOCUSED = [/^\/containers\/new$/, /^\/containers\/[^/]+\/edit$/];
 const MORE = NAV_ITEMS.slice(4);
 
 /** Phone/tablet bottom navigation: 4 main items + "المزيد" (PRD §8.1). */
@@ -16,6 +18,7 @@ export function BottomNav({ moreFooter }: { moreFooter?: ReactNode }) {
     const pathname = usePathname();
     const [moreOpen, setMoreOpen] = useState(false);
     const moreActive = MORE.some((i) => isActive(pathname, i.href));
+    if (FOCUSED.some((re) => re.test(pathname))) return null;
 
     const itemClass = (active: boolean) =>
         cx(

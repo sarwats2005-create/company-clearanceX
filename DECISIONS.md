@@ -25,3 +25,12 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - `container_charges.is_fee` is a snapshot of the charge type at posting time, so later changes in Settings don't rewrite history.
 - `journal_entries` has a headline `amount`/`currency` and a `meta` JSON for receipt display (from/to labels, the other side of an exchange). Balances never read them; they come from `journal_lines` only.
 - `journal_lines.memo` carries per-line notes such as "حصتك 4 م من 9.5 م" for shared containers.
+
+## Containers (Task 6)
+- A container that already has charges keeps its traders: a normal container can't change its trader or become shared, and a shared one can't stop being shared. Move money with "re-split" on the charge instead.
+- A shared container needs at least two traders. "Equal" split stores no share values; a normal container is one share with no value.
+- In the add/edit form, Enter goes to the next field and never saves. Ctrl/⌘+Enter saves.
+- Latin and number inputs use `num [direction:ltr] text-end`, so what you type sits on the right edge like the Arabic labels.
+- Counts follow Arabic number agreement (`countAr` in `src/lib/format.ts`): حاويتان، 3 تجار، 11 تاجراً.
+- Shipping icon is `Anchor` (`Ship01` is not in the free icon set).
+- Cancelled (archived) containers are read-only.

@@ -6,6 +6,7 @@ import { SplitError } from "@/features/charges/split";
 import { type ActionResult, fail, ok } from "@/lib/action-result";
 import { DomainError } from "@/lib/errors";
 import { t } from "@/lib/i18n";
+import { zodFieldErrors } from "@/lib/zod-errors";
 
 /** Postgres error code (Drizzle puts the driver error in `cause`). */
 export function pgCode(err: unknown): string | undefined {
@@ -13,14 +14,12 @@ export function pgCode(err: unknown): string | undefined {
     return e?.cause?.code ?? e?.code;
 }
 
-export function zodFieldErrors(err: ZodError): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const issue of err.issues) {
-        const key = issue.path.join(".") || "_";
-        out[key] ??= issue.message;
-    }
-    return out;
+function pgConstraint(err: unknown): string | undefined {
+    const e = err as { constraint?: string; cause?: { constraint?: string } };
+    return e?.cause?.constraint ?? e?.constraint;
 }
+
+export { zodFieldErrors };
 
 /**
  * Runs the body of a server action and turns any failure into an Arabic ActionResult.
@@ -46,7 +45,10 @@ export async function runAction<T>(fn: () => Promise<T>): Promise<ActionResult<T
             console.error("[ledger]", err);
             return fail(t("error.server"));
         }
-        if (pgCode(err) === "23505") return fail("هذا الاسم أو الرقم موجود مسبقاً");
+        if (pgCode(err) === "23505") {
+            if (pgConstraint(err) === "containers_container_number_unique") return fail(t("error.duplicateContainer"), { containerNumber: t("error.duplicateContainer") });
+            return fail("هذا الاسم أو الرقم موجود مسبقاً");
+        }
         console.error("[action]", err);
         return fail(t("error.server"));
     }

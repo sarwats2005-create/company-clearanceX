@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Select } from "@/components/base/select/select";
 
 export interface Option {
@@ -10,13 +11,13 @@ export interface Option {
 }
 
 interface SelectFieldProps {
-    label?: string;
+    label?: ReactNode;
     "aria-label"?: string;
     items: Option[];
     value: string | null;
     onChange: (id: string) => void;
     placeholder?: string;
-    hint?: string;
+    hint?: ReactNode;
     isInvalid?: boolean;
     isRequired?: boolean;
     isDisabled?: boolean;
@@ -28,7 +29,7 @@ export function SelectField({ label, items, value, onChange, placeholder = "اخ
     return (
         <Select
             label={label}
-            aria-label={rest["aria-label"] ?? label}
+            aria-label={rest["aria-label"] ?? (typeof label === "string" ? label : undefined)}
             size="lg"
             items={items}
             selectedKey={value}

@@ -291,7 +291,7 @@ const MultiSelectRoot = ({
                                 )}
 
                                 <AriaListBox
-                                    aria-label={label || "Options"}
+                                    aria-label={typeof label === "string" && label ? label : "الخيارات"}
                                     items={items}
                                     selectionMode="multiple"
                                     selectedKeys={selectedKeys}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatDateLong, formatMoney, formatNumber, iraqiMonth, todayISO } from "@/lib/format";
+import { daysText, formatDate, formatDateLong, formatMoney, formatNumber, containersText, iraqiMonth, todayISO, tradersText } from "@/lib/format";
 
 describe("formatMoney", () => {
     it("formats IQD with separators, no decimals, symbol after", () => {
@@ -45,5 +45,42 @@ describe("dates", () => {
     });
     it("gives today's date in Baghdad as yyyy-mm-dd", () => {
         expect(todayISO(new Date("2026-11-23T22:00:00Z"))).toBe("2026-11-24");
+    });
+});
+
+describe("daysText", () => {
+    it("counts days the way Arabic does", () => {
+        expect(daysText(0)).toBe("اليوم");
+        expect(daysText(1)).toBe("يوم واحد");
+        expect(daysText(2)).toBe("يومان");
+        expect(daysText(3)).toBe("3 أيام");
+        expect(daysText(10)).toBe("10 أيام");
+        expect(daysText(11)).toBe("11 يوماً");
+        expect(daysText(100)).toBe("100 يوم");
+        expect(daysText(103)).toBe("103 أيام");
+    });
+});
+
+describe("tradersText", () => {
+    it("counts traders the way Arabic does", () => {
+        expect(tradersText(1)).toBe("تاجر واحد");
+        expect(tradersText(2)).toBe("تاجران");
+        expect(tradersText(3)).toBe("3 تجار");
+        expect(tradersText(10)).toBe("10 تجار");
+        expect(tradersText(11)).toBe("11 تاجراً");
+        expect(tradersText(99)).toBe("99 تاجراً");
+        expect(tradersText(100)).toBe("100 تاجر");
+        expect(tradersText(103)).toBe("103 تجار");
+    });
+});
+
+describe("containersText", () => {
+    it("counts containers the way Arabic does", () => {
+        expect(containersText(0)).toBe("0 حاوية");
+        expect(containersText(1)).toBe("حاوية واحدة");
+        expect(containersText(2)).toBe("حاويتان");
+        expect(containersText(7)).toBe("7 حاويات");
+        expect(containersText(25)).toBe("25 حاوية");
+        expect(containersText(1200)).toBe("1,200 حاوية");
     });
 });
