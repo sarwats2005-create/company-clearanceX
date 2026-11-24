@@ -34,8 +34,8 @@ function Traders({ names }: { names: string[] }) {
     );
 }
 
+/** Days in the current status (PRD §8.3), delivered included; amber once late. */
 function Since({ row }: { row: ContainerRow }) {
-    if (row.status === "delivered") return <bdi className="num text-tertiary">{row.deliveredOn ? formatDate(row.deliveredOn) : "—"}</bdi>;
     return <span className={cx("whitespace-nowrap", row.isLate ? "font-semibold text-warning-primary" : "text-tertiary")}>{daysText(row.daysInStatus)}</span>;
 }
 
@@ -72,22 +72,22 @@ export function ContainersList({ rows, filters }: { rows: ContainerRow[]; filter
                             <SortHeader filters={filters} sort="number" className="w-[19%] text-start">
                                 رقم الحاوية
                             </SortHeader>
-                            <SortHeader filters={filters} sort="trader" className="w-[19%] text-start">
+                            <SortHeader filters={filters} sort="trader" className="w-[18%] text-start">
                                 التاجر
                             </SortHeader>
-                            <th scope="col" className="w-[15%] px-3 py-3 text-start font-medium">
+                            <th scope="col" className="w-[13%] px-3 py-3 text-start font-medium">
                                 البضاعة
                             </th>
-                            <SortHeader filters={filters} sort="status" className="w-[17%] text-start">
+                            <SortHeader filters={filters} sort="status" className="w-[15%] text-start">
                                 الحالة
                             </SortHeader>
-                            <th scope="col" className="w-[10%] px-3 py-3 text-start font-medium">
+                            <th scope="col" className="w-[9%] px-3 py-3 text-start font-medium">
                                 منذ
                             </th>
-                            <SortHeader filters={filters} sort="registered" className="w-[10%] text-start">
+                            <SortHeader filters={filters} sort="registered" className="w-[11%] text-start">
                                 التسجيل
                             </SortHeader>
-                            <th scope="col" className="w-[10%] px-3 py-3 text-end font-medium">
+                            <th scope="col" className="w-[15%] px-3 py-3 text-end font-medium">
                                 المصاريف
                             </th>
                         </tr>

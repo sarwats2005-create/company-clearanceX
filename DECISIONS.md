@@ -63,3 +63,12 @@ Product decisions waiting for the owner are in `docs/PRD.md` §17.
 - Vaults: the main vault is the wide navy card. A new vault has a name, a kind (شخص، محل صيرفة، تاجر، أخرى), one or both currencies, and notes. A currency the vault has already used, or that it is the Settings default for, can't be removed. A vault can be stopped only when it is empty, is not one of the two built-in vaults, and is not a Settings default.
 - From a trader's containers tab, "حاوية جديدة" opens the container form with that trader already picked.
 - Deferred to Task 11: the statement's Excel export and the Settings "القاصات" section (default vault per currency). Not built: the per-container breakdown on a party page (optional in the PRD).
+
+## Home and search (Task 10)
+- Home follows Part F4.1: greeting with the owner's name and today's date, then one hairline band with four status figures (تم التأكيد, في الطريق, وصلت أم قصر, سُلّمت هذا الشهر) over four money figures (main vault, dollar vault, لنا عند التجار in red, علينا للجهات in green). Each figure is a link; the money ones open the vault or account list.
+- Tapping a status figure filters "الحاويات الحالية" below and scrolls to it; tapping it again shows everything. The chips above the list do the same without moving the page. "الكل" means not delivered yet, plus delivered in the last 7 days; "سُلّمت هذا الشهر" lists the deliveries since the 1st, so the number and the list always agree.
+- Amber lines warn about containers in Umm Qasr longer than the Settings limit, and containers past their expected arrival. Each opens the containers list filtered to exactly those.
+- The only navy button is "+ حاوية جديدة". "قبض من تاجر" and "دفع لجهة" sit quietly in the header. With no containers at all, the list becomes the box empty state with the same button.
+- "منذ" in container lists is the number of days in the current status for every status (amber once late).
+- Search (top bar, Ctrl/⌘+K, or the magnifier on phones) looks in containers (number or B/L, any case or spacing, part of it is enough), traders (name ignoring hamza, or phone), receipts (ق-12, ق12 or 12) and parties. Five per group, cancelled containers left out. Arrow keys and Enter work; the last five searches are remembered on the device.
+- `pnpm db:demo` adds sample data (10 traders, 30 containers in every status, some late and some shared, charges and payments in both currencies) to a database with no containers, for showing the app. It refuses to run on a database that already has containers.

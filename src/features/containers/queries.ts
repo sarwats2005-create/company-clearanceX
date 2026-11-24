@@ -30,6 +30,10 @@ export interface ContainerFilters {
     from?: string;
     to?: string;
     lateOnly?: boolean;
+    /** Home list (PRD §8.3): not delivered yet, or delivered in the last 7 days. */
+    current?: boolean;
+    /** delivered on or after this date, yyyy-mm-dd (home "delivered this month") */
+    deliveredFrom?: string;
     sort?: ContainerSort;
     dir?: "asc" | "desc";
     /** 1-based */
@@ -83,6 +87,8 @@ export async function listContainers(db: DbOrTx, f: ContainerFilters): Promise<{
     if (f.from) where.push(gte(containers.registeredOn, f.from));
     if (f.to) where.push(lte(containers.registeredOn, f.to));
     if (f.lateOnly) where.push(late);
+    if (f.deliveredFrom) where.push(gte(containers.deliveredOn, f.deliveredFrom));
+    if (f.current) where.push(sql`(${containers.status} <> 'delivered' or ${containers.deliveredOn} >= (${today}::date - 7))`);
     const q = f.q?.trim();
     if (q) {
         const number = escapeLike(normalizeContainerNumber(q));

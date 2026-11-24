@@ -14,7 +14,7 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "tsx scripts/migrate.ts",
         "db:seed": "tsx src/db/seed.ts",
-        "db:demo": "tsx src/db/demo.ts"
+        "db:demo": "tsx --conditions=react-server src/db/demo.ts"
     },
     "dependencies": {
         "@internationalized/date": "^3.12.4",
