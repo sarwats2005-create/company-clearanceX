@@ -167,7 +167,7 @@ const MultiSelectRoot = ({
     isDisabled,
     isRequired,
     isInvalid,
-    placeholder = "Select",
+    placeholder = "اختر",
     label,
     hint,
     tooltip,

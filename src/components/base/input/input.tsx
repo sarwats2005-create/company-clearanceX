@@ -84,7 +84,7 @@ export const InputBase = ({
             shortcut: "pe-2",
         },
         lg: {
-            root: cx("px-3.5 py-2.5 text-md", hasLeadingIcon && "ps-10.5", hasTrailingIcon && "pe-9.5"),
+            root: cx("px-3.5 py-3 text-md", hasLeadingIcon && "ps-10.5", hasTrailingIcon && "pe-9.5"),
             iconLeading: "start-3.5 size-5",
             iconTrailing: "end-3.5",
             shortcut: "pe-2.5",
@@ -169,7 +169,7 @@ export const InputBase = ({
             {/* Password visibility toggle */}
             {type === "password" && (
                 <AriaButton
-                    aria-label="Toggle password visibility"
+                    aria-label="إظهار أو إخفاء كلمة المرور"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     className={cx(
                         "absolute flex cursor-pointer items-center justify-center text-fg-quaternary transition duration-100 ease-linear hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover focus:outline-hidden",
