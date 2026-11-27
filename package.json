@@ -16,10 +16,16 @@
         "db:migrate": "tsx scripts/migrate.ts",
         "db:setup": "tsx scripts/setup.ts",
         "db:seed": "tsx src/db/seed.ts",
-        "db:demo": "tsx --conditions=react-server src/db/demo.ts"
+        "db:demo": "tsx --conditions=react-server src/db/demo.ts",
+        "check:neon:auth": "node scripts/check-neon-auth.mjs",
+        "check:neon:ai": "node scripts/check-neon-ai-gateway.mjs",
+        "check:neon:realtime": "node scripts/check-neon-realtime.mjs"
     },
     "dependencies": {
         "@internationalized/date": "^3.12.4",
+        "@neon/config": "^1.14.8",
+        "@neon/env": "^2.1.11",
+        "@neon/realtime": "^0.2.2",
         "@react-aria/utils": "^3.34.1",
         "@react-stately/utils": "^3.12.1",
         "@tailwindcss/postcss": "^4.3.3",
@@ -51,6 +57,7 @@
         "tailwindcss-animate": "^1.0.7",
         "tailwindcss-react-aria-components": "^2.2.0",
         "tsx": "^4.23.15",
+        "ws": "^8.23.0",
         "zod": "^4.6.7"
     },
     "devDependencies": {
@@ -59,6 +66,7 @@
         "@types/pg": "^8.23.1",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
+        "@types/ws": "^8.18.2",
         "drizzle-kit": "^0.31.11",
         "postcss": "^8.5.28",
         "postcss-loader": "^8.2.1",
