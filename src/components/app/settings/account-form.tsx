@@ -47,7 +47,7 @@ export function AccountForm({ name, username }: { name: string; username: string
                     value={next}
                     onChange={setNext}
                     isInvalid={!!err.next}
-                    hint={err.next ?? "8 أحرف على الأقل. سيتم تسجيل خروج الأجهزة الأخرى."}
+                    hint={err.next ?? "10 أحرف على الأقل، ويُفضّل عدة كلمات. سيتم تسجيل خروج الأجهزة الأخرى."}
                 />
                 <div>
                     <Button type="submit" size="lg" isLoading={save.pending} isDisabled={!current || !next}>

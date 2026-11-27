@@ -125,8 +125,8 @@ export const currencyAlertsSchema = z.object({
 });
 
 export const passwordSchema = z.object({
-    current: z.string().min(1, t("error.required")),
-    next: z.string().min(8, "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل").max(200),
+    current: z.string().min(1, t("error.required")).max(256),
+    next: z.string().min(10, "كلمة المرور الجديدة يجب أن تكون 10 أحرف على الأقل").max(256, "كلمة المرور طويلة جداً"),
 });
 
 export type PartyInput = z.input<typeof partySchema>;

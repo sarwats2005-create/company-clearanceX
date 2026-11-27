@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { AppProviders } from "@/providers/app-providers";
 import "@/styles/globals.css";
 import { cx } from "@/utils/cx";
@@ -33,11 +33,13 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const textSize = parseTextSize((await cookies()).get(TEXT_SIZE_COOKIE)?.value);
+    // Set by src/proxy.ts with the Content-Security-Policy; inline scripts must carry it to run.
+    const nonce = (await headers()).get("x-nonce") ?? undefined;
 
     return (
         <html lang="ar" dir="rtl" data-text-size={textSize} className="light-mode" suppressHydrationWarning>
             <body className={cx(plexArabic.variable, plexMono.variable, "bg-primary text-primary antialiased")}>
-                <AppProviders>{children}</AppProviders>
+                <AppProviders nonce={nonce}>{children}</AppProviders>
             </body>
         </html>
     );

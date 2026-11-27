@@ -88,3 +88,12 @@ The owner found the Part F look flat and the flows too long. The full brief live
 5. **Shipping line logos**: `shipping_lines.logo` (owner-uploaded, resized to ≤160px in the browser, PNG/JPEG/WebP only, no SVG) and `shipping_lines.website` (its site icon via Google's favicon service until a logo is uploaded; only the domain is sent). No carrier logo files are committed to the repo. The add-container form picks the line from a logo grid.
 6. **WhatsApp picture or text** on receipts, the container page and statements (`whatsapp-share.tsx`, `html-to-image`). Phones use the share sheet with the JPEG file; computers copy + save the picture and open the chat.
 7. **Fixed:** `Dropdown.Item` with `unstyled` dropped its children (`src/components/base/dropdown/dropdown.tsx`).
+
+## Security hardening (2026-11-27)
+Full details, findings and owner to-dos: `SECURITY.md`.
+1. **Nonce-based CSP in `src/proxy.ts`** (Next.js guide), other headers in `next.config.mjs`. `style-src` keeps `'unsafe-inline'` because React style attributes and the UI kit need it; styles can't run code. WhatsApp pictures convert data URLs without `fetch()` so `connect-src 'self'` stays strict.
+2. **Session cookie renamed to `__Host-cc_session` in production**: everyone signs in once after the deploy.
+3. **Login limits per username, per IP and per pair**. `CF-Connecting-IP` is trusted only with `TRUST_CLOUDFLARE=1`; otherwise the last `X-Forwarded-For` hop (added by Railway) is used.
+4. **scrypt N=2^15, r=8, p=3** (OWASP equivalent minimum), re-hashed at login. The new-password minimum is 10 characters (NIST: length over composition rules).
+5. **Database guards live in `src/db/sql/0002_hardening.sql`** (runs every start, idempotent): audit log append-only, CHECK constraints added `NOT VALID` then validated, so a deploy never fails on old rows.
+6. **Least-privilege role is opt-in** (`scripts/sql/create-app-role.sql`) because it needs a password only the owner should choose. `setup.ts` warns at start while the app still uses the owner role.

@@ -10,7 +10,14 @@ export const pool =
     new Pool({
         connectionString: process.env.DATABASE_URL,
         max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+        // Fail fast instead of hanging: a stuck query or an open transaction can't hold locks forever.
+        connectionTimeoutMillis: 10_000,
+        statement_timeout: 30_000,
+        idle_in_transaction_session_timeout: 60_000,
+        application_name: "clearance-app",
     });
+// A dropped connection (e.g. the database restarting) must not crash the whole server.
+pool.on("error", (err) => console.error("[db] idle client error", err.message));
 globalForDb.__ccPool = pool;
 
 export const db = drizzle(pool, { schema });

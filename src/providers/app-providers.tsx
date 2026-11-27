@@ -9,11 +9,12 @@ import { Theme } from "@/providers/theme";
 /** Arabic (Iraq), Gregorian calendar, Latin digits (PRD §10.5 item 9). */
 export const APP_LOCALE = "ar-IQ-u-ca-gregory-nu-latn";
 
-export function AppProviders({ children }: PropsWithChildren) {
+/** `nonce`: this request's CSP nonce, for the small inline script next-themes adds. */
+export function AppProviders({ children, nonce }: PropsWithChildren<{ nonce?: string }>) {
     return (
         <RouteProvider>
             <I18nProvider locale={APP_LOCALE}>
-                <Theme>
+                <Theme nonce={nonce}>
                     {children}
                     <Toaster
                         dir="rtl"

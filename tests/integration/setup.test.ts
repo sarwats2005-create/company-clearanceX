@@ -6,7 +6,7 @@ import { setupDatabase } from "../../scripts/setup";
 import { closeDb, resetDb } from "../helpers/db";
 
 const url = process.env.DATABASE_URL!;
-const owner = { username: "owner", password: "owner-pass-123", name: "أبو علي" };
+const owner = { username: "owner", password: "Basra-docks-2026", name: "أبو علي" };
 
 beforeEach(resetDb);
 afterAll(closeDb);

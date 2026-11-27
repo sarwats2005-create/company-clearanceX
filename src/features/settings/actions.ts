@@ -1,11 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { and, eq } from "drizzle-orm";
 import { db, withTx } from "@/db";
+import { sessions } from "@/db/schema";
+import { audit } from "@/features/audit/log";
 import type { ReceiptKind } from "@/db/schema";
-import { SESSION_COOKIE, requireSession } from "@/lib/auth";
-import { createSessionRecord } from "@/lib/auth-core";
+import { clientIp, requireSession, setSessionCookie } from "@/lib/auth";
+import { createSessionRecord, deleteOtherSessions, isRateLimited, listUserSessions, recordLoginAttempt } from "@/lib/auth-core";
+import { DomainError } from "@/lib/errors";
 import { runAction } from "@/lib/run-action";
 import { TEXT_SIZE_COOKIE, type TextSize, parseTextSize } from "@/lib/text-size";
 import type { ChargeTypeDefaultLineInput, ChargeTypeInput, PartyInput, ShippingLineBrandInput } from "./schemas";
@@ -124,10 +128,44 @@ export async function setDefaultVaultsAction(input: { IQD: string; USD: string }
 export async function changePasswordAction(input: { current: string; next: string }) {
     return runAction(async () => {
         const s = await requireSession();
-        await withTx((tx) => service.changePassword(tx, s.userId, input.current, input.next));
-        // Other devices are signed out; keep this one signed in with a fresh session.
-        const { token, expiresAt } = await createSessionRecord(db, s.userId);
-        (await cookies()).set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", expires: expiresAt });
+        // The current password is a password check like a login: same limits, so a stolen session can't guess it.
+        const ip = await clientIp();
+        if (await isRateLimited(db, s.username, ip)) throw new DomainError("محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة", "current");
+        try {
+            await withTx((tx) => service.changePassword(tx, s.userId, input.current, input.next));
+        } catch (err) {
+            if (err instanceof DomainError && err.field === "current") await recordLoginAttempt(db, s.username, ip, false);
+            throw err;
+        }
+        // Every session ended (other devices are signed out); keep this one signed in with a fresh session.
+        const userAgent = (await headers()).get("user-agent");
+        const { token, expiresAt } = await createSessionRecord(db, s.userId, { remember: true, userAgent, ip });
+        await setSessionCookie(token, expiresAt, true);
+        return null;
+    });
+}
+
+/** Signs out every other device of the owner (for a lost or shared phone). Keeps this one. */
+export async function signOutOtherDevicesAction() {
+    return runAction(async () => {
+        const s = await requireSession();
+        const count = await deleteOtherSessions(db, s.userId, s.sessionId);
+        await audit(db, { table: "sessions", recordId: s.userId, action: "update", after: { signedOutOtherDevices: count }, userId: s.userId });
+        done();
+        return { count };
+    });
+}
+
+/** Signs out one device. Only the owner's own sessions can be touched, never someone else's. */
+export async function signOutDeviceAction(sessionId: string) {
+    return runAction(async () => {
+        const s = await requireSession();
+        if (sessionId === s.sessionId) throw new DomainError("هذا هو الجهاز الحالي. استخدم «تسجيل الخروج»");
+        const mine = (await listUserSessions(db, s.userId)).some((x) => x.id === sessionId);
+        if (!mine) throw new DomainError("الجهاز غير موجود");
+        await db.delete(sessions).where(and(eq(sessions.id, sessionId), eq(sessions.userId, s.userId)));
+        await audit(db, { table: "sessions", recordId: s.userId, action: "update", after: { signedOutDevice: true }, userId: s.userId });
+        done();
         return null;
     });
 }

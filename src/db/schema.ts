@@ -96,10 +96,18 @@ export const sessions = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
+        /** Absolute end: the session dies here whatever happens (30 days). */
         expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+        /** Last request seen; a session idle for too long ends (see IDLE_* in auth-core). */
+        lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+        /** "تذكرني": a longer idle limit on a trusted device. */
+        remember: boolean("remember").notNull().default(true),
+        /** Shown to the owner in Settings → الحساب so he can recognise and sign out a device. */
+        userAgent: text("user_agent"),
+        ip: text("ip"),
         createdAt: createdAt(),
     },
-    (t) => [index("sessions_user_idx").on(t.userId)],
+    (t) => [index("sessions_user_idx").on(t.userId), index("sessions_expires_idx").on(t.expiresAt)],
 );
 
 export const loginAttempts = pgTable(
@@ -107,10 +115,17 @@ export const loginAttempts = pgTable(
     {
         id: uuid("id").primaryKey().defaultRandom(),
         key: text("key").notNull(),
+        /** Limits are counted per username (any IP) and per IP (any username), not only per pair. */
+        username: text("username"),
+        ip: text("ip"),
         success: boolean("success").notNull(),
         at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
     },
-    (t) => [index("login_attempts_key_at_idx").on(t.key, t.at)],
+    (t) => [
+        index("login_attempts_key_at_idx").on(t.key, t.at),
+        index("login_attempts_username_at_idx").on(t.username, t.at),
+        index("login_attempts_ip_at_idx").on(t.ip, t.at),
+    ],
 );
 
 // ── Reference data ───────────────────────────────────────────────────────────

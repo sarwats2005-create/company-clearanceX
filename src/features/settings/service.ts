@@ -24,7 +24,7 @@ import { formatMoney } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { isUuid } from "@/lib/ids";
 import { absMoney, isZero, parseAmount } from "@/lib/money";
-import { hashPassword, verifyPassword } from "@/lib/password";
+import { hashPassword, passwordProblems, verifyPassword } from "@/lib/password";
 import { deleteUserSessions } from "@/lib/auth-core";
 import {
     type ChargeTypeDefaultLineInput,
@@ -280,6 +280,9 @@ export async function changePassword(tx: DbOrTx, userId: string, current: string
     const data = passwordSchema.parse({ current, next });
     const [user] = await tx.select().from(users).where(eq(users.id, userId));
     if (!user || !(await verifyPassword(data.current, user.passwordHash))) throw new DomainError("كلمة المرور الحالية غير صحيحة", "current");
+    const problems = passwordProblems(data.next, user.username);
+    if (problems.length) throw new DomainError(problems[0], "next");
+    if (data.next === data.current) throw new DomainError("اختر كلمة مرور جديدة تختلف عن الحالية", "next");
     await tx.update(users).set({ passwordHash: await hashPassword(data.next) }).where(eq(users.id, userId));
     await deleteUserSessions(tx, userId);
     await audit(tx, { table: "users", recordId: userId, action: "update", after: { password: "changed" }, userId });

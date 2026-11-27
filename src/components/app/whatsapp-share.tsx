@@ -30,8 +30,17 @@ async function elementToJpeg(el: HTMLElement): Promise<Blob> {
         // Buttons and other screen-only bits never go into the picture.
         filter: (node) => !(node instanceof HTMLElement && node.classList.contains("no-print")),
     });
-    const res = await fetch(dataUrl);
-    return res.blob();
+    return dataUrlToBlob(dataUrl);
+}
+
+/** data: URL → Blob without fetch(), which the Content-Security-Policy (connect-src 'self') rightly blocks. */
+function dataUrlToBlob(dataUrl: string): Blob {
+    const [head, b64] = dataUrl.split(",", 2);
+    const type = /data:([^;]+)/.exec(head)?.[1] ?? "image/jpeg";
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type });
 }
 
 async function copyAsPng(jpeg: Blob): Promise<boolean> {

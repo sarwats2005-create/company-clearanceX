@@ -17,7 +17,7 @@ import {
     users,
     vaults,
 } from "@/db/schema";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, passwordProblems } from "@/lib/password";
 
 export const SEED = {
     company: "سرور البصرة",
@@ -144,8 +144,8 @@ export async function seed(db: DbOrTx, owner: { username: string; password: stri
 
 if (process.argv[1]?.endsWith("seed.ts")) {
     const { OWNER_USERNAME, OWNER_PASSWORD, OWNER_NAME } = process.env;
-    if (!OWNER_USERNAME || !OWNER_PASSWORD || OWNER_PASSWORD.length < 8) {
-        console.error("Set OWNER_USERNAME and OWNER_PASSWORD (at least 8 characters) before seeding.");
+    if (!OWNER_USERNAME || !OWNER_PASSWORD || passwordProblems(OWNER_PASSWORD, OWNER_USERNAME).length) {
+        console.error("Set OWNER_USERNAME and a strong OWNER_PASSWORD (10+ characters, not common, not containing the username) before seeding.");
         process.exit(1);
     }
     void (async () => {

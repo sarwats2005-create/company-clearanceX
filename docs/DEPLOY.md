@@ -1,5 +1,7 @@
 # Deploying the app
 
+> Security settings to switch on after the first deploy (2FA, backups, restricted database user, Cloudflare) are in [`SECURITY.md`](../SECURITY.md) §3.
+
 The app runs as a normal Node.js server on **Railway**, with its database on **Neon**. **Cloudflare** only holds the domain and sits in front of Railway. Railway needs no special settings: `pnpm build` builds the app, and `pnpm start` prepares the database and then starts the server.
 
 On every start, `pnpm start` runs `scripts/setup.ts` first:
@@ -21,10 +23,11 @@ On every start, `pnpm start` runs `scripts/setup.ts` first:
 
     | Variable                | Value                                                       |
     | ----------------------- | ----------------------------------------------------------- |
-    | `DATABASE_URL`          | Neon pooled connection string                               |
-    | `DATABASE_URL_UNPOOLED` | Neon direct connection string                               |
+    | `DATABASE_URL`          | Neon pooled connection string (later: the restricted `clearance_app` user, see `SECURITY.md` §3) |
+    | `DATABASE_URL_UNPOOLED` | Neon direct connection string (the owner; used only to update tables at start) |
     | `OWNER_USERNAME`        | The owner's login name, for example `admin`                 |
-    | `OWNER_PASSWORD`        | A strong password, 8 characters or more                     |
+    | `OWNER_PASSWORD`        | A strong password: 10+ characters, not common, not containing the username |
+    | `TRUST_CLOUDFLARE`      | `1` when the domain goes through Cloudflare (real visitor IPs for login limits) |
     | `OWNER_NAME`            | The owner's name as shown in the app, for example `أبو علي` |
     | `TZ`                    | `Asia/Baghdad`                                              |
 

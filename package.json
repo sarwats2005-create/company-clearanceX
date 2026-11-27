@@ -19,7 +19,8 @@
         "db:demo": "tsx --conditions=react-server src/db/demo.ts",
         "check:neon:auth": "node scripts/check-neon-auth.mjs",
         "check:neon:ai": "node scripts/check-neon-ai-gateway.mjs",
-        "check:neon:realtime": "node scripts/check-neon-realtime.mjs"
+        "check:neon:realtime": "node scripts/check-neon-realtime.mjs",
+        "audit:deps": "pnpm audit --prod"
     },
     "dependencies": {
         "@internationalized/date": "^3.12.4",
@@ -78,5 +79,15 @@
     },
     "engines": {
         "node": ">=22"
+    },
+    "pnpm": {
+        "overrides": {
+            "uuid": "^11.1.1",
+            "postcss-selector-parser": "^6.1.5"
+        }
+    },
+    "overrides": {
+        "uuid": "^11.1.1",
+        "postcss-selector-parser": "^6.1.5"
     }
 }
