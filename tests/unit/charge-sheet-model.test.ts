@@ -7,9 +7,9 @@ const CHINA = "p-china";
 const A = "t-ahmed";
 const H = "t-haider";
 const types: ChargeSheetData["chargeTypes"] = [
-    { id: "ct-customs", name: "كمرك بصرة", defaultCurrency: "USD", defaultPartyId: CHINA, isFee: false, defaultAmount: null },
-    { id: "ct-port", name: "غرامة ميناء", defaultCurrency: "IQD", defaultPartyId: SELF, isFee: false, defaultAmount: "50000" },
-    { id: "ct-fee", name: "أتعاب شركة", defaultCurrency: "USD", defaultPartyId: null, isFee: true, defaultAmount: "300.00" },
+    { id: "ct-customs", name: "كمرك بصرة", defaultCurrency: "USD", defaultPartyId: CHINA, isFee: false, isDefaultLine: false, defaultAmount: null },
+    { id: "ct-port", name: "غرامة ميناء", defaultCurrency: "IQD", defaultPartyId: SELF, isFee: false, isDefaultLine: false, defaultAmount: "50000" },
+    { id: "ct-fee", name: "أتعاب شركة", defaultCurrency: "USD", defaultPartyId: null, isFee: true, isDefaultLine: false, defaultAmount: "300.00" },
 ];
 const base = (shared: boolean): ChargeSheetData => ({
     container: shared

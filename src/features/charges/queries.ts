@@ -29,7 +29,16 @@ export interface ChargeSheetData {
         splitUnit: SplitUnit | null;
         shares: { traderId: string; name: string; shareValue: string | null }[];
     };
-    chargeTypes: { id: string; name: string; defaultCurrency: Currency; defaultPartyId: string | null; isFee: boolean; defaultAmount: string | null }[];
+    chargeTypes: {
+        id: string;
+        name: string;
+        defaultCurrency: Currency;
+        defaultPartyId: string | null;
+        isFee: boolean;
+        /** Already on the expenses page when it opens. */
+        isDefaultLine: boolean;
+        defaultAmount: string | null;
+    }[];
     /** Active parties, our own company first. */
     parties: { id: string; name: string; isSelf: boolean }[];
     vaults: { id: string; name: string; allowedCurrencies: Currency[] }[];
@@ -78,6 +87,7 @@ export async function getChargeSheetData(db: DbOrTx, containerId: string): Promi
                 defaultCurrency: ct.defaultCurrency,
                 defaultPartyId: ct.defaultPartyId,
                 isFee: ct.isFee,
+                isDefaultLine: ct.isDefaultLine,
                 defaultAmount: d ? roundTo(d.amount, ct.defaultCurrency) : null,
             };
         }),

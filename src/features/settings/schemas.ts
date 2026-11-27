@@ -62,8 +62,42 @@ export const chargeTypeSchema = z.object({
     defaultPartyId: z.uuid().nullable(),
     isFee: z.boolean(),
     isActive: z.boolean(),
+    /** Already on the expenses page when it opens. Left out = unchanged. */
+    isDefaultLine: z.boolean().optional(),
     /** container size id → typed amount ("" = no default) */
     defaults: z.record(z.string(), z.string()),
+});
+
+/** Mark an expense type as a default line (from the expenses page or Settings), with its default currency. */
+export const chargeTypeDefaultLineSchema = z.object({
+    id: z.uuid(),
+    isDefaultLine: z.boolean(),
+    defaultCurrency: currencySchema.optional(),
+});
+
+/** A small uploaded logo (PNG/JPEG/WebP as a data: URL, ≤ 150 KB) and/or the line's website. */
+export const shippingLineBrandSchema = z.object({
+    id: z.uuid(),
+    logo: z
+        .string()
+        .max(200_000, "الصورة كبيرة جداً. اختر صورة أصغر")
+        .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, "اختر صورة PNG أو JPG")
+        .nullable()
+        .optional(),
+    website: z
+        .string()
+        .trim()
+        .max(120)
+        .transform((v) =>
+            v
+                .replace(/^https?:\/\//i, "")
+                .replace(/\/.*$/, "")
+                .toLowerCase(),
+        )
+        .refine((v) => v === "" || /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(v), "اكتب عنوان الموقع مثل maersk.com")
+        .transform((v) => v || null)
+        .nullable()
+        .optional(),
 });
 
 export const receiptSequenceSchema = z.object({
@@ -97,3 +131,5 @@ export const passwordSchema = z.object({
 
 export type PartyInput = z.input<typeof partySchema>;
 export type ChargeTypeInput = z.input<typeof chargeTypeSchema>;
+export type ChargeTypeDefaultLineInput = z.input<typeof chargeTypeDefaultLineSchema>;
+export type ShippingLineBrandInput = z.input<typeof shippingLineBrandSchema>;

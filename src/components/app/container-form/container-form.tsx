@@ -1,7 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Anchor, Calendar, CheckCircle, Container, Package } from "@untitledui/icons";
+import { AlertCircle, Anchor, ArrowLeft, Calendar, CheckCircle, Container, Package } from "@untitledui/icons";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AppDialog } from "@/components/app/app-dialog";
@@ -26,10 +26,11 @@ import { zodFieldErrors } from "@/lib/zod-errors";
 import { cx } from "@/utils/cx";
 import { FormSection } from "./form-section";
 import { SharesEditor } from "./shares-editor";
+import { ShippingLinePicker } from "./shipping-line-picker";
 import { type FormValues, type SectionKey, emptyShare, emptyValues, sectionCounts, sectionOf, toInput } from "./values";
 
 export interface ContainerFormOptions {
-    shippingLines: { id: string; name: string; isActive: boolean }[];
+    shippingLines: { id: string; name: string; logo: string | null; website: string | null; isActive: boolean }[];
     ports: { id: string; name: string; country: string | null; isActive: boolean }[];
     sizes: { id: string; label: string; lengthM: string | null; volumeM3: string | null; isActive: boolean }[];
     parties: { id: string; name: string; isActive: boolean }[];
@@ -222,10 +223,6 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
     };
 
     // ---- options for the pickers (keep an inactive item when it is the current value)
-    const lineItems: EntityOption[] = useMemo(
-        () => lines.filter((l) => l.isActive || l.id === values.shippingLineId).map((l) => ({ id: l.id, label: l.name })),
-        [lines, values.shippingLineId],
-    );
     const portItems: EntityOption[] = useMemo(
         () =>
             ports
@@ -400,8 +397,15 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
 
     const actions = (
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
-            <Button size="xl" isLoading={pending} showTextWhileLoading onClick={() => save("open")} className="w-full md:w-auto">
-                {pending ? "جارٍ الحفظ…" : isEdit ? "حفظ التعديلات" : "حفظ الحاوية"}
+            <Button
+                size="xl"
+                isLoading={pending}
+                showTextWhileLoading
+                onClick={() => save("open")}
+                iconTrailing={isEdit ? undefined : <ArrowLeft data-icon aria-hidden="true" />}
+                className="w-full md:w-auto"
+            >
+                {pending ? "جارٍ الحفظ…" : isEdit ? "حفظ التعديلات" : "حفظ ثم المصاريف"}
             </Button>
             <div className="flex items-center justify-center gap-4 md:contents">
                 {!isEdit && (
@@ -493,7 +497,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
 
             <fieldset disabled={pending} className="flex min-w-0 items-start gap-8">
                 <div className="flex w-full max-w-[720px] min-w-0 flex-col gap-6 pb-24">
-                    <FormSection id="sec-basics" step="1" title="الأساسيات" icon={Container} required isOpen accent>
+                    <FormSection id="sec-basics" step="1" title="الأساسيات" icon={Container} color="orange" required isOpen accent>
                         <div data-field="containerNumber">
                             <Input
                                 label="رقم الحاوية"
@@ -512,16 +516,11 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                             />
                         </div>
                         <div data-field="shippingLineId">
-                            <EntityCombobox
-                                label="خط الشحن"
-                                aria-label="خط الشحن"
-                                isRequired
-                                icon={Anchor}
-                                items={lineItems}
+                            <ShippingLinePicker
+                                lines={lines}
                                 value={values.shippingLineId}
                                 onChange={(id) => set("shippingLineId", id)}
-                                addLabel="إضافة خط جديد"
-                                onAdd={(typed) => setDialog({ kind: "line", typed })}
+                                onAdd={() => setDialog({ kind: "line", typed: "" })}
                                 isInvalid={!!errors.shippingLineId}
                                 hint={
                                     errors.shippingLineId ??
@@ -529,7 +528,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                                     values.shippingLineId &&
                                     values.shippingLineId === options.defaults.shippingLineId &&
                                     values.shippingLineId === baseline.shippingLineId
-                                        ? "اخترناه لأنه آخر خط استخدمته. يمكنك تغييره."
+                                        ? "اخترناه لأنه آخر خط استخدمته. اضغط على شعار آخر لتغييره."
                                         : undefined)
                                 }
                             />
@@ -571,7 +570,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                     </FormSection>
 
                     {values.isShared && (
-                        <FormSection id="sec-shares" step="1ب" title="الحصص" icon={Package} required isOpen>
+                        <FormSection id="sec-shares" step="1ب" title="الحصص" icon={Package} color="purple" required isOpen>
                             <SharesEditor
                                 unit={values.splitUnit}
                                 onUnitChange={(u) => set("splitUnit", u)}
@@ -592,6 +591,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                         step="2"
                         title="تفاصيل الشحنة"
                         icon={Anchor}
+                        color="blue"
                         filled={counts.shipment.filled}
                         total={counts.shipment.total}
                         preview={shipmentPreview}
@@ -686,6 +686,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                             step="3"
                             title="البضاعة"
                             icon={Package}
+                            color="teal"
                             filled={counts.goods.filled}
                             total={counts.goods.total}
                             preview={goodsPreview}
@@ -760,6 +761,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                         step={values.isShared ? "3" : "4"}
                         title="التواريخ والملاحظات"
                         icon={Calendar}
+                        color="pink"
                         filled={counts.dates.filled}
                         total={counts.dates.total}
                         preview={datesPreview}
@@ -825,7 +827,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
 
                 <aside
                     aria-label="ملخص الحاوية"
-                    className="sticky top-6 hidden w-80 shrink-0 flex-col gap-4 rounded-xl bg-primary p-6 shadow-xs ring-1 ring-secondary xl:flex"
+                    className="surface sticky top-6 hidden w-80 shrink-0 flex-col gap-4 p-6 xl:flex"
                 >
                     <h2 className="text-md font-semibold text-primary">ملخص الحاوية</h2>
                     <dl className="flex flex-col gap-2.5 text-sm">
@@ -861,7 +863,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                 </aside>
             </fieldset>
 
-            <div className="no-print sticky bottom-0 z-10 -mx-4 border-t border-secondary bg-primary/95 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md md:-mx-6 md:px-6 lg:-mx-8 lg:px-8">
+            <div className="glass no-print sticky bottom-0 z-10 -mx-4 border-t border-white/70 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-12px_rgb(11_31_92/0.2)] md:-mx-6 md:px-6 lg:-mx-8 lg:px-8">
                 <div className="w-full max-w-[720px]">{actions}</div>
             </div>
 
@@ -881,7 +883,7 @@ export function ContainerForm({ mode, containerId, status = null, hasCharges = f
                 onOpenChange={(o) => !o && setDialog(null)}
                 initialName={dialog?.kind === "line" ? dialog.typed : ""}
                 onCreated={(item) => {
-                    setLines((l) => [...l, { id: item.id, name: item.name, isActive: true }]);
+                    setLines((l) => [...l, { id: item.id, name: item.name, logo: null, website: null, isActive: true }]);
                     set("shippingLineId", item.id);
                 }}
             />

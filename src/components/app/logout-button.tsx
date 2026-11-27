@@ -5,10 +5,10 @@ import { IconButton } from "@/components/app/icon-button";
 import { Button } from "@/components/base/buttons/button";
 import { logoutAction } from "@/features/auth/actions";
 
-export function LogoutIconButton() {
+export function LogoutIconButton({ onDark = false }: { onDark?: boolean }) {
     return (
         <form action={logoutAction}>
-            <IconButton type="submit" icon={LogOut01} label="تسجيل الخروج" />
+            <IconButton type="submit" icon={LogOut01} label="تسجيل الخروج" tone={onDark ? "onDark" : "default"} />
         </form>
     );
 }

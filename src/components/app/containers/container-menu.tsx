@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Printer, SlashCircle01 } from "@untitledui/icons";
 import { useRouter } from "next/navigation";
 import { AppDialog } from "@/components/app/app-dialog";
 import { Button } from "@/components/base/buttons/button";
@@ -8,16 +9,14 @@ import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { archiveContainerAction } from "@/features/containers/actions";
 import { useAction } from "@/hooks/use-action";
 
-/** "⋯" on the container page: print sheet, WhatsApp summary and cancel container (PRD §8.6, §8.11). */
+/** "⋯" on the container page: print sheet and cancel container. WhatsApp has its own button. */
 export function ContainerMenu({
     containerId,
     containerNumber,
-    shareText,
     canArchive,
 }: {
     containerId: string;
     containerNumber: string;
-    shareText: string;
     canArchive: boolean;
 }) {
     const router = useRouter();
@@ -30,18 +29,16 @@ export function ContainerMenu({
     return (
         <>
             <Dropdown.Root>
-                <Dropdown.DotsButton aria-label="خيارات أخرى" className="size-11 rounded-lg ring-1 ring-primary ring-inset" />
+                <Dropdown.DotsButton aria-label="خيارات أخرى" className="size-11 rounded-xl bg-primary ring-1 ring-primary ring-inset" />
                 <Dropdown.Popover className="w-64">
                     <Dropdown.Menu
                         onAction={(key) => {
                             if (key === "print") window.open(`/print/container/${containerId}?autoprint=1`, "_blank", "noopener");
-                            if (key === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank", "noopener,noreferrer");
                             if (key === "archive") setConfirm(true);
                         }}
                     >
-                        <Dropdown.Item id="print" label="طباعة كشف الحاوية" />
-                        <Dropdown.Item id="whatsapp" label="مشاركة واتساب" />
-                        <Dropdown.Item id="archive" label="إلغاء الحاوية" isDisabled={!canArchive} />
+                        <Dropdown.Item id="print" label="طباعة كشف الحاوية" icon={Printer} />
+                        <Dropdown.Item id="archive" label="إلغاء الحاوية" icon={SlashCircle01} isDisabled={!canArchive} />
                     </Dropdown.Menu>
                 </Dropdown.Popover>
             </Dropdown.Root>

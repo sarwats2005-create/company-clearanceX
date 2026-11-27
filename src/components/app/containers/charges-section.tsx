@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ChevronDown } from "@untitledui/icons";
+import { AlertTriangle, ChevronDown, Receipt } from "@untitledui/icons";
 import { AppDialog } from "@/components/app/app-dialog";
 import { BalanceText } from "@/components/app/balance-text";
+import { CardTitle } from "@/components/app/icon-tile";
 import { AddChargesButton, useChargesSheet } from "@/components/app/charges-sheet";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
@@ -59,19 +60,20 @@ export function ChargesSection({
     const [cancel, setCancel] = useState<{ charge: ContainerChargeRow; replace: boolean } | null>(null);
 
     return (
-        <section id="charges" aria-labelledby="charges-title" className="flex scroll-mt-6 flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-                <h2 id="charges-title" className="text-lg font-semibold text-primary">
-                    المصاريف
-                </h2>
-                {canEdit && active.length > 0 && <AddChargesButton size="md" className="max-lg:hidden" />}
-            </div>
+        <section id="charges" aria-labelledby="charges-title" className="surface flex scroll-mt-6 flex-col gap-4 p-5 md:p-6">
+            <CardTitle
+                id="charges-title"
+                icon={Receipt}
+                color="pink"
+                title="المصاريف"
+                actions={canEdit && active.length > 0 ? <AddChargesButton size="md" color="secondary" className="max-lg:hidden" /> : undefined}
+            />
 
             {active.length === 0 ? (
-                <p className="border-y border-secondary py-6 text-md text-tertiary">لم تُسجَّل مصاريف على هذه الحاوية بعد.</p>
+                <p className="rounded-2xl bg-secondary px-4 py-6 text-center text-md text-tertiary">لم تُسجَّل مصاريف على هذه الحاوية بعد.</p>
             ) : (
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10">
-                    <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+                    <ul className="flex flex-col divide-y divide-secondary">
                         {active.map((c) => (
                             <ChargeItem
                                 key={c.id}
@@ -236,7 +238,7 @@ function Line({ label, children, strong }: { label: string; children: React.Reac
 /** PRD §5.4a: what this container costs, our fee, what we owe each party, and each trader's part and overall balance. */
 function MoneySummary({ money, isShared }: { money: ContainerMoney; isShared: boolean }) {
     return (
-        <aside aria-labelledby="money-title" className="flex flex-col gap-5 lg:border-s lg:border-secondary lg:ps-8">
+        <aside aria-labelledby="money-title" className="flex flex-col gap-5 rounded-2xl bg-secondary p-4 lg:p-5">
             <div className="flex flex-col">
                 <h3 id="money-title" className="text-md font-semibold text-secondary">
                     ملخص الحساب

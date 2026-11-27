@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ContainerForm } from "@/components/app/container-form/container-form";
 import { emptyShare, emptyValues } from "@/components/app/container-form/values";
 import { FormPageHeader } from "@/components/app/form-page-header";
+import { StepBar } from "@/components/app/step-bar";
 import { db } from "@/db";
 import { getContainerFormOptions } from "@/features/containers/queries";
 import { requireSession } from "@/lib/auth";
@@ -19,7 +20,12 @@ export default async function NewContainerPage({ searchParams }: { searchParams:
     if (typeof trader === "string" && options.traders.some((t) => t.id === trader)) initial.shares = [emptyShare(trader)];
     return (
         <>
-            <FormPageHeader parent={{ href: "/containers", label: "الحاويات" }} title="حاوية جديدة" description="أدخل الأساسيات الثلاثة. باقي التفاصيل اختيارية ويمكن إضافتها لاحقاً." />
+            <FormPageHeader
+                parent={{ href: "/containers", label: "الحاويات" }}
+                title="حاوية جديدة"
+                description="رقم الحاوية، خط الشحن، والتاجر. بعد الحفظ تنتقل مباشرة إلى المصاريف."
+            />
+            <StepBar current={0} className="mb-6 max-w-[720px]" />
             <ContainerForm mode="create" initial={initial} options={options} today={today} />
         </>
     );

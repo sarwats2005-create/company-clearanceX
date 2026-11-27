@@ -1,24 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { FileDownload02, MessageChatCircle, Printer, SlashCircle01 } from "@untitledui/icons";
+import { FileDownload02, Printer, SlashCircle01 } from "@untitledui/icons";
 import { toast } from "sonner";
 import { AppDialog } from "@/components/app/app-dialog";
+import { WhatsAppShareButton } from "@/components/app/whatsapp-share";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { cancelReceiptAction } from "@/features/money/actions";
 import { useAction } from "@/hooks/use-action";
 
-/** Receipt actions (PRD §6.5): print, PDF, WhatsApp, and cancel with a reason. Print is the one navy button. */
+/** Receipt actions: print, PDF, WhatsApp (picture or text), and cancel with a reason. */
 export function ReceiptActions({
     entryId,
     receiptNo,
-    whatsappHref,
+    shareText,
+    phone,
     canCancel,
 }: {
     entryId: string;
     receiptNo: string;
-    whatsappHref: string;
+    /** The plain-text WhatsApp version; the picture is drawn from the receipt on screen (#receipt-doc). */
+    shareText: string;
+    phone: string | null;
     canCancel: boolean;
 }) {
     const [cancelOpen, setCancelOpen] = useState(false);
@@ -46,9 +50,7 @@ export function ReceiptActions({
                 >
                     حفظ PDF
                 </Button>
-                <Button size="lg" color="secondary" iconLeading={MessageChatCircle} href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                    واتساب
-                </Button>
+                <WhatsAppShareButton text={shareText} phone={phone} targetId="receipt-doc" fileName={`وصل ${receiptNo}`} />
                 {canCancel && (
                     <Button size="lg" color="tertiary-destructive" iconLeading={SlashCircle01} onClick={() => (setReason(""), setCancelOpen(true))}>
                         إلغاء الوصل

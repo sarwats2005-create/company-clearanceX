@@ -1,14 +1,16 @@
 "use client";
 
-import type { FC, ReactNode } from "react";
+import type { FC, ReactNode, SVGProps } from "react";
 import { ChevronDown } from "@untitledui/icons";
+import { IconTile, type TileColor } from "@/components/app/icon-tile";
 import { cx } from "@/utils/cx";
 
 interface FormSectionProps {
     id: string;
     step: string;
     title: string;
-    icon: FC<{ className?: string; "aria-hidden"?: boolean | "true" }>;
+    icon: FC<SVGProps<SVGSVGElement>>;
+    color?: TileColor;
     /** "مطلوب" instead of "اختياري · n من m" */
     required?: boolean;
     filled?: number;
@@ -24,14 +26,19 @@ interface FormSectionProps {
 }
 
 /** One numbered card of the container form (PRD §8.5.2, §8.5.5). */
-export function FormSection({ id, step, title, icon: Icon, required, filled = 0, total = 0, preview, isOpen, onToggle, accent, children }: FormSectionProps) {
+export function FormSection({ id, step, title, icon, color = "brand", required, filled = 0, total = 0, preview, isOpen, onToggle, accent, children }: FormSectionProps) {
     const status = required ? "مطلوب" : `اختياري · ${filled} من ${total}`;
     const head = (
         <>
-            <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary tabular-nums ring-1 ring-secondary">
-                {step}
+            <span className="relative">
+                <IconTile icon={icon} color={color} size="md" />
+                <span
+                    aria-hidden="true"
+                    className="absolute -end-1.5 -bottom-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-secondary tabular-nums shadow-xs ring-1 ring-secondary"
+                >
+                    {step}
+                </span>
             </span>
-            <Icon className="size-5 shrink-0 text-fg-quaternary" aria-hidden="true" />
             <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
                 <span className="text-lg font-semibold text-primary">{title}</span>
                 {!isOpen && preview && <span className="w-full truncate text-sm text-tertiary">{preview}</span>}
@@ -44,7 +51,7 @@ export function FormSection({ id, step, title, icon: Icon, required, filled = 0,
     );
 
     return (
-        <section id={id} aria-labelledby={`${id}-title`} className={cx("scroll-mt-6 rounded-xl bg-primary shadow-xs ring-1 ring-secondary", accent && "border-s-2 border-brand")}>
+        <section id={id} aria-labelledby={`${id}-title`} className={cx("surface scroll-mt-6", accent && "ring-2 ring-brand/30")}>
             {onToggle ? (
                 <h2 id={`${id}-title`} className="m-0">
                     <button
@@ -53,7 +60,7 @@ export function FormSection({ id, step, title, icon: Icon, required, filled = 0,
                         aria-controls={`${id}-body`}
                         onClick={onToggle}
                         className={cx(
-                            "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 outline-focus-ring focus-visible:outline-2 md:px-6",
+                            "flex min-h-18 w-full cursor-pointer items-center gap-3 rounded-[1.25rem] px-4 py-3 outline-focus-ring focus-visible:outline-2 md:px-6",
                             isOpen && "rounded-b-none border-b border-secondary",
                         )}
                     >
@@ -61,7 +68,7 @@ export function FormSection({ id, step, title, icon: Icon, required, filled = 0,
                     </button>
                 </h2>
             ) : (
-                <h2 id={`${id}-title`} className="m-0 flex min-h-16 items-center gap-3 border-b border-secondary px-4 py-3 md:px-6">
+                <h2 id={`${id}-title`} className="m-0 flex min-h-18 items-center gap-3 border-b border-secondary px-4 py-3 md:px-6">
                     {head}
                 </h2>
             )}

@@ -15,7 +15,7 @@ export function FormPageHeader({
     description?: ReactNode;
 }) {
     return (
-        <header className="mb-6 lg:mb-8">
+        <header className="mb-5 lg:mb-6">
             <nav aria-label="مسار الصفحة" className="text-sm text-tertiary">
                 <a href={parent.href} className="inline-flex items-center gap-1.5 rounded-md outline-focus-ring hover:text-secondary focus-visible:outline-2 md:hidden">
                     <ArrowRight className="size-5" aria-hidden="true" />
@@ -29,7 +29,7 @@ export function FormPageHeader({
                     <span className="text-secondary">{crumb ?? title}</span>
                 </span>
             </nav>
-            <h1 className="mt-4 text-display-xs font-semibold text-primary">{title}</h1>
+            <h1 className="mt-3 text-display-xs font-semibold text-primary">{title}</h1>
             {description && <p className="mt-1 text-md text-tertiary">{description}</p>}
         </header>
     );

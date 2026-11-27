@@ -10,6 +10,8 @@ import { useAction } from "@/hooks/use-action";
 import { formatDate, formatNumber } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cx } from "@/utils/cx";
+import { Users01 } from "@untitledui/icons";
+import { CardTitle } from "@/components/app/icon-tile";
 
 interface Share {
     traderId: string;
@@ -25,17 +27,21 @@ export function SharesCard({ containerId, unit, shares, capacity, sizeLabel, tod
     const percents = sharePercents(unit, shares);
 
     return (
-        <section aria-labelledby="shares-title" className="flex flex-col gap-5">
-            <div className="flex items-center justify-between gap-3">
-                <h2 id="shares-title" className="text-lg font-semibold text-primary">
-                    الحصص <span className="text-md font-normal text-tertiary">· {unit ? t(`splitUnit.${unit}`) : ""}</span>
-                </h2>
-                <Button size="md" color="link-color" href={`/containers/${containerId}/edit#sec-shares`}>
-                    تعديل الحصص
-                </Button>
-            </div>
+        <section aria-labelledby="shares-title" className="surface flex flex-col gap-5 p-5 md:p-6">
+            <CardTitle
+                id="shares-title"
+                icon={Users01}
+                color="purple"
+                title="الحصص"
+                hint={unit ? t(`splitUnit.${unit}`) : undefined}
+                actions={
+                    <Button size="md" color="link-color" href={`/containers/${containerId}/edit#sec-shares`}>
+                        تعديل الحصص
+                    </Button>
+                }
+            />
             <FillBar unit={unit} capacity={capacity} sizeLabel={sizeLabel} rows={shares.map((s) => ({ traderId: s.traderId, name: s.traderName, shareValue: s.shareValue }))} />
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+            <ul className="flex flex-col divide-y divide-secondary">
                 {shares.map((s, i) => (
                     <li key={s.traderId} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
                         <span aria-hidden="true" className={cx("size-2.5 shrink-0 rounded-full", SHARE_COLORS[i % SHARE_COLORS.length])} />

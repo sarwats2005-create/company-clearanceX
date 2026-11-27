@@ -8,6 +8,13 @@
       "when": 1795527968245,
       "tag": "0000_easy_mimic",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795788784262,
+      "tag": "0001_redesign_logos_default_lines",
+      "breakpoints": true
     }
   ]
 }

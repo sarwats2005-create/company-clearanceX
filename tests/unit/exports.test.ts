@@ -63,6 +63,8 @@ const container: ContainerRow = {
     arrivedOn: "2026-11-10",
     deliveredOn: null,
     shippingLineName: "MSC",
+    shippingLineLogo: null,
+    shippingLineWebsite: null,
     billOfLadingNumber: "MEDU1234567",
     traderNames: ["أحمد كاظم", "حيدر"],
     goods: "أثاث",

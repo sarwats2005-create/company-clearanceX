@@ -834,11 +834,22 @@
     }
 }
 
-/* ── Container clearance: design additions (IMAGE_PROMPTS Part F, emil-design-eng) ── */
+/* ── Container clearance: design additions (redesign 2026-11, see .claude/skills/clearancex-redesign) ── */
 @theme {
-    /* Warm signature accent: ONLY the logo mark and the active-nav marker. */
+    /* Warm gold accent: highlights on the dark brand surfaces (logo, active nav, hero details). */
+    --color-accent-50: rgb(251 247 239);
+    --color-accent-100: rgb(246 236 216);
+    --color-accent-300: rgb(226 196 140);
+    --color-accent-400: rgb(207 166 98);
     --color-accent-500: rgb(184 138 68);
+    --color-accent-600: rgb(150 108 46);
     --color-sidebar: rgb(250 250 250);
+
+    /* Depth: soft navy-tinted shadows so cards float over the gradient background. */
+    --shadow-card: 0px 1px 2px rgb(16 24 40 / 0.05), 0px 10px 28px -12px rgb(30 58 138 / 0.18);
+    --shadow-card-hover: 0px 2px 4px rgb(16 24 40 / 0.06), 0px 18px 40px -14px rgb(30 58 138 / 0.3);
+    --shadow-hero: 0px 28px 56px -20px rgb(11 31 92 / 0.6), 0px 6px 14px -6px rgb(11 31 92 / 0.35);
+    --shadow-button-brand: 0px 1px 0px rgb(255 255 255 / 0.18) inset, 0px 8px 18px -8px rgb(30 58 138 / 0.65);
 
     /* Motion: strong ease-out for UI, drawer curve for sheets. */
     --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1);

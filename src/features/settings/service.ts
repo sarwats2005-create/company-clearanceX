@@ -27,14 +27,18 @@ import { absMoney, isZero, parseAmount } from "@/lib/money";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { deleteUserSessions } from "@/lib/auth-core";
 import {
+    type ChargeTypeDefaultLineInput,
     type ChargeTypeInput,
     type PartyInput,
+    type ShippingLineBrandInput,
+    chargeTypeDefaultLineSchema,
     chargeTypeSchema,
     companySchema,
     currencyAlertsSchema,
     partySchema,
     passwordSchema,
     receiptSequenceSchema,
+    shippingLineBrandSchema,
     simpleItemSchema,
     sizeSchema,
 } from "./schemas";
@@ -168,6 +172,7 @@ export async function saveChargeType(tx: DbOrTx, input: ChargeTypeInput, userId:
         defaultPartyId: data.isFee ? null : data.defaultPartyId,
         isFee: data.isFee,
         isActive: data.isActive,
+        ...(data.isDefaultLine === undefined ? {} : { isDefaultLine: data.isDefaultLine }),
     };
     const defaults: { sizeId: string; amount: string }[] = [];
     for (const [sizeId, raw] of Object.entries(data.defaults)) {
@@ -192,6 +197,28 @@ export async function saveChargeType(tx: DbOrTx, input: ChargeTypeInput, userId:
     await tx.delete(chargeTypeDefaults).where(eq(chargeTypeDefaults.chargeTypeId, id));
     if (defaults.length) await tx.insert(chargeTypeDefaults).values(defaults.map((d) => ({ chargeTypeId: id!, containerSizeId: d.sizeId, amount: d.amount })));
     return id;
+}
+
+/** Mark or unmark an expense type as a default line; optionally save the currency the owner picked as its default. */
+export async function setChargeTypeDefaultLine(tx: DbOrTx, input: ChargeTypeDefaultLineInput, userId: string) {
+    const data = chargeTypeDefaultLineSchema.parse(input);
+    const set = { isDefaultLine: data.isDefaultLine, ...(data.defaultCurrency ? { defaultCurrency: data.defaultCurrency } : {}) };
+    const rows = await tx.update(chargeTypes).set(set).where(eq(chargeTypes.id, data.id)).returning({ id: chargeTypes.id });
+    if (!rows.length) throw new DomainError("نوع المصروف غير موجود");
+    await audit(tx, { table: "charge_types", recordId: data.id, action: "update", after: set, userId });
+}
+
+/** A shipping line's logo and website (Settings → خطوط الشحن). Fields left out stay as they are. */
+export async function saveShippingLineBrand(tx: DbOrTx, input: ShippingLineBrandInput, userId: string) {
+    const data = shippingLineBrandSchema.parse(input);
+    const set = {
+        ...(data.logo === undefined ? {} : { logo: data.logo }),
+        ...(data.website === undefined ? {} : { website: data.website }),
+    };
+    if (!Object.keys(set).length) return;
+    const rows = await tx.update(shippingLines).set(set).where(eq(shippingLines.id, data.id)).returning({ id: shippingLines.id });
+    if (!rows.length) throw new DomainError("خط الشحن غير موجود");
+    await audit(tx, { table: "shipping_lines", recordId: data.id, action: "update", after: { website: data.website, logo: data.logo ? "(صورة)" : data.logo }, userId });
 }
 
 /** Prefix and next number per receipt kind. The number can only move up, and never below a used one (PRD §6.5). */

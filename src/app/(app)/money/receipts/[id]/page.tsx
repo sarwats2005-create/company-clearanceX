@@ -9,7 +9,7 @@ import { getReceipt } from "@/features/money/queries";
 import { requireSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { isUuid } from "@/lib/ids";
-import { receiptShareText, whatsappUrl } from "@/lib/whatsapp";
+import { receiptShareText } from "@/lib/whatsapp";
 
 type Params = Promise<{ id: string }>;
 
@@ -46,10 +46,10 @@ export default async function ReceiptPage({ params }: { params: Params }) {
                 description={r.description}
             />
 
-            <ReceiptActions entryId={r.id} receiptNo={r.receiptNo} whatsappHref={whatsappUrl(r.phone, share)} canCancel={!r.cancelledAt && !r.isCancellation} />
+            <ReceiptActions entryId={r.id} receiptNo={r.receiptNo} shareText={share} phone={r.phone} canCancel={!r.cancelledAt && !r.isCancellation} />
 
             {(r.cancelledAt || r.isCancellation || r.containerId) && (
-                <div className="flex max-w-[40rem] flex-col gap-1 border-y border-secondary py-3 text-md">
+                <div className="surface flex max-w-[40rem] flex-col gap-1 px-5 py-4 text-md">
                     {r.cancelledAt && (
                         <p className="text-error-primary">
                             أُلغي هذا الوصل في <bdi className="num">{formatDateTime(r.cancelledAt)}</bdi>
@@ -74,7 +74,7 @@ export default async function ReceiptPage({ params }: { params: Params }) {
                 </div>
             )}
 
-            <ReceiptDocument r={r} className="w-full max-w-[40rem] rounded-2xl ring-1 ring-secondary" />
+            <ReceiptDocument id="receipt-doc" r={r} className="w-full max-w-[40rem] rounded-2xl shadow-card ring-1 ring-secondary" />
         </div>
     );
 }
