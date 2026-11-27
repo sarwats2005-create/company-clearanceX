@@ -27,11 +27,11 @@ Who it is for: one owner in Basra, about 50, reads Iraqi Arabic, comfortable wit
 
 ## Non-negotiables (why each matters)
 
-- **Main vault is loud and one tap away.** It is the owner's cash. It is the hero card at the top of the home dashboard (balance in both currencies, last movements, quick actions) and it has its own page reachable in one tap from anywhere (nav item plus the hero card itself). Today it takes three taps, which the owner called out directly.
-- **Expenses are entered while adding the container.** Re-adding fees after the container is saved is the second thing the owner called out. Adding a container is short steps with the expenses inside the flow, pre-filled from the owner's default expense types (`references/feature-specs.md` §1).
+- **Main vault is loud and one tap away.** It is the owner's cash. It is the hero card at the top of the home dashboard (balance in both currencies and quick actions, `references/feature-specs.md` §5) and it has its own page reachable in one tap from anywhere (nav item plus the hero card itself). Today it takes three taps, which the owner called out directly.
+- **Expenses are entered while adding the container.** Re-adding fees after the container is saved is the second thing the owner called out. Adding a container is short steps with the expenses inside the flow, pre-filled from the owner's default expense types (`references/feature-specs.md` §1 and §2).
 - **Icons everywhere, always with a label.** Icons tell this owner what is going on at a glance; a label under or beside each icon removes guessing. Never an icon alone except the universal close X, and even that gets an `aria-label`.
 - **Shipping lines are picked by logo**, not by a flat list of names (`references/feature-specs.md` §3).
-- **Anything about money can be sent on WhatsApp**: a container's details, any debit or credit receipt, a statement. The owner chooses picture (JPEG of the receipt) or text before sending (`references/feature-specs.md` §2).
+- **Anything about money can be sent on WhatsApp**: a container's details, any debit or credit receipt, a statement. The owner chooses picture (JPEG of the receipt) or text before sending (`references/feature-specs.md` §4).
 - **Depth, not flatness.** Gradient backgrounds and sleek raised cards give the app the "good design taste" the owner wants (`references/visual-system.md`). Keep text contrast at 4.5:1 on top of any gradient.
 
 ## What not to do
