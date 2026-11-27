@@ -1,8 +1,10 @@
+import Decimal from "decimal.js";
 import { eq } from "drizzle-orm";
 import "server-only";
 import type { DbOrTx } from "@/db";
 import { type Currency, containerCharges, expenseCategories, journalEntries, parties, traders, vaults } from "@/db/schema";
 import { audit } from "@/features/audit/log";
+import { getBranch } from "@/features/branch/service";
 import { cancelCharge } from "@/features/charges/service";
 import { postEntry } from "@/features/ledger/post-entry";
 import * as postings from "@/features/ledger/postings";
@@ -17,11 +19,20 @@ import { type MoneyData, type MoneyInput, moneySchema, otherCurrency } from "./s
 
 export type { MoneyInput };
 
-async function vaultFor(tx: DbOrTx, vaultId: string, currency: Currency, field: string) {
+async function vaultFor(tx: DbOrTx, vaultId: string, currency: Currency, field: string, opts: { ownerOnly?: boolean } = {}) {
     const [v] = await tx.select().from(vaults).where(eq(vaults.id, vaultId));
     if (!v || !v.isActive) throw new DomainError("اختر القاصة", field);
     if (!v.allowedCurrencies.includes(currency)) throw new DomainError(t("error.vaultCurrency"), field);
+    // The branch's vault is its money: it takes customers' payments, container expenses, its own general
+    // expenses and transfers with the owner's vaults, but not the owner's dealings with outside parties.
+    if (opts.ownerOnly && v.partyId) throw new DomainError("هذه قاصة الشراكة. اختر قاصة من قاصاتك", field);
     return v;
+}
+
+async function branchFor(tx: DbOrTx, field: string) {
+    const branch = await getBranch(tx);
+    if (!branch) throw new DomainError("لا توجد شراكة معرّفة في الإعدادات", field);
+    return branch;
 }
 
 async function traderFor(tx: DbOrTx, traderId: string) {
@@ -34,6 +45,7 @@ async function partyFor(tx: DbOrTx, partyId: string) {
     const [p] = await tx.select().from(parties).where(eq(parties.id, partyId));
     if (!p || !p.isActive) throw new DomainError("اختر الجهة", "partyId");
     if (p.kind === "self") throw new DomainError("اختر جهة غير شركتنا. لإدخال أو إخراج مال المالك استخدم إيداع أو سحب", "partyId");
+    if (p.isBranch) throw new DomainError("للشراكة قاصة خاصة: لتسليمها أو استلام المال منها استخدم «تحويل» بين القاصتين", "partyId");
     return p;
 }
 
@@ -72,6 +84,28 @@ async function resolve(tx: DbOrTx, d: MoneyData): Promise<Resolved> {
             const tr = await traderFor(tx, d.traderId);
             const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId");
             const paid = { amount: d.amount, currency: d.currency };
+            const branchPart = new Decimal(d.branchAmount ?? "0");
+            if (branchPart.gt(0) || v.partyId) {
+                // B3: the payment pays what the trader owes the branch and/or the owner, into either one's vault.
+                const branch = await branchFor(tx, "branchAmount");
+                if (d.fx) throw new DomainError("قاصة الشراكة بالدينار: اقبض بالدينار بدون تصريف", "vaultId");
+                return {
+                    lines: postings.receiveFromTraderSplit({
+                        traderId: tr.id,
+                        vaultId: v.id,
+                        vaultIsBranch: !!v.partyId,
+                        branchId: branch.id,
+                        currency: d.currency,
+                        ownerPart: new Decimal(d.amount).minus(branchPart).toFixed(),
+                        branchPart: branchPart.toFixed(),
+                    }),
+                    description: `قبض من التاجر ${tr.name}`,
+                    counterpartyLabel: tr.name,
+                    ...paid,
+                    fxRate: null,
+                    meta: { ...base, traderId: tr.id, traderName: tr.name, vaultName: v.name, branchAmount: branchPart.toFixed(), branchName: branch.name },
+                };
+            }
             return {
                 lines: d.fx
                     ? postings.receiveFromTraderFx({
@@ -92,7 +126,7 @@ async function resolve(tx: DbOrTx, d: MoneyData): Promise<Resolved> {
         }
         case "pay_party": {
             const p = await partyFor(tx, d.partyId);
-            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId");
+            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId", { ownerOnly: true });
             const paid = { amount: d.amount, currency: d.currency };
             return {
                 lines: d.fx
@@ -114,7 +148,7 @@ async function resolve(tx: DbOrTx, d: MoneyData): Promise<Resolved> {
         }
         case "receive_party": {
             const p = await partyFor(tx, d.partyId);
-            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId");
+            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId", { ownerOnly: true });
             return {
                 lines: postings.receiveFromParty({ partyId: p.id, vaultId: v.id, currency: d.currency, amount: d.amount }),
                 description: `قبض من ${p.name}`,
@@ -127,7 +161,7 @@ async function resolve(tx: DbOrTx, d: MoneyData): Promise<Resolved> {
         }
         case "pay_trader": {
             const tr = await traderFor(tx, d.traderId);
-            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId");
+            const v = await vaultFor(tx, d.vaultId, d.currency, "vaultId", { ownerOnly: true });
             return {
                 lines: postings.payTrader({ traderId: tr.id, vaultId: v.id, currency: d.currency, amount: d.amount }),
                 description: `دفع للتاجر ${tr.name}${d.reason !== "other" ? ` · ${PAY_REASON_LABEL[d.reason]}` : ""}`,
@@ -155,20 +189,28 @@ async function resolve(tx: DbOrTx, d: MoneyData): Promise<Resolved> {
         case "transfer": {
             const from = await vaultFor(tx, d.fromVaultId, d.currency, "fromVaultId");
             const to = await vaultFor(tx, d.toVaultId, d.currency, "toVaultId");
+            // B4: between the owner's vault and the branch's, a handover settles what they owe each other unless
+            // the owner says it's just moving cash (profit taken out, cash topped up).
+            const withBranch = !!from.partyId !== !!to.partyId;
+            const settles = withBranch && d.settleBranch !== false;
+            const branchId = from.partyId ?? to.partyId;
             return {
-                lines: postings.transfer({ fromVaultId: from.id, toVaultId: to.id, currency: d.currency, amount: d.amount }),
-                description: `تحويل من ${from.name} إلى ${to.name}`,
+                lines:
+                    settles && branchId
+                        ? postings.branchSettle({ fromVaultId: from.id, toVaultId: to.id, toBranch: !!to.partyId, branchId, currency: d.currency, amount: d.amount })
+                        : postings.transfer({ fromVaultId: from.id, toVaultId: to.id, currency: d.currency, amount: d.amount }),
+                description: settles ? `تسليم من ${from.name} إلى ${to.name}` : `تحويل من ${from.name} إلى ${to.name}`,
                 counterpartyLabel: to.name,
                 amount: d.amount,
                 currency: d.currency,
                 fxRate: null,
-                meta: { ...base, fromVaultName: from.name, toVaultName: to.name },
+                meta: { ...base, fromVaultName: from.name, toVaultName: to.name, ...(withBranch ? { settlesBranch: settles } : {}) },
             };
         }
         case "exchange": {
             const toCurrency = otherCurrency(d.fromCurrency);
-            const from = await vaultFor(tx, d.fromVaultId, d.fromCurrency, "fromVaultId");
-            const to = await vaultFor(tx, d.toVaultId, toCurrency, "toVaultId");
+            const from = await vaultFor(tx, d.fromVaultId, d.fromCurrency, "fromVaultId", { ownerOnly: true });
+            const to = await vaultFor(tx, d.toVaultId, toCurrency, "toVaultId", { ownerOnly: true });
             return {
                 lines: postings.exchange({
                     fromVaultId: from.id,

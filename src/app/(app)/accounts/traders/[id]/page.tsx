@@ -14,7 +14,9 @@ import { db } from "@/db";
 import { type Currency, traders } from "@/db/schema";
 import { defaultCurrency, parseStatementParams } from "@/features/accounts/model";
 import { getStatementTarget, getTraderAccount } from "@/features/accounts/queries";
+import { getBranch } from "@/features/branch/service";
 import { listContainers } from "@/features/containers/queries";
+import { getTraderSplit } from "@/features/ledger/balances";
 import { requireSession } from "@/lib/auth";
 import { balanceSide, todayISO } from "@/lib/format";
 import { isUuid } from "@/lib/ids";
@@ -37,7 +39,12 @@ export default async function TraderAccountPage({ params, searchParams }: { para
     await requireSession();
     const { id } = await params;
     if (!isUuid(id)) notFound();
-    const [account, target] = await Promise.all([getTraderAccount(db, id), getStatementTarget(db, "traders", id)]);
+    const [account, target, split, branch] = await Promise.all([
+        getTraderAccount(db, id),
+        getStatementTarget(db, "traders", id),
+        getTraderSplit(db, id),
+        getBranch(db),
+    ]);
     if (!account || !target) notFound();
     const sp = await searchParams;
     const tab: Tab = TABS.find((x) => x === sp.tab) ?? "statement";
@@ -99,6 +106,17 @@ export default async function TraderAccountPage({ params, searchParams }: { para
                 ]}
             />
 
+            {/* Inside the app the owner sees whose debt it is; what the customer receives shows one total. */}
+            {branch && Number(split.branch.IQD) !== 0 && (
+                <BalanceBand
+                    title="لمن الدينار؟"
+                    items={[
+                        { label: "لك (الأتعاب ومصاريفك)", value: <SideFigure amount={split.owner.IQD} currency="IQD" /> },
+                        { label: `لـ${branch.name}`, value: <SideFigure amount={split.branch.IQD} currency="IQD" /> },
+                    ]}
+                />
+            )}
+
             <LinkTabs
                 label="أقسام حساب التاجر"
                 items={[
@@ -123,7 +141,7 @@ export default async function TraderAccountPage({ params, searchParams }: { para
 async function TraderContainers({ traderId }: { traderId: string }) {
     const { rows, total } = await listContainers(db, { traderId, totalsOf: traderId, pageSize: 200, sort: "registered", dir: "desc" });
     return (
-        <section aria-labelledby="containers-title" className="surface flex flex-col gap-4 p-4 md:p-6">
+        <section aria-labelledby="containers-title" className="flex flex-col gap-4 surface p-4 md:p-6">
             <CardTitle
                 id="containers-title"
                 icon={Container}

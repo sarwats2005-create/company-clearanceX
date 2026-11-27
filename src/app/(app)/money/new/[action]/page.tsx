@@ -34,7 +34,7 @@ export default async function NewMoneyPage({ params, searchParams }: { params: P
                 kind={kind}
                 options={options}
                 today={todayISO()}
-                prefill={{ trader: one(sp.trader), party: one(sp.party), vault: one(sp.vault), currency: one(sp.currency) }}
+                prefill={{ trader: one(sp.trader), party: one(sp.party), vault: one(sp.vault), to: one(sp.to), currency: one(sp.currency) }}
             />
         </>
     );

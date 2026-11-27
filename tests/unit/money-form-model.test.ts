@@ -2,22 +2,38 @@ import { describe, expect, it } from "vitest";
 import {
     KIND_BY_SLUG,
     SLUG_BY_KIND,
+    branchShare,
     emptyForm,
+    formSentence,
     fullAmount,
     onAmountChange,
     onDebtChange,
     onRateChange,
     toMoneyInput,
+    transferWithBranch,
     validateForm,
 } from "@/features/money/form-model";
 
 const opts = {
-    traders: [{ id: "t1", name: "أحمد كاظم", phone: null, balance: { IQD: "0", USD: "2400.00" } }],
+    traders: [
+        { id: "t1", name: "أحمد كاظم", phone: null, balance: { IQD: "0", USD: "2400.00" }, branchBalance: { IQD: "0", USD: "0.00" } },
+        // Owes 11,150,000: 10,000,000 to the partnership (its expenses) and 1,150,000 to the owner (the fee).
+        { id: "t2", name: "علي حسن", phone: null, balance: { IQD: "11150000", USD: "0.00" }, branchBalance: { IQD: "10000000", USD: "0.00" } },
+    ],
     parties: [{ id: "p1", name: "شركة التخليص - الصين", balance: { IQD: "-50000", USD: "-3000.00" } }],
     vaults: [
-        { id: "v-main", name: "القاصة الرئيسية", kind: "main" as const, allowedCurrencies: ["IQD" as const], balance: { IQD: "1000000", USD: "0.00" } },
-        { id: "v-usd", name: "قاصة الدولار", kind: "usd" as const, allowedCurrencies: ["USD" as const], balance: { IQD: "0", USD: "500.00" } },
+        {
+            id: "v-main",
+            name: "القاصة الرئيسية",
+            kind: "main" as const,
+            allowedCurrencies: ["IQD" as const],
+            partyId: null,
+            balance: { IQD: "1000000", USD: "0.00" },
+        },
+        { id: "v-usd", name: "قاصة الدولار", kind: "usd" as const, allowedCurrencies: ["USD" as const], partyId: null, balance: { IQD: "0", USD: "500.00" } },
+        { id: "v-b", name: "قاصة الشراكة", kind: "other" as const, allowedCurrencies: ["IQD" as const], partyId: "p-b", balance: { IQD: "0", USD: "0.00" } },
     ],
+    branch: { id: "p-b", name: "شراكة تخليص أم قصر", vaultId: "v-b", balance: { IQD: "0", USD: "0.00" } },
     categories: [{ id: "c1", name: "إيجار" }],
     defaultVaults: { IQD: "v-main", USD: "v-usd" },
     defaultRate: "1310",
@@ -107,5 +123,32 @@ describe("toMoneyInput", () => {
             note: null,
             allowNegative: true,
         });
+    });
+});
+
+describe("the branch (partnership) in the money forms", () => {
+    const form = (over: Partial<ReturnType<typeof emptyForm>>) => ({ ...emptyForm("receive_trader", opts, "2026-11-27", {}), traderId: "t2", ...over });
+    it("into the owner's vault: the owner's part first, the rest pays the partnership", () => {
+        expect(branchShare(form({ amount: "1150000" }), opts)).toEqual({ branch: "0", owner: "1150000" });
+        expect(branchShare(form({ amount: "11150000" }), opts)).toEqual({ branch: "10000000", owner: "1150000" });
+    });
+    it("into the partnership's vault: its own debt first", () => {
+        expect(branchShare(form({ amount: "10000000", vaultId: "v-b" }), opts)).toEqual({ branch: "10000000", owner: "0" });
+    });
+    it("the owner can type the split himself, and it is sent to the server", () => {
+        const f = form({ amount: "5000000", branchAmount: "4000000" });
+        expect(branchShare(f, opts)).toEqual({ branch: "4000000", owner: "1000000" });
+        expect(toMoneyInput("receive_trader", f, false, opts)).toMatchObject({ branchAmount: "4000000" });
+        expect(formSentence("receive_trader", f, opts)).toContain("4,000,000");
+    });
+    it("a trader who owes the partnership nothing pays the owner as before", () => {
+        expect(branchShare(form({ traderId: "t1", amount: "100" }), opts)).toBeNull();
+    });
+    it("a transfer between the owner's vault and the partnership's is a handover unless the owner says otherwise", () => {
+        const f = { ...emptyForm("transfer", opts, "2026-11-27", {}), fromVaultId: "v-main", toVaultId: "v-b", amount: "100" };
+        expect(transferWithBranch(opts, f)).toBe(true);
+        expect(toMoneyInput("transfer", f, false, opts)).toMatchObject({ settleBranch: true });
+        expect(toMoneyInput("transfer", { ...f, settleBranch: false }, false, opts)).toMatchObject({ settleBranch: false });
+        expect(formSentence("transfer", f, opts)).toContain("تسليم");
     });
 });

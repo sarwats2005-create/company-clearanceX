@@ -42,6 +42,8 @@ const type: Record<string, string> = {};
 beforeEach(async () => {
     await resetDb();
     await seed(db, { username: "owner", password: "owner-pass-123", name: "أبو علي" });
+    // These tests use the partnership as a plain outside party (the branch rules are in branch.test.ts).
+    await db.update(parties).set({ isBranch: false });
     ownerId = (await db.select().from(users))[0].id;
     msc = (await db.select().from(shippingLines).orderBy(asc(shippingLines.sortOrder)))[0].id;
     [ahmed, haider] = (

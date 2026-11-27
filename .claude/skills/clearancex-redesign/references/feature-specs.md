@@ -75,3 +75,24 @@ Owner's rule: the fresh-start option only appears once he has saved a restore po
 - **Start fresh**: locked card ("يظهر فقط بعد أن تحفظ نقطة استرجاع اليوم") until a manual point exists today. Then a red card opens a dialog with two big choices: "امسح الحاويات والمال فقط" (default: lists, traders and settings stay, balances go to zero, receipt numbers restart at 1) or "امسح كل شيء" (back to the original starting lists). Password required. An automatic point is saved first.
 - **Delete**: only manual points, and not on the day they were saved (today's point is the undo for a fresh start). Automatic points delete themselves after 30 days (the newest 5 always stay). At most 30 manual points.
 - **Where it is enforced**: inside the database (`src/db/sql/0003_restore_points.sql`), not only in the page. The app's restricted user can't write points or truncate tables itself.
+
+## 7. The Umm Qasr partnership (the owner's branch)
+
+Owner's rules: `owner-requirements.md`, "Money workflow for the Umm Qasr partnership" (2026-11-27).
+
+- **Setup:** the party has `is_branch` (at most one) and its own dinar vault (`vaults.party_id`). The update marks "شراكة تخليص أم قصر" automatically.
+- **Expenses page:** when the payer is the partnership, "من أي قاصة؟" offers "من قاصة الشراكة" (default) or "دفعتُها عنها من {owner vault}". The hint says the trader owes it to the partnership. A dollar expense asks for "سعر الدولار" and is saved in dinar.
+- **Ledger:**
+  - Trader debts to the branch are account kind `trader_branch`.
+  - The owner↔branch account is the branch's party account: negative means the owner holds the branch's money, positive means the branch owes the owner. `branch_owner` is its hidden mirror.
+  - Postings B1–B4 are in `src/features/ledger/postings.ts`.
+- **Receive from a trader:** "لمن هذا المبلغ؟" shows both debts, an editable "منه لدَين الشراكة" field, and two buttons ("كله لدَين الشراكة" / "كله لدَينك").
+  - Default split: into the owner's vault, the owner's debt is paid first; into the branch's vault, the branch's debt is paid first.
+  - Branch money taken into the owner's vault stays "أمانة" until it is handed over.
+- **Transfer** between the owner's vault and the branch's: "تسليم يسدّد ما بينكما" (default) or "أرباح أو تمويل". The page shows what is between them now.
+- **Customer's view:** lists, statements, receipts and WhatsApp show one total. The trader page adds a "لمن الدينار؟" band with the two parts.
+- **Partnership page** (Accounts → parties → the partnership):
+  - its vault balance, what traders owe it, and what is between it and the owner;
+  - the traders who owe it;
+  - "تسليم للشراكة" and "استلام من الشراكة" buttons.
+- The branch's vault can't be used for paying or receiving from outside parties, paying traders, or currency exchange. The partnership itself can't be paid as a party: use a transfer between the two vaults.

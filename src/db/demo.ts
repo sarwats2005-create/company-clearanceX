@@ -63,13 +63,16 @@ export async function demo(db: DbOrTx, ownerId: string, today: string = todayISO
     const ummQasr = allParties.find((p) => p.name === "شراكة تخليص أم قصر") ?? allParties.find((p) => p.kind === "partner")!;
     const main = allVaults.find((v) => v.kind === "main")!;
     const usd = allVaults.find((v) => v.kind === "usd")!;
-    if (!lines.length || !types.length || !self || !china || !ummQasr || !main || !usd) throw new Error("شغّل pnpm db:seed أولاً.");
+    // The partnership is the owner's branch with its own dinar vault (owner's request 2026-11-27).
+    const branchVault = allVaults.find((v) => v.partyId === ummQasr?.id);
+    if (!lines.length || !types.length || !self || !china || !ummQasr || !main || !usd || !branchVault) throw new Error("شغّل pnpm db:seed أولاً.");
 
     const traderIds = (await db.insert(traders).values(TRADERS).returning({ id: traders.id })).map((t) => t.id);
 
     // Opening cash so the vaults start positive.
     const opening = addDays(today, -90);
     await postMoney(db, { kind: "deposit", date: opening, vaultId: main.id, amount: "60000000", currency: "IQD", note: "رصيد افتتاحي" }, ownerId);
+    await postMoney(db, { kind: "deposit", date: opening, vaultId: branchVault.id, amount: "8000000", currency: "IQD", note: "رصيد افتتاحي" }, ownerId);
     await postMoney(db, { kind: "deposit", date: opening, vaultId: usd.id, amount: "45000", currency: "USD", note: "رصيد افتتاحي" }, ownerId);
 
     const monthStart = `${today.slice(0, 7)}-01`;
@@ -132,9 +135,9 @@ export async function demo(db: DbOrTx, ownerId: string, today: string = todayISO
         const arrivedOn = stage === "arrived" ? addDays(today, i === 15 ? -12 : i === 16 ? -10 : i === 17 ? -9 : -(i - 17)) : addDays(registeredOn, 30);
         await changeStatus(db, id, { to: "arrived", date: arrivedOn }, ownerId);
         const portRows: ChargeRowInput[] = [
-            // Port fines: some paid by the Umm Qasr partner, some from our own main vault.
+            // Port fines: some paid by the Umm Qasr partnership from its vault (the trader owes the partnership), some from our own main vault.
             i % 2 === 0
-                ? { chargeTypeId: type("غرامة ميناء").id, amount: String(250000 + (i % 4) * 75000), currency: "IQD", paidByPartyId: ummQasr.id }
+                ? { chargeTypeId: type("غرامة ميناء").id, amount: String(250000 + (i % 4) * 75000), currency: "IQD", paidByPartyId: ummQasr.id, vaultId: branchVault.id }
                 : { chargeTypeId: type("غرامة ميناء").id, amount: String(300000 + (i % 3) * 50000), currency: "IQD", paidByPartyId: self.id, vaultId: main.id },
         ];
         if (i % 3 === 0) portRows.push({ chargeTypeId: type("غرامة شركة الشحن").id, amount: "450", currency: "USD", paidByPartyId: china.id });
@@ -168,9 +171,15 @@ export async function demo(db: DbOrTx, ownerId: string, today: string = todayISO
         { kind: "pay_party", date: addDays(today, -6), partyId: china.id, vaultId: usd.id, amount: "18000", currency: "USD", allowNegative: true },
         ownerId,
     );
+    // A trader pays the partnership's part into the owner's vault; the owner then hands it over.
     await postMoney(
         db,
-        { kind: "pay_party", date: addDays(today, -4), partyId: ummQasr.id, vaultId: main.id, amount: "1500000", currency: "IQD", allowNegative: true },
+        { kind: "receive_trader", date: addDays(today, -4), traderId: traderIds[0], vaultId: main.id, amount: "250000", currency: "IQD", branchAmount: "250000" },
+        ownerId,
+    );
+    await postMoney(
+        db,
+        { kind: "transfer", date: addDays(today, -3), fromVaultId: main.id, toVaultId: branchVault.id, amount: "250000", currency: "IQD", settleBranch: true },
         ownerId,
     );
 

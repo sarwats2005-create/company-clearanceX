@@ -4,6 +4,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
+    type AnyPgColumn,
     boolean,
     date,
     index,
@@ -36,6 +37,10 @@ export const accountKindEnum = pgEnum("account_kind", [
     "owner_equity",
     "fx",
     "opening",
+    /** What a trader owes our branch (the Umm Qasr partnership) for expenses it paid. refId = trader. */
+    "trader_branch",
+    /** The branch's side of what it and the owner owe each other (mirror of the branch's party account). refId = branch party. */
+    "branch_owner",
 ]);
 export const entryTypeEnum = pgEnum("entry_type", [
     "container_charge",
@@ -132,23 +137,38 @@ export const loginAttempts = pgTable(
 );
 
 // ── Reference data ───────────────────────────────────────────────────────────
-export const parties = pgTable("parties", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull().unique(),
-    kind: partyKindEnum("kind").notNull().default("other"),
-    phone: text("phone"),
-    notes: text("notes"),
-    isSystem: boolean("is_system").notNull().default(false),
-    isActive: boolean("is_active").notNull().default(true),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
-});
+export const parties = pgTable(
+    "parties",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        name: text("name").notNull().unique(),
+        kind: partyKindEnum("kind").notNull().default("other"),
+        phone: text("phone"),
+        notes: text("notes"),
+        isSystem: boolean("is_system").notNull().default(false),
+        /**
+         * Our own branch (e.g. the Umm Qasr partnership): it has its own vault, customers owe it directly for the
+         * expenses it pays, and it and the owner keep an account with each other. At most one.
+         */
+        isBranch: boolean("is_branch").notNull().default(false),
+        isActive: boolean("is_active").notNull().default(true),
+        createdAt: createdAt(),
+        updatedAt: updatedAt(),
+    },
+    (t) => [
+        uniqueIndex("parties_one_branch_uq")
+            .on(t.isBranch)
+            .where(sql`${t.isBranch}`),
+    ],
+);
 
 export const vaults = pgTable("vaults", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull().unique(),
     kind: vaultKindEnum("kind").notNull().default("other"),
     allowedCurrencies: currencyEnum("allowed_currencies").array().notNull(),
+    /** Set on the branch's own vault: the money in it is the branch's, not the owner's. */
+    partyId: uuid("party_id").references((): AnyPgColumn => parties.id),
     notes: text("notes"),
     isSystem: boolean("is_system").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
@@ -168,7 +188,11 @@ export const traders = pgTable(
         createdAt: createdAt(),
         updatedAt: updatedAt(),
     },
-    (t) => [uniqueIndex("traders_name_active_uq").on(sql`lower(${t.name})`).where(sql`${t.isActive}`)],
+    (t) => [
+        uniqueIndex("traders_name_active_uq")
+            .on(sql`lower(${t.name})`)
+            .where(sql`${t.isActive}`),
+    ],
 );
 
 export const shippingLines = pgTable("shipping_lines", {

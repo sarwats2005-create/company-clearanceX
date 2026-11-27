@@ -29,6 +29,13 @@
       "when": 1795818478296,
       "tag": "0003_restore_points",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795819719122,
+      "tag": "0004_branch_partnership",
+      "breakpoints": true
     }
   ]
 }

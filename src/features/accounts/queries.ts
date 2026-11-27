@@ -1,9 +1,9 @@
-import { and, asc, eq, lte, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, lte, ne, sql } from "drizzle-orm";
 import "server-only";
 import type { DbOrTx } from "@/db";
 import { type AccountKind, type Currency, type PartyKind, type VaultKind, accounts, journalEntries, journalLines, parties, traders, vaults } from "@/db/schema";
 import { compact, compactPattern, folded, likePattern } from "@/db/search";
-import { type Balances, getBalances, getBalancesMany } from "@/features/ledger/balances";
+import { type Balances, getBalances, getBalancesMany, kindsOf } from "@/features/ledger/balances";
 import { getSettingsRow } from "@/features/settings/service";
 import { balanceSide } from "@/lib/format";
 import { roundTo } from "@/lib/money";
@@ -29,6 +29,8 @@ export interface PartyAccountRow {
 
 export interface VaultAccountRow {
     id: string;
+    /** Set on the branch's own vault. */
+    partyId: string | null;
     name: string;
     kind: VaultKind;
     allowedCurrencies: Currency[];
@@ -109,6 +111,7 @@ export async function listVaultAccounts(db: DbOrTx): Promise<VaultAccountRow[]> 
             name: vaults.name,
             kind: vaults.kind,
             allowedCurrencies: vaults.allowedCurrencies,
+            partyId: vaults.partyId,
             notes: vaults.notes,
             isSystem: vaults.isSystem,
             isActive: vaults.isActive,
@@ -120,7 +123,8 @@ export async function listVaultAccounts(db: DbOrTx): Promise<VaultAccountRow[]> 
         "vault",
         rows.map((r) => r.id),
     );
-    const rank = (v: (typeof rows)[number]) => (v.isActive ? (VAULT_ORDER[v.kind] ?? 2) : 3);
+    // The branch's vault comes right after the owner's two (it's the other cash box the owner watches).
+    const rank = (v: (typeof rows)[number]) => (v.isActive ? (VAULT_ORDER[v.kind] ?? (v.partyId ? 2 : 3)) : 4);
     return rows.map((r) => ({ ...r, allowedCurrencies: r.allowedCurrencies as Currency[], balance: balances.get(r.id)! })).sort((a, b) => rank(a) - rank(b));
 }
 
@@ -162,7 +166,7 @@ export async function balancesAsOf(db: DbOrTx, kind: AccountKind, refId: string,
         .from(journalLines)
         .innerJoin(accounts, eq(accounts.id, journalLines.accountId))
         .innerJoin(journalEntries, eq(journalEntries.id, journalLines.entryId))
-        .where(and(eq(accounts.kind, kind), eq(accounts.refId, refId), to ? lte(journalEntries.entryDate, to) : undefined))
+        .where(and(inArray(accounts.kind, kindsOf(kind)), eq(accounts.refId, refId), to ? lte(journalEntries.entryDate, to) : undefined))
         .groupBy(accounts.currency);
     const out: Balances = { IQD: roundTo("0", "IQD"), USD: roundTo("0", "USD") };
     for (const r of rows) out[r.currency] = roundTo(r.v, r.currency);

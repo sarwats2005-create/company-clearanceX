@@ -1,9 +1,10 @@
 import "server-only";
 import Decimal from "decimal.js";
-import { and, asc, eq, gte, isNull, lt, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { type Currency, type EntryType, accounts, containers, journalEntries, journalLines } from "@/db/schema";
 import { roundTo } from "@/lib/money";
+import { kindsOf } from "./balances";
 import type { AccountRef } from "./types";
 
 export interface StatementRow {
@@ -33,7 +34,8 @@ export interface Statement {
 
 /** Account statement with opening balance, running balance and totals (PRD §8.8). */
 export async function getStatement(db: DbOrTx, ref: AccountRef, currency: Currency, from?: string, to?: string): Promise<Statement> {
-    const accountWhere = and(eq(accounts.kind, ref.kind), ref.refId ? eq(accounts.refId, ref.refId) : isNull(accounts.refId), eq(accounts.currency, currency));
+    // A trader's statement is the customer's view: what they owe the owner and the branch, as one running balance.
+    const accountWhere = and(inArray(accounts.kind, kindsOf(ref.kind)), ref.refId ? eq(accounts.refId, ref.refId) : isNull(accounts.refId), eq(accounts.currency, currency));
 
     let opening = new Decimal(0);
     if (from) {
@@ -68,10 +70,22 @@ export async function getStatement(db: DbOrTx, ref: AccountRef, currency: Curren
         .where(and(accountWhere, from ? gte(journalEntries.entryDate, from) : undefined, to ? lte(journalEntries.entryDate, to) : undefined))
         .orderBy(asc(journalEntries.entryDate), asc(journalEntries.createdAt), asc(journalLines.createdAt));
 
+    // One payment can pay both parts (owner's and branch's): show it as one row, as the customer sees it.
+    const merged: typeof lines = [];
+    for (const l of lines) {
+        const prev = merged.at(-1);
+        if (prev && prev.entryId === l.entryId) {
+            const net = new Decimal(prev.debit).minus(prev.credit).plus(l.debit).minus(l.credit);
+            prev.debit = net.gt(0) ? net.toFixed(2) : "0";
+            prev.credit = net.lt(0) ? net.neg().toFixed(2) : "0";
+            prev.memo = prev.memo ?? l.memo;
+        } else merged.push({ ...l });
+    }
+
     let running = opening;
     let totalDebit = new Decimal(0);
     let totalCredit = new Decimal(0);
-    const rows: StatementRow[] = lines.map((l) => {
+    const rows: StatementRow[] = merged.map((l) => {
         running = running.plus(l.debit).minus(l.credit);
         totalDebit = totalDebit.plus(l.debit);
         totalCredit = totalCredit.plus(l.credit);

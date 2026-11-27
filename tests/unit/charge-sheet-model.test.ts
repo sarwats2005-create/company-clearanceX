@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ChargeSheetData } from "@/features/charges/queries";
-import { confirmSentence, newRow, rowPreview, sheetSummary, toInput, vaultOutflows } from "@/features/charges/sheet-model";
+import { branchDinar, confirmSentence, newRow, payerVault, rowPreview, sheetSummary, toInput, vaultFor, vaultOutflows } from "@/features/charges/sheet-model";
 
 const SELF = "p-self";
 const CHINA = "p-china";
@@ -26,12 +26,14 @@ const base = (shared: boolean): ChargeSheetData => ({
         : { id: "c1", containerNumber: "MSCU4829175", isShared: false, splitUnit: null, shares: [{ traderId: A, name: "أحمد", shareValue: null }] },
     chargeTypes: types,
     parties: [
-        { id: SELF, name: "شركتنا", isSelf: true },
-        { id: CHINA, name: "شركة التخليص - الصين", isSelf: false },
+        { id: SELF, name: "شركتنا", isSelf: true, isBranch: false },
+        { id: CHINA, name: "شركة التخليص - الصين", isSelf: false, isBranch: false },
+        { id: "p-umm", name: "شراكة تخليص أم قصر", isSelf: false, isBranch: true },
     ],
     vaults: [
-        { id: "v-main", name: "القاصة الرئيسية", allowedCurrencies: ["IQD"] },
-        { id: "v-usd", name: "قاصة الدولار", allowedCurrencies: ["USD"] },
+        { id: "v-main", name: "القاصة الرئيسية", allowedCurrencies: ["IQD"], partyId: null },
+        { id: "v-usd", name: "قاصة الدولار", allowedCurrencies: ["USD"], partyId: null },
+        { id: "v-branch", name: "قاصة الشراكة", allowedCurrencies: ["IQD"], partyId: "p-umm" },
     ],
     defaultVaults: { IQD: "v-main", USD: "v-usd" },
 });
@@ -136,5 +138,22 @@ describe("toInput and vaultOutflows", () => {
         const d = base(false);
         const rows = { "ct-customs": { ...newRow(types[0], d), amount: "10", splitMode: "manual" as const } };
         expect(toInput(d, "2026-11-20", ["ct-customs"], rows).rows[0].splitMode).toBe("by_share");
+    });
+});
+
+describe("the branch (Umm Qasr partnership) as payer", () => {
+    const d = base(false);
+    it("pays from its own vault by default; the owner can pay for it from his dinar vault", () => {
+        expect(payerVault(d, "p-umm", "IQD")).toBe("v-branch");
+        expect(payerVault(d, "p-umm", "IQD", "v-main")).toBe("v-main");
+        expect(payerVault(d, "p-umm", "IQD", "v-usd")).toBe("v-branch");
+        // Our own company never pays from the branch's vault.
+        expect(vaultFor(d, "IQD", "v-branch")).toBe("v-main");
+    });
+    it("turns a dollar expense into dinar at the typed rate, and sends the rate", () => {
+        const row = { ...newRow(d.chargeTypes[0], d), paidByPartyId: "p-umm", vaultId: "v-branch", amount: "500", currency: "USD" as const, fxRate: "1,320" };
+        expect(branchDinar(d, row)).toBe("660000");
+        expect(vaultOutflows(d, [d.chargeTypes[0].id], { [d.chargeTypes[0].id]: row })).toEqual([{ vaultId: "v-branch", currency: "IQD", amount: "660000" }]);
+        expect(toInput(d, "2026-11-27", [d.chargeTypes[0].id], { [d.chargeTypes[0].id]: row }).rows[0]).toMatchObject({ vaultId: "v-branch", fxRate: "1,320" });
     });
 });

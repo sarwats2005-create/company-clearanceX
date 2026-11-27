@@ -33,8 +33,9 @@ export const CURRENCY_NAME: Record<Currency, string> = { IQD: "دينار عرا
 export const CURRENCY_IN: Record<Currency, string> = { IQD: "بالدينار العراقي", USD: "بالدولار الأمريكي" };
 
 /** Under a vault's name: its kind, or for the two built-in vaults (whose name says it all) the currencies it holds. */
-export function vaultSubtitle(v: { kind: VaultKind; allowedCurrencies: Currency[] }): string {
+export function vaultSubtitle(v: { kind: VaultKind; allowedCurrencies: Currency[]; partyId?: string | null }): string {
     const currencies = v.allowedCurrencies.map((c) => CURRENCY_NAME[c]).join(" و");
+    if (v.partyId) return `قاصة الشراكة · ${currencies}`;
     return v.kind === "main" || v.kind === "usd" ? currencies : `${VAULT_KIND_LABEL[v.kind]} · ${currencies}`;
 }
 

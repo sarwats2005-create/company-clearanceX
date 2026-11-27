@@ -8,10 +8,14 @@ import { type MoneyInput, type MoneyKind, type PayReason, otherCurrency } from "
 export type Balances = Record<Currency, string>;
 
 export interface MoneyFormOptions {
-    traders: { id: string; name: string; phone: string | null; balance: Balances }[];
-    /** Active parties other than our own company. Negative balance = we owe them. */
+    /** balance = everything the trader owes (customer's view); branchBalance = the part owed to the branch. */
+    traders: { id: string; name: string; phone: string | null; balance: Balances; branchBalance: Balances }[];
+    /** Active parties other than our own company and the branch. Negative balance = we owe them. */
     parties: { id: string; name: string; balance: Balances }[];
-    vaults: { id: string; name: string; kind: VaultKind; allowedCurrencies: Currency[]; balance: Balances }[];
+    /** partyId is set on the branch's own vault. */
+    vaults: { id: string; name: string; kind: VaultKind; allowedCurrencies: Currency[]; partyId: string | null; balance: Balances }[];
+    /** The owner's branch (the partnership). balance: negative = the owner holds money for it, positive = it owes the owner. */
+    branch: { id: string; name: string; vaultId: string | null; balance: Balances } | null;
     categories: { id: string; name: string }[];
     defaultVaults: Partial<Record<Currency, string>>;
     /** Dinars per dollar to pre-fill. */
@@ -52,12 +56,18 @@ export interface MoneyFormState {
     toVaultId: string | null;
     /** Exchange: what arrives in the second vault. */
     toAmount: string;
+    /** Receive from a trader: the part that pays what they owe the branch ("" = the automatic split). */
+    branchAmount: string;
+    /** Transfer between the owner's vault and the branch's: a handover that settles their account (default) or just moving cash. */
+    settleBranch: boolean;
 }
 
 export interface Prefill {
     trader?: string;
     party?: string;
     vault?: string;
+    /** Transfer: the vault the money goes to. */
+    to?: string;
     currency?: string;
 }
 
@@ -94,9 +104,43 @@ export function emptyForm(kind: MoneyKind, o: MoneyFormOptions, today: string, p
         rate: o.defaultRate,
         debtAmount: "",
         fromVaultId: vault,
-        toVaultId: kind === "exchange" ? vaultFor(o, otherCurrency(currency)) : null,
+        toVaultId: kind === "exchange" ? vaultFor(o, otherCurrency(currency)) : accepts(o, prefill.to, currency) && prefill.to !== vault ? prefill.to! : null,
         toAmount: "",
+        branchAmount: "",
+        settleBranch: true,
     };
+}
+
+/** Kinds that only use the owner's vaults (the branch's vault is its own money). */
+export const OWNER_VAULT_KINDS: MoneyKind[] = ["receive_party", "pay_party", "pay_trader", "exchange"];
+
+export const isBranchVault = (o: MoneyFormOptions, id: string | null | undefined) => !!id && !!o.vaults.find((v) => v.id === id)?.partyId;
+
+/** A transfer between one of the owner's vaults and the branch's. */
+export const transferWithBranch = (o: MoneyFormOptions, f: MoneyFormState) =>
+    !!f.fromVaultId && !!f.toVaultId && isBranchVault(o, f.fromVaultId) !== isBranchVault(o, f.toVaultId);
+
+/**
+ * Receive from a trader who owes the branch, or into the branch's vault: how much of the payment pays the branch's
+ * debt. The owner can type it; otherwise money into the branch's vault pays the branch first, and money into the
+ * owner's vault pays the owner first and only the rest goes to the branch.
+ */
+export function branchShare(f: MoneyFormState, o: MoneyFormOptions): { branch: string; owner: string } | null {
+    if (f.kind !== "receive_trader" || f.fxOn || f.currency !== "IQD" || !o.branch) return null;
+    const t = o.traders.find((x) => x.id === f.traderId);
+    const owesBranch = new Decimal(t?.branchBalance.IQD ?? 0);
+    const intoBranch = isBranchVault(o, f.vaultId);
+    if (!intoBranch && owesBranch.lte(0)) return null;
+    const amount = new Decimal(parseAmount(f.amount, "IQD") ?? 0);
+    const typed = f.branchAmount.trim() ? parseAmount(f.branchAmount, "IQD") : null;
+    let branch: Decimal;
+    if (typed !== null) branch = Decimal.min(new Decimal(typed), amount);
+    else if (intoBranch) branch = Decimal.min(Decimal.max(owesBranch, 0), amount);
+    else {
+        const owesOwner = Decimal.max(new Decimal(t?.balance.IQD ?? 0).minus(owesBranch), 0);
+        branch = Decimal.min(Decimal.max(amount.minus(owesOwner), 0), Decimal.max(owesBranch, 0));
+    }
+    return { branch: branch.toFixed(0), owner: amount.minus(branch).toFixed(0) };
 }
 
 /** A typed rate ("1,310", "١٣١٠", "1310.5") as a plain positive number, or null. */
@@ -187,13 +231,15 @@ export function validateForm(kind: MoneyKind, f: MoneyFormState): FormErrors {
     return e;
 }
 
-export function toMoneyInput(kind: MoneyKind, f: MoneyFormState, allowNegative: boolean): MoneyInput {
+export function toMoneyInput(kind: MoneyKind, f: MoneyFormState, allowNegative: boolean, o?: MoneyFormOptions): MoneyInput {
     const common = { date: f.date ?? "", note: f.note.trim() || null, allowNegative };
     const cash = { vaultId: f.vaultId ?? "", amount: f.amount, currency: f.currency };
     const fx = f.fxOn ? { debtCurrency: otherCurrency(f.currency), debtAmount: f.debtAmount } : null;
     switch (kind) {
-        case "receive_trader":
-            return { kind, ...common, ...cash, traderId: f.traderId ?? "", fx };
+        case "receive_trader": {
+            const share = o ? branchShare(f, o) : null;
+            return { kind, ...common, ...cash, traderId: f.traderId ?? "", fx, ...(share ? { branchAmount: share.branch } : {}) };
+        }
         case "pay_party":
             return { kind, ...common, ...cash, partyId: f.partyId ?? "", fx };
         case "receive_party":
@@ -204,7 +250,15 @@ export function toMoneyInput(kind: MoneyKind, f: MoneyFormState, allowNegative: 
         case "withdraw":
             return { kind, ...common, ...cash };
         case "transfer":
-            return { kind, ...common, fromVaultId: f.fromVaultId ?? "", toVaultId: f.toVaultId ?? "", amount: f.amount, currency: f.currency };
+            return {
+                kind,
+                ...common,
+                fromVaultId: f.fromVaultId ?? "",
+                toVaultId: f.toVaultId ?? "",
+                amount: f.amount,
+                currency: f.currency,
+                ...(o && transferWithBranch(o, f) ? { settleBranch: f.settleBranch } : {}),
+            };
         case "exchange":
             return {
                 kind,
@@ -237,6 +291,9 @@ export function formSentence(kind: MoneyKind, f: MoneyFormState, o: MoneyFormOpt
         payee: f.payee.trim() || null,
         payReason: f.payReason,
     };
+    const share = branchShare(f, o);
+    if (kind === "receive_trader" && share && Number(share.branch) > 0) Object.assign(s, { branchAmount: share.branch, branchName: o.branch?.name });
+    if (kind === "transfer" && transferWithBranch(o, f)) s.settlesBranch = f.settleBranch;
     if (kind === "exchange") {
         const to = parseAmount(f.toAmount, other) ?? "0";
         s.exchange = { toAmount: to, toCurrency: other };

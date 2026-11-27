@@ -1,5 +1,5 @@
 import { ArrowCircleDown, Building07, Phone01, Settings01, Wallet02 } from "@untitledui/icons";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BalanceBand, ParentLink } from "@/components/app/accounts/balance-band";
@@ -10,6 +10,9 @@ import { db } from "@/db";
 import { type Currency, parties } from "@/db/schema";
 import { PARTY_KIND_LABEL, parseStatementParams } from "@/features/accounts/model";
 import { getPartyAccount, getStatementTarget } from "@/features/accounts/queries";
+import { type Branch, getBranch } from "@/features/branch/service";
+import { type Balances, getBalances, getKindTotals } from "@/features/ledger/balances";
+import { getSettingsRow } from "@/features/settings/service";
 import { requireSession } from "@/lib/auth";
 import { balanceSide, formatMoney, todayISO } from "@/lib/format";
 import { isUuid } from "@/lib/ids";
@@ -45,6 +48,8 @@ export default async function PartyAccountPage({ params, searchParams }: { param
     const [account, target] = await Promise.all([getPartyAccount(db, id), getStatementTarget(db, "parties", id)]);
     if (!account || !target) notFound();
     const { party, balance } = account;
+    const branch = party.isBranch ? await getBranch(db) : null;
+    if (branch) return <BranchPage branch={branch} party={party} balance={balance} target={target} sp={await searchParams} />;
     const owe = (["USD", "IQD"] as Currency[]).find((c) => balanceSide(balance[c], c) === "weOwe");
     const owesUs = (["USD", "IQD"] as Currency[]).find((c) => balanceSide(balance[c], c) === "owesUs");
 
@@ -110,6 +115,106 @@ export default async function PartyAccountPage({ params, searchParams }: { param
                     {party.notes || "لا توجد ملاحظات."}
                 </p>
             </section>
+        </div>
+    );
+}
+
+/**
+ * The owner's branch (the Umm Qasr partnership): its own vault, what customers owe it, and what it and the owner
+ * owe each other, with one-tap handovers both ways.
+ */
+async function BranchPage({
+    branch,
+    party,
+    balance,
+    target,
+    sp,
+}: {
+    branch: Branch;
+    party: typeof parties.$inferSelect;
+    balance: Balances;
+    target: NonNullable<Awaited<ReturnType<typeof getStatementTarget>>>;
+    sp: Record<string, string | string[] | undefined>;
+}) {
+    const settings = await getSettingsRow(db);
+    const main = settings.defaultVaultIqdId;
+    const [vault, customers, debtors] = await Promise.all([
+        branch.vaultId ? getBalances(db, "vault", branch.vaultId) : null,
+        getKindTotals(db, "trader_branch"),
+        db.execute<{ id: string; name: string; owes: string }>(sql`
+            SELECT t.id, t.name, sum(l.debit - l.credit) AS owes
+              FROM accounts a JOIN journal_lines l ON l.account_id = a.id JOIN traders t ON t.id = a.ref_id
+             WHERE a.kind = 'trader_branch'
+             GROUP BY t.id, t.name HAVING sum(l.debit - l.credit) <> 0
+             ORDER BY owes DESC LIMIT 20`),
+    ]);
+    const iqd = Number(balance.IQD);
+    const between = iqd < 0 ? `عندك لها ${formatMoney(String(-iqd), "IQD")}` : iqd > 0 ? `هي مدينة لك بـ ${formatMoney(balance.IQD, "IQD")}` : "لا شيء";
+    return (
+        <div className="flex flex-col gap-8">
+            <PageHeader
+                icon={Building07}
+                iconColor="teal"
+                eyebrow={<ParentLink href="/accounts/parties">حسابات الجهات</ParentLink>}
+                title={party.name}
+                description="شراكتك: لها قاصة خاصة، والتجار يدينون لها بالمصاريف التي تدفعها"
+                actions={
+                    branch.vaultId &&
+                    main && (
+                        <>
+                            <Button
+                                size="lg"
+                                iconLeading={<ArrowCircleDown data-icon aria-hidden="true" />}
+                                href={`/money/new/transfer?vault=${main}&to=${branch.vaultId}&currency=IQD`}
+                            >
+                                تسليم للشراكة
+                            </Button>
+                            <Button
+                                size="lg"
+                                color="secondary"
+                                iconLeading={<Wallet02 data-icon aria-hidden="true" />}
+                                href={`/money/new/transfer?vault=${branch.vaultId}&to=${main}&currency=IQD`}
+                            >
+                                استلام من الشراكة
+                            </Button>
+                        </>
+                    )
+                }
+            />
+
+            <BalanceBand
+                title="الشراكة بالدينار"
+                items={[
+                    { label: `في ${branch.vaultName ?? "قاصتها"}`, value: <span className="num">{formatMoney(vault?.IQD ?? "0", "IQD")}</span> },
+                    { label: "التجار مدينون لها", value: <span className="num">{formatMoney(customers.positive.IQD, "IQD")}</span> },
+                    { label: "بينك وبينها", value: <span>{between}</span> },
+                ]}
+            />
+
+            <section aria-labelledby="branch-debtors" className="flex flex-col gap-3">
+                <h2 id="branch-debtors" className="text-lg font-semibold text-primary">
+                    التجار المدينون للشراكة
+                </h2>
+                {debtors.rows.length === 0 ? (
+                    <p className="surface px-5 py-4 text-md text-tertiary">لا يوجد تاجر مدين للشراكة الآن.</p>
+                ) : (
+                    <ul className="surface flex flex-col divide-y divide-secondary px-5">
+                        {debtors.rows.map((d) => (
+                            <li key={d.id}>
+                                <a
+                                    href={`/accounts/traders/${d.id}`}
+                                    className="flex min-h-14 items-center justify-between gap-3 rounded-md py-3 text-md outline-focus-ring hover:text-brand-secondary focus-visible:outline-2"
+                                >
+                                    <span className="text-primary">{d.name}</span>
+                                    <span className="num text-secondary">{formatMoney(d.owes, "IQD")}</span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            <StatementSection target={target} params={parseStatementParams(sp, todayISO())} />
         </div>
     );
 }

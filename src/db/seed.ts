@@ -26,7 +26,7 @@ export const SEED = {
         china: "شركة التخليص - الصين",
         ummQasr: "شراكة تخليص أم قصر",
     },
-    vaults: { main: "القاصة الرئيسية", usd: "قاصة الدولار" },
+    vaults: { main: "القاصة الرئيسية", usd: "قاصة الدولار", branch: "قاصة شراكة تخليص أم قصر" },
     shippingLines: ["MSC", "Maersk", "CMA CGM", "COSCO", "Hapag-Lloyd", "ONE", "Evergreen", "Yang Ming", "ZIM", "HMM"],
     /** Websites of the seeded lines: their site icon is the line's logo until the owner uploads one. */
     shippingLineWebsites: {
@@ -86,7 +86,7 @@ export async function seedLists(db: DbOrTx) {
         .values([
             { name: SEED.parties.self, kind: "self", isSystem: true },
             { name: SEED.parties.china, kind: "clearance_company" },
-            { name: SEED.parties.ummQasr, kind: "partner" },
+            { name: SEED.parties.ummQasr, kind: "partner", isBranch: true },
         ])
         .onConflictDoNothing();
     await db
@@ -125,6 +125,13 @@ export async function seedLists(db: DbOrTx) {
     const partyId = async (name: string) => (await db.select({ id: parties.id }).from(parties).where(eq(parties.name, name)))[0]?.id ?? null;
     const china = await partyId(SEED.parties.china);
     const ummQasr = await partyId(SEED.parties.ummQasr);
+    // The branch's own dinar vault (its money is not the owner's).
+    if (ummQasr) {
+        await db
+            .insert(vaults)
+            .values({ name: SEED.vaults.branch, kind: "other", allowedCurrencies: ["IQD"], partyId: ummQasr, notes: "قاصة الشراكة: أموالها ليست من القاصة الرئيسية" })
+            .onConflictDoNothing();
+    }
     await db
         .insert(chargeTypes)
         .values(

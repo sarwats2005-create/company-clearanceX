@@ -26,7 +26,7 @@ describe("seed", () => {
         expect(await counts()).toEqual({
             users: 1,
             parties: 3,
-            vaults: 2,
+            vaults: 3,
             charge_types: 7,
             container_sizes: 4,
             ports_of_loading: 9,

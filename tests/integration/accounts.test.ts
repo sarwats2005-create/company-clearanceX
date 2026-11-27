@@ -35,6 +35,8 @@ let msc: string;
 beforeEach(async () => {
     await resetDb();
     await seed(db, { username: "owner", password: "owner-pass-123", name: "أبو علي" });
+    // These tests use the partnership as a plain outside party (the branch rules are in branch.test.ts).
+    await db.update(parties).set({ isBranch: false });
     ownerId = (await db.select().from(users))[0].id;
     [ahmed, haider, ali, zaid] = (
         await db
@@ -125,8 +127,9 @@ describe("vaults (US-19)", () => {
         const shop = await save({ name: "صيرفة الأمين", kind: "exchange_shop", allowedCurrencies: ["IQD", "USD"], notes: "شارع الكويت" });
         await post({ kind: "deposit", date: D, vaultId: shop, amount: "100", currency: "USD" });
         const rows = await listVaultAccounts(db);
-        expect(rows.map((r) => r.id)).toEqual([main, usd, shop]);
-        expect(rows[2]).toMatchObject({ kind: "exchange_shop", allowedCurrencies: ["IQD", "USD"], notes: "شارع الكويت", balance: { USD: "100.00", IQD: "0" } });
+        const branchVault = (await db.select().from(vaults)).find((v) => v.partyId)!.id;
+        expect(rows.map((r) => r.id)).toEqual([main, usd, branchVault, shop]);
+        expect(rows[3]).toMatchObject({ kind: "exchange_shop", allowedCurrencies: ["IQD", "USD"], notes: "شارع الكويت", balance: { USD: "100.00", IQD: "0" } });
         expect((await getVaultAccount(db, shop))!.vault.name).toBe("صيرفة الأمين");
     });
 

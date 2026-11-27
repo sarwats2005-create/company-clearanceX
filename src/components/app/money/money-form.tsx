@@ -22,21 +22,36 @@ import {
     type MoneyFormOptions,
     type MoneyFormState,
     type Prefill,
+    OWNER_VAULT_KINDS,
+    branchShare,
     emptyForm,
     formSentence,
     fullAmount,
     onAmountChange,
     onDebtChange,
     onRateChange,
+    isBranchVault,
     toMoneyInput,
+    transferWithBranch,
     validateForm,
     vaultFor,
 } from "@/features/money/form-model";
 import { type MoneyKind, type PayReason, otherCurrency } from "@/features/money/schemas";
 import { useAction } from "@/hooks/use-action";
 import { formatDate, formatMoney } from "@/lib/format";
+import { parseAmount } from "@/lib/money";
 import { t } from "@/lib/i18n";
 import { balanceWords } from "./money-kinds";
+
+const parseAmountOr0 = (raw: string) => Number(parseAmount(raw, "IQD") ?? 0);
+
+/** What the owner and the branch owe each other, in words. Negative = the owner holds the branch's money. */
+export function branchAccountWords(iqd: string, name: string): string {
+    const n = Number(iqd);
+    if (n < 0) return `عندك الآن لـ${name}: ${formatMoney(String(-n), "IQD")}`;
+    if (n > 0) return `${name} مدينة لك الآن بـ ${formatMoney(iqd, "IQD")}`;
+    return `لا شيء بينك وبين ${name} الآن`;
+}
 
 const CURRENCY_OPTIONS: { value: Currency; label: string }[] = [
     { value: "IQD", label: "دينار" },
@@ -91,7 +106,7 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
 
     const vaultItems = (c: Currency, exclude?: string | null) =>
         opts.vaults
-            .filter((v) => v.allowedCurrencies.includes(c) && v.id !== exclude)
+            .filter((v) => v.allowedCurrencies.includes(c) && v.id !== exclude && !(v.partyId && OWNER_VAULT_KINDS.includes(kind)))
             .map((v) => ({ id: v.id, label: v.name, supportingText: formatMoney(v.balance[c], c) }));
     const traderItems = useMemo(() => opts.traders.map((x) => ({ id: x.id, label: x.name, supportingText: balanceWords(x.balance) })), [opts.traders]);
     const partyItems = useMemo(
@@ -123,6 +138,9 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
     };
 
     const full = fullAmount(kind, f, opts);
+    const share = branchShare(f, opts);
+    const shareTrader = opts.traders.find((x) => x.id === f.traderId);
+    const withBranch = kind === "transfer" && transferWithBranch(opts, f);
 
     const onSave = async () => {
         const e = validateForm(kind, f);
@@ -133,7 +151,7 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
             return;
         }
         toast.dismiss();
-        const res = await check.run(toMoneyInput(kind, f, false));
+        const res = await check.run(toMoneyInput(kind, f, false, opts));
         if (!res.ok) {
             setErrors(res.fieldErrors ?? {});
             return;
@@ -142,7 +160,7 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
     };
 
     const onConfirm = async () => {
-        const res = await save.run(toMoneyInput(kind, f, !!confirm?.shortfalls.length));
+        const res = await save.run(toMoneyInput(kind, f, !!confirm?.shortfalls.length, opts));
         if (res.ok || !res.fieldErrors) return;
         if (res.fieldErrors.allowNegative) {
             setConfirm(null);
@@ -380,6 +398,44 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
                     </div>
                 )}
 
+                {share && opts.branch && (
+                    <section aria-labelledby="split-title" className="flex flex-col gap-4 rounded-2xl bg-secondary p-4 md:p-5" data-invalid={errors.branchAmount ? "" : undefined}>
+                        <h3 id="split-title" className="text-md font-semibold text-primary">
+                            لمن هذا المبلغ؟
+                        </h3>
+                        {shareTrader && (
+                            <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-md">
+                                <dt className="text-tertiary">دَينه لك (الأتعاب ومصاريفك)</dt>
+                                <dd className="num text-primary">{formatMoney(String(Math.max(0, Number(shareTrader.balance.IQD) - Number(shareTrader.branchBalance.IQD))), "IQD")}</dd>
+                                <dt className="text-tertiary">دَينه لـ{opts.branch.name}</dt>
+                                <dd className="num text-primary">{formatMoney(shareTrader.branchBalance.IQD, "IQD")}</dd>
+                            </dl>
+                        )}
+                        <Input
+                            label={`منه لدَين ${opts.branch.name}`}
+                            size="lg"
+                            inputMode="decimal"
+                            inputClassName={numInput}
+                            placeholder={share.branch}
+                            value={f.branchAmount}
+                            onChange={(v) => set({ branchAmount: v })}
+                            isInvalid={!!errors.branchAmount}
+                            hint={errors.branchAmount ?? `لك: ${formatMoney(share.owner, "IQD")} · للشراكة: ${formatMoney(share.branch, "IQD")}`}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                            <Button size="md" color="secondary" onClick={() => set({ branchAmount: String(parseAmountOr0(f.amount)) })}>
+                                كله لدَين الشراكة
+                            </Button>
+                            <Button size="md" color="secondary" onClick={() => set({ branchAmount: "0" })}>
+                                كله لدَينك
+                            </Button>
+                        </div>
+                        {Number(share.branch) > 0 && !isBranchVault(opts, f.vaultId) && (
+                            <p className="text-sm text-tertiary">حصة الشراكة تبقى عندك أمانة لها حتى تسلّمها لقاصتها (تحويل).</p>
+                        )}
+                    </section>
+                )}
+
                 {kind === "transfer" && (
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div data-invalid={errors.fromVaultId ? "" : undefined}>
@@ -405,6 +461,21 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
                                 placeholder="اختر القاصة"
                             />
                         </div>
+                    </div>
+                )}
+
+                {withBranch && opts.branch && (
+                    <div className="flex flex-col gap-2">
+                        <SegmentedControl
+                            label="ما هذا التحويل؟"
+                            value={f.settleBranch ? "settle" : "move"}
+                            onChange={(v) => set({ settleBranch: v === "settle" })}
+                            options={[
+                                { value: "settle", label: "تسليم يسدّد ما بينكما" },
+                                { value: "move", label: "أرباح أو تمويل" },
+                            ]}
+                        />
+                        <p className="text-sm text-tertiary">{branchAccountWords(opts.branch.balance.IQD, opts.branch.name)}</p>
                     </div>
                 )}
 

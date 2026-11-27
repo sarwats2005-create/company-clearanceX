@@ -40,8 +40,9 @@ export interface ChargeSheetData {
         defaultAmount: string | null;
     }[];
     /** Active parties, our own company first. */
-    parties: { id: string; name: string; isSelf: boolean }[];
-    vaults: { id: string; name: string; allowedCurrencies: Currency[] }[];
+    parties: { id: string; name: string; isSelf: boolean; isBranch: boolean }[];
+    /** partyId is set on the branch's own vault. */
+    vaults: { id: string; name: string; allowedCurrencies: Currency[]; partyId: string | null }[];
     defaultVaults: Partial<Record<Currency, string>>;
 }
 
@@ -95,8 +96,9 @@ export async function getChargeSheetData(db: DbOrTx, containerId: string): Promi
             id: p.id,
             name: p.name,
             isSelf: p.kind === "self",
+            isBranch: p.isBranch,
         })),
-        vaults: vs.map((v) => ({ id: v.id, name: v.name, allowedCurrencies: v.allowedCurrencies })),
+        vaults: vs.map((v) => ({ id: v.id, name: v.name, allowedCurrencies: v.allowedCurrencies, partyId: v.partyId })),
         defaultVaults: {
             ...(settings?.defaultVaultIqdId ? { IQD: settings.defaultVaultIqdId } : {}),
             ...(settings?.defaultVaultUsdId ? { USD: settings.defaultVaultUsdId } : {}),

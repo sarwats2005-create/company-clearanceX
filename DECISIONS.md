@@ -111,3 +111,12 @@ Full details, findings and owner to-dos: `SECURITY.md`.
 - Restore and start fresh ask for the password again and count wrong tries toward the login limits.
 - A point in the same database is not a backup against losing the database: Neon's point-in-time restore is still
   the owner's job (SECURITY.md §3).
+
+## The Umm Qasr partnership as a branch (2026-11-27)
+- Modelled as two sets of books in the one ledger:
+  - the branch owns its vault and the `trader_branch` receivables;
+  - the owner↔branch account is the branch's existing party account (owner's side) plus a hidden mirror `branch_owner` (branch's side), so every entry balances for each side too.
+- Old charges that credited the partnership as a plain party keep their meaning: the owner owes the branch. They need no conversion.
+- Reads of a trader (`kind "trader"`) include `trader_branch`: lists, totals, statements and receipts show the customer's one total. `getTraderSplit` gives the two parts.
+- Branch-paid dollar expenses are converted to dinar when saved; the vault is dinar only, as the owner chose. The owner paying for the branch is limited to his dinar vaults.
+- Only one branch (unique partial index) because the business has one. Supporting more would need a branch dimension on `trader_branch` accounts.

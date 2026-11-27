@@ -1,7 +1,7 @@
 /** Charges input (PRD §5.4). Shared by the server actions and the charges sheet. */
 import { z } from "zod";
 import { ISO_DATE } from "@/features/containers/status";
-import { parseAmount } from "@/lib/money";
+import { parseAmount, parseTypedDecimal } from "@/lib/money";
 import type { ChargeSplit } from "./allocate";
 
 const id = z.string().uuid();
@@ -18,6 +18,8 @@ export const chargeRowSchema = z
         currency: z.enum(["IQD", "USD"]),
         paidByPartyId: optId,
         vaultId: optId,
+        /** Dollar rate when a dollar expense is paid by the branch (its vault is dinar only): the charge is saved in dinar. */
+        fxRate: z.string().nullish(),
         splitMode: z.enum(["by_share", "single_trader", "manual"]).default("by_share"),
         splitTraderId: optId,
         manual: z.record(z.string(), z.string()).optional(),
@@ -46,6 +48,7 @@ export const chargeRowSchema = z
             currency: r.currency,
             paidByPartyId: r.paidByPartyId ?? null,
             vaultId: r.vaultId ?? null,
+            fxRate: r.fxRate ? parseTypedDecimal(r.fxRate) : null,
             split,
             note: r.note,
         };

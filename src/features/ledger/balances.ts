@@ -2,10 +2,19 @@ import "server-only";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { type AccountKind, type Currency, accounts, journalLines } from "@/db/schema";
+import Decimal from "decimal.js";
 import { roundTo } from "@/lib/money";
 import type { AccountRef } from "./types";
 
 export type Balances = Record<Currency, string>;
+
+/**
+ * What a trader owes is the customer's view: what they owe the owner plus what they owe the branch. Lists,
+ * totals and statements read both; the trader's page also shows the two parts (getTraderSplit).
+ */
+export function kindsOf(kind: AccountKind): AccountKind[] {
+    return kind === "trader" ? ["trader", "trader_branch"] : [kind];
+}
 
 const zero = (): Balances => ({ IQD: roundTo("0", "IQD"), USD: roundTo("0", "USD") });
 
@@ -32,11 +41,12 @@ export async function getBalancesMany(db: DbOrTx, kind: AccountKind, refIds: str
         .select({ refId: accounts.refId, currency: accounts.currency, balance: sql<string>`coalesce(sum(${journalLines.debit} - ${journalLines.credit}), 0)` })
         .from(accounts)
         .leftJoin(journalLines, eq(journalLines.accountId, accounts.id))
-        .where(and(eq(accounts.kind, kind), inArray(accounts.refId, refIds)))
+        .where(and(inArray(accounts.kind, kindsOf(kind)), inArray(accounts.refId, refIds)))
         .groupBy(accounts.refId, accounts.currency);
     for (const r of rows) {
         if (!r.refId) continue;
-        out.get(r.refId)![r.currency] = roundTo(r.balance, r.currency);
+        const b = out.get(r.refId)!;
+        b[r.currency] = roundTo(new Decimal(b[r.currency]).plus(r.balance), r.currency);
     }
     return out;
 }
@@ -49,8 +59,8 @@ export async function getKindTotals(db: DbOrTx, kind: AccountKind): Promise<{ po
                coalesce(sum(CASE WHEN bal < 0 THEN bal ELSE 0 END), 0) AS neg
           FROM (SELECT a.currency, sum(l.debit - l.credit) AS bal
                   FROM accounts a JOIN journal_lines l ON l.account_id = a.id
-                 WHERE a.kind = ${kind}
-                 GROUP BY a.id, a.currency) t
+                 WHERE a.kind = ANY(${sql.param(kindsOf(kind))}::account_kind[])
+                 GROUP BY a.ref_id, a.currency) t
          GROUP BY currency`);
     const positive = zero();
     const negative = zero();
@@ -59,4 +69,16 @@ export async function getKindTotals(db: DbOrTx, kind: AccountKind): Promise<{ po
         negative[r.currency] = roundTo(r.neg, r.currency);
     }
     return { positive, negative };
+}
+
+/** A trader's debt in its two parts: to the owner and to the branch (both currencies; the branch's is dinar). */
+export async function getTraderSplit(db: DbOrTx, traderId: string): Promise<{ owner: Balances; branch: Balances }> {
+    const [owner, branch] = await Promise.all([exact(db, "trader", traderId), exact(db, "trader_branch", traderId)]);
+    return { owner, branch };
+}
+
+async function exact(db: DbOrTx, kind: AccountKind, refId: string): Promise<Balances> {
+    const out = zero();
+    for (const c of ["IQD", "USD"] as Currency[]) out[c] = await getBalance(db, { kind, refId }, c);
+    return out;
 }

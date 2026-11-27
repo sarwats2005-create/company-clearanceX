@@ -23,6 +23,14 @@ export interface MoneyMeta {
     payReason?: PayReason;
     fx?: { debtCurrency: Currency; debtAmount: string } | null;
     exchange?: { toAmount: string; toCurrency: Currency };
+    /** Receive from a trader: the part that paid what they owe the branch (the partnership). */
+    branchAmount?: string;
+    branchName?: string;
+    /** Transfer between the owner's vault and the branch's: true = a handover that settles their account. */
+    settlesBranch?: boolean;
+    /** Container charge paid by the branch or for it: the traders owe the branch. */
+    owedTo?: "branch";
+    branchId?: string;
     /** Container charges (written by the charges service). */
     chargeType?: string;
     containerNumber?: string;
@@ -79,8 +87,15 @@ export function moneySentence(kind: MoneyKind, s: SentenceInput): string {
     const amt = formatMoney(s.amount, s.currency);
     const fx = s.fx ? ` مقابل ${formatMoney(s.fx.debtAmount, s.fx.debtCurrency)} بسعر صرف ${rateText(s.rate)}` : "";
     switch (kind) {
-        case "receive_trader":
-            return `سيتم استلام ${amt} من التاجر ${s.traderName} إلى ${s.vaultName}${fx}`;
+        case "receive_trader": {
+            const b = s.branchAmount && Number(s.branchAmount) > 0 ? s.branchAmount : null;
+            const split = b
+                ? new Decimal(b).eq(s.amount)
+                    ? `، كله من دَينه لـ${s.branchName ?? "الشراكة"}`
+                    : `، منها ${formatMoney(b, s.currency)} من دَينه لـ${s.branchName ?? "الشراكة"} و${formatMoney(new Decimal(s.amount).minus(b).toFixed(), s.currency)} من دَينه لك`
+                : "";
+            return `سيتم استلام ${amt} من التاجر ${s.traderName} إلى ${s.vaultName}${fx}${split}`;
+        }
         case "receive_party":
             return `سيتم استلام ${amt} من ${s.partyName} إلى ${s.vaultName}`;
         case "deposit":
@@ -92,7 +107,9 @@ export function moneySentence(kind: MoneyKind, s: SentenceInput): string {
         case "withdraw":
             return `سيتم سحب ${amt} من ${s.vaultName}`;
         case "transfer":
-            return `سيتم تحويل ${amt} من ${s.fromVaultName} إلى ${s.toVaultName}`;
+            return s.settlesBranch
+                ? `سيتم تسليم ${amt} من ${s.fromVaultName} إلى ${s.toVaultName}، ويُخصم من الحساب بينك وبين الشراكة`
+                : `سيتم تحويل ${amt} من ${s.fromVaultName} إلى ${s.toVaultName}`;
         case "exchange":
             return `سيتم تصريف ${amt} من ${s.fromVaultName} إلى ${formatMoney(s.exchange?.toAmount ?? "0", s.exchange?.toCurrency ?? "USD")} في ${s.toVaultName} بسعر صرف ${rateText(s.rate)}`;
         case "expense":
@@ -155,6 +172,7 @@ export function receiptLines(type: EntryType, m: MoneyMeta, fxRate: string | nul
         case "transfer":
             add("من قاصة", m.fromVaultName);
             add("إلى قاصة", m.toVaultName);
+            add("النوع", m.settlesBranch === true ? "تسليم يسدّد الحساب مع الشراكة" : m.settlesBranch === false ? "نقل أرباح أو تمويل" : null);
             break;
         case "exchange":
             add("من قاصة", m.fromVaultName);

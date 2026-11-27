@@ -20,7 +20,19 @@ import { Input } from "@/components/base/input/input";
 import type { Currency } from "@/db/schema";
 import { addChargesAction, checkVaultsAction } from "@/features/charges/actions";
 import type { ChargeSheetData } from "@/features/charges/queries";
-import { type SheetRow, confirmSentence, newRow, rowPreview, sheetSummary, toInput, vaultFor, vaultOutflows } from "@/features/charges/sheet-model";
+import {
+    type SheetRow,
+    branchDinar,
+    confirmSentence,
+    isBranch,
+    newRow,
+    payerVault,
+    paysFromVault,
+    rowPreview,
+    sheetSummary,
+    toInput,
+    vaultOutflows,
+} from "@/features/charges/sheet-model";
 import type { VaultShortfall } from "@/features/ledger/vault-check";
 import { setChargeTypeDefaultLineAction } from "@/features/settings/actions";
 import { useAction } from "@/hooks/use-action";
@@ -34,7 +46,7 @@ export interface ChargePrefill {
     row: Partial<SheetRow>;
 }
 
-type Errors = Record<string, Partial<Record<"amount" | "paidByPartyId" | "vaultId" | "splitTraderId" | "manual" | "chargeTypeId", string>>>;
+type Errors = Record<string, Partial<Record<"amount" | "paidByPartyId" | "vaultId" | "fxRate" | "splitTraderId" | "manual" | "chargeTypeId", string>>>;
 
 const CURRENCY_OPTIONS = [
     { value: "IQD" as const, label: "دينار" },
@@ -220,7 +232,9 @@ function ChargesSheet({
             const amount = parseAmount(row.amount, row.currency);
             if (amount === null || Number(amount) <= 0) e.amount = "اكتب المبلغ";
             if (!type.isFee && !row.paidByPartyId) e.paidByPartyId = "اختر من دفع المبلغ";
-            if (!type.isFee && data.parties.find((p) => p.id === row.paidByPartyId)?.isSelf && !row.vaultId) e.vaultId = "اختر القاصة التي دُفع منها";
+            if (!type.isFee && paysFromVault(data, row.paidByPartyId) && !row.vaultId) e.vaultId = "اختر القاصة التي دُفع منها";
+            if (!type.isFee && isBranch(data, row.paidByPartyId) && row.currency === "USD" && !e.amount && !branchDinar(data, row))
+                e.fxRate = "اكتب سعر الدولار: قاصة الشراكة بالدينار فقط";
             if (c.isShared && row.splitMode === "single_trader" && !row.splitTraderId) e.splitTraderId = "اختر التاجر";
             if (c.isShared && !e.amount) {
                 const p = rowPreview(row, data);
@@ -398,9 +412,7 @@ function ChargesSheet({
                                 const row = rows[id];
                                 const type = data.chargeTypes.find((x) => x.id === id)!;
                                 const payer = type.isFee ? "ربح الشركة" : data.parties.find((p) => p.id === row.paidByPartyId)?.name;
-                                const vault = data.parties.find((p) => p.id === row.paidByPartyId)?.isSelf
-                                    ? data.vaults.find((v) => v.id === row.vaultId)?.name
-                                    : null;
+                                const vault = paysFromVault(data, row.paidByPartyId) ? data.vaults.find((v) => v.id === row.vaultId)?.name : null;
                                 return (
                                     <li key={id} className="flex items-baseline justify-between gap-3 py-2">
                                         <span className="min-w-0 text-secondary">
@@ -493,11 +505,19 @@ function ChargeRowEditor({
     const c = data.container;
     const [showNote, setShowNote] = useState(!!row.note);
     const payerIsSelf = !!data.parties.find((p) => p.id === row.paidByPartyId)?.isSelf;
+    const payerIsBranch = isBranch(data, row.paidByPartyId);
     const partyItems = useMemo(() => data.parties.map((p) => ({ id: p.id, label: p.name })), [data.parties]);
     const vaultItems = useMemo(
-        () => data.vaults.filter((v) => v.allowedCurrencies.includes(row.currency)).map((v) => ({ id: v.id, label: v.name })),
-        [data.vaults, row.currency],
+        () =>
+            payerIsBranch
+                ? // The branch pays from its own vault, or the owner pays for it from one of his dinar vaults.
+                  data.vaults
+                      .filter((v) => v.partyId === row.paidByPartyId || (!v.partyId && v.allowedCurrencies.includes("IQD")))
+                      .map((v) => ({ id: v.id, label: v.partyId ? `من ${v.name}` : `دفعتُها عنها من ${v.name}` }))
+                : data.vaults.filter((v) => !v.partyId && v.allowedCurrencies.includes(row.currency)).map((v) => ({ id: v.id, label: v.name })),
+        [data.vaults, row.currency, row.paidByPartyId, payerIsBranch],
     );
+    const dinar = branchDinar(data, row);
     const traderItems = useMemo(() => c.shares.map((s) => ({ id: s.traderId, label: s.name })), [c.shares]);
     const preview = c.isShared ? rowPreview(row, data) : null;
     const name = (id: string) => c.shares.find((s) => s.traderId === id)?.name ?? "";
@@ -559,7 +579,7 @@ function ChargeRowEditor({
                     <SegmentedControl
                         label="العملة"
                         value={row.currency}
-                        onChange={(cur) => onChange({ currency: cur, vaultId: payerIsSelf ? vaultFor(data, cur, row.vaultId) : row.vaultId })}
+                        onChange={(cur) => onChange({ currency: cur, vaultId: payerIsSelf || payerIsBranch ? payerVault(data, row.paidByPartyId, cur, row.vaultId) : row.vaultId })}
                         options={CURRENCY_OPTIONS}
                     />
                     {row.currency !== type.defaultCurrency && (
@@ -585,14 +605,11 @@ function ChargeRowEditor({
                         isRequired
                         items={partyItems}
                         value={row.paidByPartyId}
-                        onChange={(id) => {
-                            const self = !!data.parties.find((p) => p.id === id)?.isSelf;
-                            onChange({ paidByPartyId: id, vaultId: self ? vaultFor(data, row.currency, row.vaultId) : null });
-                        }}
+                        onChange={(id) => onChange({ paidByPartyId: id, vaultId: payerVault(data, id, row.currency, row.vaultId) })}
                         isInvalid={!!errors.paidByPartyId}
-                        hint={errors.paidByPartyId}
+                        hint={errors.paidByPartyId ?? (payerIsBranch ? "التاجر يدين بهذا المبلغ للشراكة، لا لك" : undefined)}
                     />
-                    {payerIsSelf && (
+                    {(payerIsSelf || payerIsBranch) && (
                         <SelectField
                             label="من أي قاصة؟"
                             isRequired
@@ -600,8 +617,29 @@ function ChargeRowEditor({
                             value={row.vaultId}
                             onChange={(id) => onChange({ vaultId: id })}
                             isInvalid={!!errors.vaultId}
-                            hint={errors.vaultId ?? (vaultItems.length ? "يصدر لها وصل صرف" : "لا توجد قاصة بهذه العملة")}
+                            hint={
+                                errors.vaultId ??
+                                (payerIsBranch && row.vaultId && !data.vaults.find((v) => v.id === row.vaultId)?.partyId
+                                    ? "دفعتَها عن الشراكة: تصبح الشراكة مدينة لك بها"
+                                    : vaultItems.length
+                                      ? "يصدر لها وصل صرف"
+                                      : "لا توجد قاصة بهذه العملة")
+                            }
                             placeholder="اختر القاصة"
+                        />
+                    )}
+                    {payerIsBranch && row.currency === "USD" && (
+                        <Input
+                            label="سعر الدولار"
+                            isRequired
+                            size="lg"
+                            inputMode="decimal"
+                            inputClassName="num [direction:ltr] text-end"
+                            placeholder="1310"
+                            value={row.fxRate}
+                            onChange={(v) => onChange({ fxRate: v })}
+                            isInvalid={!!errors.fxRate}
+                            hint={errors.fxRate ?? (dinar ? `يُسجَّل بالدينار: ${formatMoney(dinar, "IQD")}` : "قاصة الشراكة بالدينار فقط، فيُحوَّل المبلغ بهذا السعر")}
                         />
                     )}
                 </div>

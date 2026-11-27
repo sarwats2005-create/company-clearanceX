@@ -24,13 +24,30 @@ const common = { date: z.string().regex(ISO_DATE, "اختر التاريخ"), no
 const cash = { vaultId: id("اختر القاصة"), amount: z.string(), currency };
 
 const kinds = z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("receive_trader"), ...common, ...cash, traderId: id("اختر التاجر"), fx }),
+    z.object({
+        kind: z.literal("receive_trader"),
+        ...common,
+        ...cash,
+        traderId: id("اختر التاجر"),
+        fx,
+        /** The part of this payment that pays what the trader owes our branch (the rest pays what they owe the owner). */
+        branchAmount: z.string().nullish(),
+    }),
     z.object({ kind: z.literal("receive_party"), ...common, ...cash, partyId: id("اختر الجهة") }),
     z.object({ kind: z.literal("deposit"), ...common, ...cash }),
     z.object({ kind: z.literal("pay_party"), ...common, ...cash, partyId: id("اختر الجهة"), fx }),
     z.object({ kind: z.literal("pay_trader"), ...common, ...cash, traderId: id("اختر التاجر"), reason: z.enum(PAY_REASONS).default("other") }),
     z.object({ kind: z.literal("withdraw"), ...common, ...cash }),
-    z.object({ kind: z.literal("transfer"), ...common, fromVaultId: id("اختر القاصة"), toVaultId: id("اختر القاصة"), amount: z.string(), currency }),
+    z.object({
+        kind: z.literal("transfer"),
+        ...common,
+        fromVaultId: id("اختر القاصة"),
+        toVaultId: id("اختر القاصة"),
+        amount: z.string(),
+        currency,
+        /** Between the owner's vault and the branch's: true = it settles what they owe each other (a handover). */
+        settleBranch: z.boolean().optional(),
+    }),
     z.object({
         kind: z.literal("exchange"),
         ...common,
@@ -76,7 +93,25 @@ export const moneySchema = kinds.transform((v, ctx) => {
         case "transfer":
             if (v.fromVaultId === v.toVaultId) ctx.addIssue({ code: "custom", path: ["toVaultId"], message: "اختر قاصة غير القاصة التي يخرج منها المبلغ" });
             return { ...v, amount: money(v.amount, v.currency, ["amount"]) };
-        case "receive_trader":
+        case "receive_trader": {
+            const amount = money(v.amount, v.currency, ["amount"]);
+            const rawBranch = v.branchAmount?.trim() ? parseAmount(v.branchAmount, v.currency) : "0";
+            let branchAmount = rawBranch ?? "0";
+            if (rawBranch === null || Number(branchAmount) < 0) {
+                ctx.addIssue({ code: "custom", path: ["branchAmount"], message: "اكتب المبلغ" });
+                branchAmount = "0";
+            } else if (Number(branchAmount) > Number(amount)) {
+                ctx.addIssue({ code: "custom", path: ["branchAmount"], message: "حصة الشراكة أكبر من المبلغ المقبوض" });
+            } else if (Number(branchAmount) > 0 && v.fx) {
+                ctx.addIssue({ code: "custom", path: ["branchAmount"], message: "دين الشراكة بالدينار: اقبضه بالدينار بدون تصريف" });
+            }
+            if (!v.fx) return { ...v, amount, branchAmount, fx: null };
+            if (v.fx.debtCurrency === v.currency) {
+                ctx.addIssue({ code: "custom", path: ["fx", "debtCurrency"], message: "عملة الدين يجب أن تختلف عن عملة الدفع" });
+                return { ...v, amount, branchAmount, fx: null };
+            }
+            return { ...v, amount, branchAmount, fx: { debtCurrency: v.fx.debtCurrency, debtAmount: money(v.fx.debtAmount, v.fx.debtCurrency, ["fx", "debtAmount"]) } };
+        }
         case "pay_party": {
             const amount = money(v.amount, v.currency, ["amount"]);
             if (!v.fx) return { ...v, amount, fx: null };

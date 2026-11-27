@@ -5,7 +5,8 @@ import "server-only";
 import type { DbOrTx } from "@/db";
 import { type Currency, type EntryType, type ReceiptKind, containers, expenseCategories, journalEntries, parties, traders, vaults } from "@/db/schema";
 import { folded, likePattern } from "@/db/search";
-import { getBalancesMany } from "@/features/ledger/balances";
+import { getBranch } from "@/features/branch/service";
+import { getBalances, getBalancesMany } from "@/features/ledger/balances";
 import { getSettingsRow } from "@/features/settings/service";
 import { toArabicWords } from "@/lib/tafqeet";
 import { type MoneyMeta, type ReceiptLine, entryFlow, receiptLines, receiptTitle } from "./describe";
@@ -198,10 +199,10 @@ export async function getMoneyFormOptions(db: DbOrTx): Promise<MoneyFormOptions>
         db
             .select({ id: parties.id, name: parties.name })
             .from(parties)
-            .where(and(eq(parties.isActive, true), ne(parties.kind, "self")))
+            .where(and(eq(parties.isActive, true), ne(parties.kind, "self"), eq(parties.isBranch, false)))
             .orderBy(asc(parties.createdAt)),
         db
-            .select({ id: vaults.id, name: vaults.name, kind: vaults.kind, allowedCurrencies: vaults.allowedCurrencies })
+            .select({ id: vaults.id, name: vaults.name, kind: vaults.kind, allowedCurrencies: vaults.allowedCurrencies, partyId: vaults.partyId })
             .from(vaults)
             .where(eq(vaults.isActive, true))
             .orderBy(asc(vaults.createdAt)),
@@ -218,10 +219,16 @@ export async function getMoneyFormOptions(db: DbOrTx): Promise<MoneyFormOptions>
             .orderBy(desc(journalEntries.createdAt))
             .limit(1),
     ]);
-    const [tb, pb, vb] = await Promise.all([
+    const branch = await getBranch(db);
+    const [tb, bb, pb, vb, branchBal] = await Promise.all([
         getBalancesMany(
             db,
             "trader",
+            ts.map((x) => x.id),
+        ),
+        getBalancesMany(
+            db,
+            "trader_branch",
             ts.map((x) => x.id),
         ),
         getBalancesMany(
@@ -234,10 +241,12 @@ export async function getMoneyFormOptions(db: DbOrTx): Promise<MoneyFormOptions>
             "vault",
             vs.map((x) => x.id),
         ),
+        branch ? getBalances(db, "party", branch.id) : null,
     ]);
     const useLast = lastFx?.rate && (!settings.rateUpdatedAt || lastFx.at > settings.rateUpdatedAt);
     return {
-        traders: ts.map((x) => ({ ...x, balance: tb.get(x.id)! })),
+        traders: ts.map((x) => ({ ...x, balance: tb.get(x.id)!, branchBalance: bb.get(x.id)! })),
+        branch: branch && branchBal ? { id: branch.id, name: branch.name, vaultId: branch.vaultId, balance: branchBal } : null,
         parties: ps.map((x) => ({ ...x, balance: pb.get(x.id)! })),
         vaults: vs.map((x) => ({ ...x, balance: vb.get(x.id)! })),
         categories: cats,

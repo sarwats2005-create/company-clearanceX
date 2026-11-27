@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import "server-only";
 import type { DbOrTx } from "@/db";
@@ -19,7 +20,8 @@ import * as postings from "@/features/ledger/postings";
 import { reverseEntry } from "@/features/ledger/reverse-entry";
 import { vaultShortfalls } from "@/features/ledger/vault-check";
 import { DomainError } from "@/lib/errors";
-import { formatMoney, todayISO } from "@/lib/format";
+import { formatMoney, formatNumber, todayISO } from "@/lib/format";
+import { roundTo } from "@/lib/money";
 import { t } from "@/lib/i18n";
 import { type ChargeSplit, allocateCharge, chargeMemo } from "./allocate";
 import { type AddChargesInput, type ChargeRow, addChargesSchema } from "./schemas";
@@ -51,7 +53,44 @@ async function loadContainer(tx: DbOrTx, containerId: string, lock: boolean): Pr
 }
 
 type Payer =
-    { kind: "party"; partyId: string; label: string } | { kind: "vault"; vaultId: string; label: string; vaultName: string } | { kind: "fee"; label: string };
+    | { kind: "party"; partyId: string; label: string }
+    | { kind: "vault"; vaultId: string; label: string; vaultName: string }
+    | { kind: "fee"; label: string }
+    | { kind: "branch_vault"; vaultId: string; branchId: string; label: string; vaultName: string }
+    | { kind: "branch_on_behalf"; vaultId: string; branchId: string; label: string; vaultName: string };
+
+/** Cash left one of the vaults for this charge (it gets a payment receipt and counts for the negative-vault warning). */
+const vaultOf = (p: Payer) => (p.kind === "vault" || p.kind === "branch_vault" || p.kind === "branch_on_behalf" ? p : null);
+
+/**
+ * Who paid an expense that the branch paid, or the owner paid for it. The branch's vault holds dinar only, so a
+ * dollar expense is turned into dinar at the rate typed on the row (the traders then owe the branch in dinar).
+ */
+async function branchPayer(
+    tx: DbOrTx,
+    branch: { id: string; name: string },
+    row: ChargeRow,
+    f: (name: string) => string,
+): Promise<{ payer: Payer; row: ChargeRow }> {
+    if (!row.vaultId) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
+    const [vault] = await tx.select().from(vaults).where(eq(vaults.id, row.vaultId));
+    if (!vault || !vault.isActive) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
+    if (vault.partyId && vault.partyId !== branch.id) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
+    let out = row;
+    if (row.currency === "USD") {
+        const rate = row.fxRate ? new Decimal(row.fxRate) : null;
+        if (!rate || rate.lte(0)) throw new DomainError("اكتب سعر الدولار: قاصة الشراكة بالدينار فقط", f("fxRate"));
+        if (row.split.mode === "manual") throw new DomainError("للتقسيم اليدوي اكتب المبلغ بالدينار مباشرة", f("amount"));
+        const iqd = roundTo(new Decimal(row.amount).times(rate), "IQD");
+        const was = `${formatMoney(row.amount, "USD")} × ${formatNumber(rate.toString())}`;
+        out = { ...row, amount: iqd, currency: "IQD", note: row.note ? `${row.note} · ${was}` : was };
+    }
+    if (!vault.allowedCurrencies.includes(out.currency)) throw new DomainError(t("error.vaultCurrency"), f("vaultId"));
+    const payer: Payer = vault.partyId
+        ? { kind: "branch_vault", vaultId: vault.id, branchId: branch.id, label: `${branch.name} · ${vault.name}`, vaultName: vault.name }
+        : { kind: "branch_on_behalf", vaultId: vault.id, branchId: branch.id, label: `${vault.name} · عن ${branch.name}`, vaultName: vault.name };
+    return { payer, row: out };
+}
 
 interface PreparedCharge {
     row: ChargeRow;
@@ -63,7 +102,8 @@ interface PreparedCharge {
 }
 
 /** Checks one row against the database and computes its allocations. Throws DomainError on the row's field. */
-async function prepareRow(tx: DbOrTx, ctx: ContainerCtx, row: ChargeRow, i: number): Promise<PreparedCharge> {
+async function prepareRow(tx: DbOrTx, ctx: ContainerCtx, input: ChargeRow, i: number): Promise<PreparedCharge> {
+    let row = input;
     const f = (name: string) => `rows.${i}.${name}`;
     const [type] = await tx.select().from(chargeTypes).where(eq(chargeTypes.id, row.chargeTypeId));
     if (!type || !type.isActive) throw new DomainError("نوع المصروف غير موجود أو موقوف", f("chargeTypeId"));
@@ -75,10 +115,12 @@ async function prepareRow(tx: DbOrTx, ctx: ContainerCtx, row: ChargeRow, i: numb
         if (!row.paidByPartyId) throw new DomainError("اختر من دفع المبلغ", f("paidByPartyId"));
         const [party] = await tx.select().from(parties).where(eq(parties.id, row.paidByPartyId));
         if (!party || !party.isActive) throw new DomainError("اختر من دفع المبلغ", f("paidByPartyId"));
-        if (party.kind === "self") {
+        if (party.isBranch) {
+            ({ payer, row } = await branchPayer(tx, party, row, f));
+        } else if (party.kind === "self") {
             if (!row.vaultId) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
             const [vault] = await tx.select().from(vaults).where(eq(vaults.id, row.vaultId));
-            if (!vault || !vault.isActive) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
+            if (!vault || !vault.isActive || vault.partyId) throw new DomainError("اختر القاصة التي دُفع منها", f("vaultId"));
             if (!vault.allowedCurrencies.includes(row.currency)) throw new DomainError(t("error.vaultCurrency"), f("vaultId"));
             payer = { kind: "vault", vaultId: vault.id, label: `${party.name} · ${vault.name}`, vaultName: vault.name };
         } else {
@@ -127,15 +169,18 @@ async function postCharge(tx: DbOrTx, ctx: ContainerCtx, p: PreparedCharge, date
         payer:
             p.payer.kind === "party"
                 ? { kind: "party", partyId: p.payer.partyId }
-                : p.payer.kind === "vault"
-                  ? { kind: "vault", vaultId: p.payer.vaultId }
-                  : { kind: "fee" },
+                : p.payer.kind === "vault" || p.payer.kind === "branch_vault"
+                  ? { kind: p.payer.kind, vaultId: p.payer.vaultId }
+                  : p.payer.kind === "branch_on_behalf"
+                    ? { kind: "branch_on_behalf", vaultId: p.payer.vaultId, branchId: p.payer.branchId }
+                    : { kind: "fee" },
         memo: p.row.note,
     });
+    const paidFrom = vaultOf(p.payer);
     const { entryId, receiptNo } = await postEntry(tx, {
         type: "container_charge",
         date,
-        receiptKind: p.payer.kind === "vault" ? "out" : null,
+        receiptKind: paidFrom ? "out" : null,
         description: `${p.typeName} · ${ctx.containerNumber}`,
         counterpartyLabel: p.payer.label,
         amount: p.row.amount,
@@ -145,7 +190,8 @@ async function postCharge(tx: DbOrTx, ctx: ContainerCtx, p: PreparedCharge, date
             chargeType: p.typeName,
             containerNumber: ctx.containerNumber,
             payer: p.payer.label,
-            ...(p.payer.kind === "vault" ? { vaultName: p.payer.vaultName } : {}),
+            ...(paidFrom ? { vaultName: paidFrom.vaultName } : {}),
+            ...(p.payer.kind === "branch_vault" || p.payer.kind === "branch_on_behalf" ? { owedTo: "branch", branchId: p.payer.branchId } : {}),
             traders: p.allocations.filter((a) => Number(a.amount) > 0).map((a) => ({ name: names.get(a.traderId) ?? "", amount: a.amount })),
         },
         userId,
@@ -159,7 +205,7 @@ async function postCharge(tx: DbOrTx, ctx: ContainerCtx, p: PreparedCharge, date
             amount: p.row.amount,
             currency: p.row.currency,
             paidByPartyId: p.payer.kind === "fee" ? null : (p.row.paidByPartyId ?? null),
-            paidFromVaultId: p.payer.kind === "vault" ? p.payer.vaultId : null,
+            paidFromVaultId: paidFrom?.vaultId ?? null,
             isFee: p.isFee,
             splitMode: p.split.mode,
             journalEntryId: entryId,
@@ -190,7 +236,10 @@ export async function addCharges(
     if (!data.allowNegative) {
         const short = await vaultShortfalls(
             tx,
-            prepared.flatMap((p) => (p.payer.kind === "vault" ? [{ vaultId: p.payer.vaultId, currency: p.row.currency, amount: p.row.amount }] : [])),
+            prepared.flatMap((p) => {
+                const v = vaultOf(p.payer);
+                return v ? [{ vaultId: v.vaultId, currency: p.row.currency, amount: p.row.amount }] : [];
+            }),
         );
         if (short.length) throw new DomainError(t("warn.negativeVault"), "allowNegative");
     }
@@ -310,11 +359,7 @@ export async function resplitCharges(tx: DbOrTx, containerId: string, userId: st
         const [old] = await tx.select().from(containerCharges).where(eq(containerCharges.id, item.chargeId));
         await cancelCharge(tx, item.chargeId, RESPLIT_REASON, userId, date);
         const [type] = await tx.select({ name: chargeTypes.name }).from(chargeTypes).where(eq(chargeTypes.id, old.chargeTypeId));
-        const payer: Payer = old.isFee
-            ? { kind: "fee", label: "ربح الشركة" }
-            : old.paidFromVaultId
-              ? await vaultPayer(tx, old.paidByPartyId, old.paidFromVaultId)
-              : { kind: "party", partyId: old.paidByPartyId!, label: await partyName(tx, old.paidByPartyId!) };
+        const payer = await savedPayer(tx, old);
         await postCharge(
             tx,
             ctx,
@@ -325,6 +370,7 @@ export async function resplitCharges(tx: DbOrTx, containerId: string, userId: st
                     currency: old.currency,
                     paidByPartyId: old.paidByPartyId,
                     vaultId: old.paidFromVaultId,
+                    fxRate: null,
                     split: { mode: "by_share" },
                     note: old.note,
                 },
@@ -350,6 +396,20 @@ export async function resplitCharges(tx: DbOrTx, containerId: string, userId: st
 async function partyName(tx: DbOrTx, id: string) {
     const [p] = await tx.select({ name: parties.name }).from(parties).where(eq(parties.id, id));
     return p?.name ?? "";
+}
+
+/** Who paid a saved charge, rebuilt to post it again (re-split). Before branches existed, the partnership was a plain party. */
+async function savedPayer(tx: DbOrTx, old: { isFee: boolean; paidByPartyId: string | null; paidFromVaultId: string | null }): Promise<Payer> {
+    if (old.isFee) return { kind: "fee", label: "ربح الشركة" };
+    if (!old.paidFromVaultId) return { kind: "party", partyId: old.paidByPartyId!, label: await partyName(tx, old.paidByPartyId!) };
+    const [party] = old.paidByPartyId ? await tx.select().from(parties).where(eq(parties.id, old.paidByPartyId)) : [];
+    if (party?.isBranch) {
+        const [v] = await tx.select().from(vaults).where(eq(vaults.id, old.paidFromVaultId));
+        return v.partyId
+            ? { kind: "branch_vault", vaultId: v.id, branchId: party.id, label: `${party.name} · ${v.name}`, vaultName: v.name }
+            : { kind: "branch_on_behalf", vaultId: v.id, branchId: party.id, label: `${v.name} · عن ${party.name}`, vaultName: v.name };
+    }
+    return vaultPayer(tx, old.paidByPartyId, old.paidFromVaultId);
 }
 
 async function vaultPayer(tx: DbOrTx, partyId: string | null, vaultId: string): Promise<Payer> {
