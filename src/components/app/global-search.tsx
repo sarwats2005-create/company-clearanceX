@@ -173,7 +173,7 @@ export function GlobalSearch({ variant }: { variant: "bar" | "icon" }) {
             <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="flex h-11 w-full max-w-xl cursor-pointer items-center gap-2.5 rounded-lg bg-primary px-3.5 text-md text-placeholder ring-1 ring-primary outline-focus-ring transition-[background-color] duration-150 ease-smooth ring-inset hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="flex h-12 w-full max-w-xl cursor-pointer items-center gap-2.5 rounded-2xl bg-primary px-4 text-md text-placeholder shadow-card ring-1 ring-secondary outline-focus-ring transition-[background-color] duration-150 ease-smooth ring-inset hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
             >
                 <SearchLg className="size-5 shrink-0 text-fg-quaternary" aria-hidden="true" />
                 <span className="flex-1 truncate text-start">ابحث برقم الحاوية أو اسم التاجر أو رقم الوصل</span>
@@ -184,7 +184,7 @@ export function GlobalSearch({ variant }: { variant: "bar" | "icon" }) {
                 type="button"
                 aria-label="بحث"
                 onClick={() => setOpen(true)}
-                className="inline-flex size-11 cursor-pointer items-center justify-center rounded-lg bg-primary ring-1 ring-primary outline-focus-ring transition-[background-color,transform] duration-150 ease-smooth ring-inset hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]"
+                className="inline-flex size-11 cursor-pointer items-center justify-center rounded-xl bg-primary shadow-xs ring-1 ring-secondary outline-focus-ring transition-[background-color,transform] duration-150 ease-smooth ring-inset hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]"
             >
                 <SearchLg className="size-5 text-fg-quaternary" aria-hidden="true" />
             </button>

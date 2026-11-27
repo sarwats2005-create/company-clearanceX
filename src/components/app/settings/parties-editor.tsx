@@ -42,13 +42,13 @@ export function PartiesEditor({ parties, defaultCompanyId }: { parties: Party[];
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="surface flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between md:p-5">
                 <p className="text-md text-tertiary">الجهة هي من يدفع مصاريف الحاوية عنك، ويصبح لها رصيد في الحسابات (المستحق لهم علينا).</p>
                 <Button size="lg" iconLeading={Plus} onClick={() => open()} className="shrink-0">
                     جهة جديدة
                 </Button>
             </div>
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:px-5">
                 {parties.map((p) => (
                     <li key={p.id} className="flex min-h-16 items-center gap-3 py-3">
                         <div className={cx("flex min-w-0 flex-1 flex-col gap-0.5", !p.isActive && "opacity-60")}>

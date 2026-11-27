@@ -93,7 +93,7 @@ export function StatementTable({
 }) {
     const col = COLUMN_LABEL[mode];
     if (!st.rows.length && !showOpening) {
-        return <p className="border-y border-secondary py-12 text-center text-md text-tertiary">لا توجد حركات بهذه العملة بعد.</p>;
+        return <p className="rounded-2xl bg-secondary py-12 text-center text-md text-tertiary">لا توجد حركات بهذه العملة بعد.</p>;
     }
 
     return (
@@ -184,7 +184,7 @@ export function StatementTable({
                 </table>
             </div>
 
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary md:hidden">
+            <ul className="flex flex-col divide-y divide-secondary md:hidden">
                 {showOpening && (
                     <li className="flex items-baseline justify-between gap-3 py-3.5">
                         <span className="text-secondary">الرصيد في بداية الفترة</span>

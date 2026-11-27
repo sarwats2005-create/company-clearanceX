@@ -1,4 +1,4 @@
-import { ArrowCircleUp, Phone01, Plus, Wallet02 } from "@untitledui/icons";
+import { ArrowCircleUp, Container, File06, InfoCircle, Phone01, Plus, User01, Wallet02 } from "@untitledui/icons";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -6,6 +6,7 @@ import { BalanceBand, ParentLink, SideFigure } from "@/components/app/accounts/b
 import { StatementSection } from "@/components/app/accounts/statement-section";
 import { TraderInfo } from "@/components/app/accounts/trader-info";
 import { ContainersList } from "@/components/app/containers/containers-list";
+import { CardTitle } from "@/components/app/icon-tile";
 import { LinkTabs } from "@/components/app/link-tabs";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/base/buttons/button";
@@ -48,8 +49,10 @@ export default async function TraderAccountPage({ params, searchParams }: { para
     const receiveCurrency = owes ?? defaultCurrency(["USD", "IQD"], balance);
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
             <PageHeader
+                icon={User01}
+                iconColor="blue"
                 eyebrow={<ParentLink href="/accounts/traders">حسابات التجار</ParentLink>}
                 title={trader.name}
                 description={
@@ -99,9 +102,14 @@ export default async function TraderAccountPage({ params, searchParams }: { para
             <LinkTabs
                 label="أقسام حساب التاجر"
                 items={[
-                    { href: base, label: "كشف الحساب", isActive: tab === "statement" },
-                    { href: `${base}?tab=containers`, label: activeContainers ? `الحاويات (${activeContainers})` : "الحاويات", isActive: tab === "containers" },
-                    { href: `${base}?tab=info`, label: "معلومات", isActive: tab === "info" },
+                    { href: base, label: "كشف الحساب", icon: File06, isActive: tab === "statement" },
+                    {
+                        href: `${base}?tab=containers`,
+                        label: activeContainers ? `الحاويات (${activeContainers})` : "الحاويات",
+                        icon: Container,
+                        isActive: tab === "containers",
+                    },
+                    { href: `${base}?tab=info`, label: "معلومات", icon: InfoCircle, isActive: tab === "info" },
                 ]}
             />
 
@@ -115,15 +123,18 @@ export default async function TraderAccountPage({ params, searchParams }: { para
 async function TraderContainers({ traderId }: { traderId: string }) {
     const { rows, total } = await listContainers(db, { traderId, totalsOf: traderId, pageSize: 200, sort: "registered", dir: "desc" });
     return (
-        <section aria-labelledby="containers-title" className="flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-                <h2 id="containers-title" className="text-lg font-semibold text-primary">
-                    حاويات التاجر
-                </h2>
-                <Button size="md" color="secondary" iconLeading={<Plus data-icon aria-hidden="true" />} href={`/containers/new?trader=${traderId}`}>
-                    حاوية جديدة
-                </Button>
-            </div>
+        <section aria-labelledby="containers-title" className="surface flex flex-col gap-4 p-4 md:p-6">
+            <CardTitle
+                id="containers-title"
+                icon={Container}
+                color="orange"
+                title="حاويات التاجر"
+                actions={
+                    <Button size="md" color="secondary" iconLeading={<Plus data-icon aria-hidden="true" />} href={`/containers/new?trader=${traderId}`}>
+                        حاوية جديدة
+                    </Button>
+                }
+            />
             {rows.length ? (
                 <>
                     <ContainersList rows={rows} filters={null} totalsLabel="حصته من المصاريف" />
@@ -134,7 +145,7 @@ async function TraderContainers({ traderId }: { traderId: string }) {
                     )}
                 </>
             ) : (
-                <p className="border-y border-secondary py-12 text-center text-md text-tertiary">لا توجد حاويات لهذا التاجر بعد.</p>
+                <p className="rounded-2xl bg-secondary py-12 text-center text-md text-tertiary">لا توجد حاويات لهذا التاجر بعد.</p>
             )}
         </section>
     );

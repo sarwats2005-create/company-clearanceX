@@ -12,15 +12,15 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     const [session, companyName] = await Promise.all([requireSession(), getCompanyName()]);
 
     return (
-        <div className="min-h-dvh bg-primary">
-            <Sidebar companyName={companyName} userName={session.name} footer={<LogoutIconButton />} />
+        <div className="bg-app min-h-dvh">
+            <Sidebar companyName={companyName} userName={session.name} footer={<LogoutIconButton onDark />} />
             <MobileHeader companyName={companyName} search={<GlobalSearch variant="icon" />} />
-            <div className="lg:ps-64">
+            <div className="lg:ps-[17.5rem]">
                 <div className="no-print hidden items-center justify-between gap-3 px-8 pt-6 lg:flex">
                     <GlobalSearch variant="bar" />
                     <NewMenu />
                 </div>
-                <main className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-28 md:px-6 lg:px-8 lg:pt-6 lg:pb-12">{children}</main>
+                <main className="mx-auto w-full max-w-[1280px] px-4 pt-5 pb-32 md:px-6 lg:px-8 lg:pt-6 lg:pb-12">{children}</main>
             </div>
             <BottomNav moreFooter={<LogoutButton />} />
         </div>

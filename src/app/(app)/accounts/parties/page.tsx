@@ -36,7 +36,7 @@ export default async function PartiesAccountsPage() {
             {rows.length ? (
                 <PartiesTable rows={rows} />
             ) : (
-                <div className="flex flex-col items-center gap-2 border-y border-secondary py-16 text-center">
+                <div className="flex flex-col items-center gap-2 surface py-16 text-center">
                     <p className="text-lg font-semibold text-primary">لا توجد جهات بعد</p>
                     <p className="text-md text-tertiary">أضف شركة التخليص أو الشريك من الإعدادات.</p>
                 </div>

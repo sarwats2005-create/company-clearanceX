@@ -156,6 +156,10 @@ export const traders = pgTable(
 export const shippingLines = pgTable("shipping_lines", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull().unique(),
+    /** The line's logo, uploaded by the owner in Settings (a small image as a data: URL). */
+    logo: text("logo"),
+    /** The line's website (e.g. maersk.com): its icon is the logo until the owner uploads one. */
+    website: text("website"),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: createdAt(),
@@ -187,6 +191,8 @@ export const chargeTypes = pgTable("charge_types", {
     defaultCurrency: currencyEnum("default_currency").notNull().default("USD"),
     defaultPartyId: uuid("default_party_id").references(() => parties.id),
     isFee: boolean("is_fee").notNull().default(false),
+    /** A default line: it is already on the expenses page when it opens (the owner marks it there or in Settings). */
+    isDefaultLine: boolean("is_default_line").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: createdAt(),

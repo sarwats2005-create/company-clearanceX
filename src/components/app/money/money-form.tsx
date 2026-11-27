@@ -196,7 +196,7 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
         <>
             <form
                 noValidate
-                className="flex w-full max-w-[40rem] flex-col gap-6 pb-28 lg:pb-8"
+                className="surface flex w-full max-w-[42rem] flex-col gap-6 p-5 pb-32 md:p-7 lg:pb-7"
                 onSubmit={(e) => {
                     e.preventDefault();
                     onSave();
@@ -427,7 +427,7 @@ export function MoneyForm({ kind, options, today, prefill }: { kind: MoneyKind; 
                     <Input label={optionalLabel("ملاحظة")} size="lg" value={f.note} onChange={(v) => set({ note: v })} placeholder="تظهر على الوصل" />
                 </div>
 
-                <div className="no-print fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 border-t border-secondary bg-primary/95 px-4 py-3 backdrop-blur-md lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+                <div className="glass no-print fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+5rem)] z-10 rounded-3xl p-3 shadow-hero lg:static lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
                     <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-start">
                         <Button type="submit" size="lg" className="sm:min-w-48" isLoading={check.pending} showTextWhileLoading>
                             حفظ وإصدار الوصل

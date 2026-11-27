@@ -8,7 +8,7 @@ import { t } from "@/lib/i18n";
 /** First run (PRD §8.3): the box illustration and the one navy button on the page. */
 export function HomeEmpty() {
     return (
-        <EmptyState size="lg" className="border-y border-secondary py-12">
+        <EmptyState size="lg" className="surface py-12">
             <EmptyState.Header pattern="none">
                 <EmptyState.Illustration type="box" />
             </EmptyState.Header>

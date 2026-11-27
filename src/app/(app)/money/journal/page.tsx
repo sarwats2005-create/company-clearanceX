@@ -10,6 +10,7 @@ import { listJournal } from "@/features/money/queries";
 import { requireSession } from "@/lib/auth";
 import { countAr } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { ClockRewind } from "@untitledui/icons";
 
 export const metadata: Metadata = { title: "سجل المعاملات" };
 
@@ -26,6 +27,8 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
     return (
         <div className="flex flex-col gap-6">
             <PageHeader
+                icon={ClockRewind}
+                iconColor="gray"
                 eyebrow={
                     <a href="/money" className="rounded-md outline-focus-ring hover:text-secondary focus-visible:outline-2">
                         المالية
@@ -41,7 +44,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
             <JournalList
                 rows={rows}
                 empty={
-                    <div className="flex flex-col items-center gap-2 border-y border-secondary py-16 text-center">
+                    <div className="surface flex flex-col items-center gap-2 py-16 text-center">
                         <p className="text-lg font-semibold text-primary">{filtered ? "لا توجد معاملات تطابق البحث" : "لا توجد معاملات بعد"}</p>
                         <p className="text-md text-tertiary">
                             {filtered ? "جرّب كلمة أخرى، أو امسح التصفية." : "كل مبلغ تسجله من صفحة المالية يظهر هنا مع رقم وصله."}

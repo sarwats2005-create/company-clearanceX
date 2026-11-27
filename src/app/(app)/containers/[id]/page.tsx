@@ -1,4 +1,4 @@
-import { ArrowLeft, Edit05 } from "@untitledui/icons";
+import { ArrowLeft, ArrowRight, ClockRewind, Edit05, InfoCircle, Receipt, Route, Users01 } from "@untitledui/icons";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -7,7 +7,10 @@ import { ChargesSection, ResplitAlert } from "@/components/app/containers/charge
 import { ContainerMenu } from "@/components/app/containers/container-menu";
 import { SharesCard } from "@/components/app/containers/shares-card";
 import { StatusSteps } from "@/components/app/containers/status-steps";
+import { CardTitle, IconTile } from "@/components/app/icon-tile";
+import { ShippingLineLogo } from "@/components/app/shipping-line-logo";
 import { StatusDot } from "@/components/app/status-dot";
+import { WhatsAppShareButton } from "@/components/app/whatsapp-share";
 import { Button } from "@/components/base/buttons/button";
 import { db } from "@/db";
 import { type ContainerStatus, containers } from "@/db/schema";
@@ -36,7 +39,14 @@ function reachedDates(c: ContainerDetail): Partial<Record<ContainerStatus, strin
     return out;
 }
 
-function shareText(c: ContainerDetail) {
+const moneyText = (x: Record<"IQD" | "USD", string>) =>
+    (["USD", "IQD"] as const)
+        .filter((cur) => Number(x[cur]) !== 0)
+        .map((cur) => formatMoney(x[cur], cur))
+        .join(" و ");
+
+function shareText(c: ContainerDetail, total?: Record<"IQD" | "USD", string>) {
+    const sum = total ? moneyText(total) : "";
     return [
         `الحاوية ${c.containerNumber}`,
         `الحالة: ${t(`status.${c.status}`)}`,
@@ -44,14 +54,16 @@ function shareText(c: ContainerDetail) {
         `خط الشحن: ${c.shippingLineName}`,
         c.billOfLadingNumber ? `البوليصة: ${c.billOfLadingNumber}` : null,
         c.arrivedOn ? `تاريخ الوصول: ${formatDate(c.arrivedOn)}` : null,
+        sum ? `مجموع المصاريف: ${sum}` : null,
     ]
         .filter(Boolean)
         .join("\n");
 }
 
-export default async function ContainerPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ContainerPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }) {
     await requireSession();
     const { id } = await params;
+    const justAdded = (await searchParams).new === "1";
     if (!isUuid(id)) notFound();
     const c = await getContainer(db, id);
     if (!c) notFound();
@@ -67,56 +79,77 @@ export default async function ContainerPage({ params }: { params: Promise<{ id: 
     const meta = [c.shares.map((s) => s.traderName).join("، "), goods.join("، "), c.sizeLabel, c.shippingLineName, c.portName].filter(Boolean) as string[];
 
     return (
-        <ChargesSheetProvider data={sheetData} today={today}>
-            <div className="flex flex-col gap-8 max-lg:pb-16">
-                <header className="relative flex flex-col gap-4 border-b border-secondary pb-5 md:flex-row md:items-end md:justify-between">
-                    <div className="flex min-w-0 flex-col gap-1.5">
-                        <a href="/containers" className="inline-flex items-center gap-1 self-start text-sm text-tertiary hover:text-secondary">
-                            الحاويات
-                        </a>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <h1 className="text-display-xs font-semibold text-primary">
-                                <bdi className="cn tracking-wide">{c.containerNumber}</bdi>
-                            </h1>
-                            <StatusDot status={c.status} />
-                            {c.isShared && (
-                                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-sm text-secondary ring-1 ring-secondary ring-inset">
-                                    مشتركة · {tradersText(c.shares.length)}
-                                </span>
-                            )}
-                            {archived && <span className="rounded-full bg-error-primary px-2.5 py-0.5 text-sm text-error-primary">ملغاة</span>}
+        <ChargesSheetProvider data={sheetData} today={today} startInFlow={justAdded && c.activeCharges === 0}>
+            <div className="flex flex-col gap-6 max-lg:pb-20">
+                <a href="/containers" className="inline-flex min-h-9 items-center gap-1.5 self-start rounded-md text-sm text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2">
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                    الحاويات
+                </a>
+
+                {/* This card is also the picture sent on WhatsApp. */}
+                <header id="container-card" className="surface rise-in relative flex flex-col gap-5 overflow-hidden p-5 md:p-6">
+                    <span aria-hidden="true" className="bg-brand-gradient absolute inset-x-0 top-0 h-1.5" />
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="flex min-w-0 items-start gap-4">
+                            <ShippingLineLogo line={{ name: c.shippingLineName, logo: c.shippingLineLogo, website: c.shippingLineWebsite }} size="xl" />
+                            <div className="flex min-w-0 flex-col gap-1.5">
+                                <h1 className="text-display-xs font-semibold text-primary md:text-display-sm">
+                                    <bdi className="cn tracking-wide">{c.containerNumber}</bdi>
+                                </h1>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <StatusDot status={c.status} />
+                                    {c.isShared && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-utility-purple-50 px-2.5 py-1 text-sm font-medium text-utility-purple-700 ring-1 ring-utility-purple-200 ring-inset">
+                                            <Users01 className="size-4" aria-hidden="true" />
+                                            مشتركة · {tradersText(c.shares.length)}
+                                        </span>
+                                    )}
+                                    {archived && <span className="rounded-full bg-error-primary px-2.5 py-1 text-sm text-error-primary">ملغاة</span>}
+                                </div>
+                                <p className="text-md text-tertiary">
+                                    {meta.join(" · ")}
+                                    {c.billOfLadingNumber && (
+                                        <>
+                                            {" · "}B/L <bdi className="cn">{c.billOfLadingNumber}</bdi>
+                                        </>
+                                    )}
+                                </p>
+                            </div>
                         </div>
-                        <p className="text-md text-tertiary">
-                            {meta.join(" · ")}
-                            {c.billOfLadingNumber && (
-                                <>
-                                    {" · "}B/L <bdi className="cn">{c.billOfLadingNumber}</bdi>
-                                </>
-                            )}
-                        </p>
+                        {!archived && (
+                            <div className="no-print flex flex-wrap items-center gap-2">
+                                <WhatsAppShareButton text={shareText(c, money.total)} targetId="container-card" fileName={`الحاوية ${c.containerNumber}`} />
+                                <Button size="lg" color="secondary" iconLeading={<Edit05 data-icon aria-hidden="true" />} href={`/containers/${c.id}/edit`}>
+                                    {t("action.edit")}
+                                </Button>
+                                <ContainerMenu containerId={c.id} containerNumber={c.containerNumber} canArchive={c.activeCharges === 0} />
+                            </div>
+                        )}
                     </div>
-                    {!archived && (
-                        <div className="flex items-center gap-2">
-                            <Button size="lg" color="secondary" iconLeading={<Edit05 data-icon aria-hidden="true" />} href={`/containers/${c.id}/edit`}>
-                                {t("action.edit")}
-                            </Button>
-                            <ContainerMenu containerId={c.id} containerNumber={c.containerNumber} shareText={shareText(c)} canArchive={c.activeCharges === 0} />
+                    {moneyText(money.total) && (
+                        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-secondary px-4 py-3">
+                            <IconTile icon={Receipt} color="pink" size="sm" />
+                            <span className="text-md text-secondary">مجموع المصاريف</span>
+                            <bdi className="num ms-auto text-lg font-semibold text-primary">{moneyText(money.total)}</bdi>
                         </div>
                     )}
-                    <span aria-hidden="true" className="absolute start-0 -bottom-px h-0.5 w-10 rounded-full bg-brand-solid" />
                 </header>
 
                 {c.activeCharges === 0 && !archived && (
-                    <div className="flex flex-col gap-4 rounded-xl bg-brand-primary_alt p-5 ring-1 ring-brand-200 ring-inset lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex flex-col gap-1">
-                            <p className="text-md font-semibold text-brand-secondary">{t("form.nextStep")}</p>
-                            <p className="text-md text-secondary">سجّل ما دُفع على هذه الحاوية (الكمرك، الغرامات، النقل، والأتعاب) ليظهر على حساب التاجر.</p>
+                    <div className="flex flex-col gap-4 rounded-[1.25rem] bg-brand-primary_alt p-5 ring-1 ring-brand-200 ring-inset lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex items-center gap-4">
+                            <IconTile icon={Receipt} color="pink" size="lg" />
+                            <div className="flex flex-col gap-1">
+                                <p className="text-md font-semibold text-brand-secondary">{t("form.nextStep")}</p>
+                                <p className="text-md text-secondary">سجّل ما دُفع على هذه الحاوية (الكمرك، الغرامات، النقل، والأتعاب) ليظهر على حساب التاجر.</p>
+                            </div>
                         </div>
-                        <AddChargesButton className="shrink-0 max-lg:hidden" />
+                        <AddChargesButton size="lg" className="shrink-0 max-lg:hidden" />
                     </div>
                 )}
 
-                <section aria-label="مراحل الحاوية" className="rounded-xl p-5 ring-1 ring-secondary md:p-6">
+                <section aria-labelledby="steps-title" className="surface flex flex-col gap-5 p-5 md:p-6">
+                    <CardTitle id="steps-title" icon={Route} color="orange" title="مراحل الحاوية" hint="اضغط على المرحلة التالية عندما تحصل" />
                     <StatusSteps containerId={c.id} status={c.status} reachedOn={reachedDates(c)} today={today} isArchived={archived} />
                 </section>
 
@@ -138,8 +171,8 @@ export default async function ContainerPage({ params }: { params: Promise<{ id: 
                 <ContainerHistory c={c} charges={charges} />
 
                 {!archived && (
-                    <div className="no-print fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t border-secondary bg-primary/95 px-4 py-3 backdrop-blur-md lg:hidden">
-                        <AddChargesButton className="w-full" />
+                    <div className="no-print fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+5rem)] z-20 lg:hidden">
+                        <AddChargesButton size="lg" className="w-full shadow-hero" />
                     </div>
                 )}
             </div>
@@ -161,15 +194,18 @@ function InfoRow({ label, children, ltr }: { label: string; children: React.Reac
 function ContainerInfo({ c }: { c: ContainerDetail }) {
     const single = !c.isShared ? c.shares[0] : null;
     return (
-        <section aria-labelledby="info-title" className="flex flex-col gap-3">
-            <h2 id="info-title" className="text-lg font-semibold text-primary">
-                معلومات الحاوية
-            </h2>
-            <dl className="grid divide-y divide-secondary border-y border-secondary md:grid-cols-2 md:gap-x-10 md:divide-y-0 md:[&>div]:border-b md:[&>div]:border-secondary">
+        <section aria-labelledby="info-title" className="surface flex flex-col gap-3 p-5 md:p-6">
+            <CardTitle id="info-title" icon={InfoCircle} color="blue" title="معلومات الحاوية" />
+            <dl className="grid divide-y divide-secondary md:grid-cols-2 md:gap-x-10 md:divide-y-0 md:[&>div]:border-b md:[&>div]:border-secondary">
                 <InfoRow label="رقم الحاوية" ltr>
                     {c.containerNumber}
                 </InfoRow>
-                <InfoRow label="خط الشحن">{c.shippingLineName}</InfoRow>
+                <InfoRow label="خط الشحن">
+                    <span className="inline-flex items-center gap-2">
+                        <ShippingLineLogo line={{ name: c.shippingLineName, logo: c.shippingLineLogo, website: c.shippingLineWebsite }} size="sm" />
+                        {c.shippingLineName}
+                    </span>
+                </InfoRow>
                 <InfoRow label="ميناء التحميل">{c.portName}</InfoRow>
                 <InfoRow label="رقم البوليصة (B/L)" ltr>
                     {c.billOfLadingNumber}
@@ -212,11 +248,9 @@ function ContainerHistory({ c, charges }: { c: ContainerDetail; charges: Contain
     // Stable sort keeps same-moment status steps in the order they were recorded.
     items.sort((a, b) => a.at.getTime() - b.at.getTime()).reverse();
     return (
-        <section aria-labelledby="history-title" className="flex flex-col gap-3">
-            <h2 id="history-title" className="text-lg font-semibold text-primary">
-                السجل
-            </h2>
-            <ol className="flex flex-col border-s border-secondary ps-5">
+        <section aria-labelledby="history-title" className="surface flex flex-col gap-4 p-5 md:p-6">
+            <CardTitle id="history-title" icon={ClockRewind} color="gray" title="السجل" />
+            <ol className="ms-2 flex flex-col border-s-2 border-secondary ps-5">
                 {items.map((it) => {
                     const warn = it.kind === "cancel" || (it.kind === "status" && it.h.isBackward);
                     return (
@@ -224,8 +258,8 @@ function ContainerHistory({ c, charges }: { c: ContainerDetail; charges: Contain
                             <span
                                 aria-hidden="true"
                                 className={cx(
-                                    "absolute -start-[25px] top-1.5 size-2.5 rounded-full ring-4 ring-bg-primary",
-                                    warn ? "bg-warning-solid" : "bg-fg-quaternary",
+                                    "absolute -start-[27px] top-1.5 size-3 rounded-full ring-4 ring-bg-primary",
+                                    warn ? "bg-warning-solid" : "bg-brand-solid",
                                 )}
                             />
                             {it.kind === "status" ? (

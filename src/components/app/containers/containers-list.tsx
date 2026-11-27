@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ChevronSelectorVertical, Users01 } from "@untitledui/icons";
+import { ShippingLineLogo } from "@/components/app/shipping-line-logo";
 import { StatusDot } from "@/components/app/status-dot";
 import type { Currency } from "@/db/schema";
 import { listQuery } from "@/features/containers/list-params";
@@ -72,13 +73,13 @@ export function ContainersList({ rows, filters, totalsLabel = "المصاريف"
                 <table className="w-full table-fixed border-collapse text-md">
                     <thead>
                         <tr className="border-b border-secondary text-start text-sm text-tertiary">
-                            <SortHeader filters={filters} sort="number" className="w-[19%] text-start">
+                            <SortHeader filters={filters} sort="number" className="w-[22%] text-start">
                                 رقم الحاوية
                             </SortHeader>
-                            <SortHeader filters={filters} sort="trader" className="w-[18%] text-start">
+                            <SortHeader filters={filters} sort="trader" className="w-[16%] text-start">
                                 التاجر
                             </SortHeader>
-                            <th scope="col" className="w-[13%] px-3 py-3 text-start font-medium">
+                            <th scope="col" className="w-[12%] px-3 py-3 text-start font-medium">
                                 البضاعة
                             </th>
                             <SortHeader filters={filters} sort="status" className="w-[15%] text-start">
@@ -97,11 +98,17 @@ export function ContainersList({ rows, filters, totalsLabel = "المصاريف"
                     </thead>
                     <tbody>
                         {rows.map((r) => (
-                            <tr key={r.id} className="group relative border-b border-secondary transition-colors duration-100 hover:bg-primary_hover">
+                            <tr key={r.id} className="group relative border-b border-secondary transition-colors duration-100 last:border-b-0 hover:bg-primary_hover">
                                 <td className="px-3 py-3.5">
-                                    <a href={`/containers/${r.id}`} className="flex flex-col outline-none after:absolute after:inset-0 focus-visible:after:outline-2 focus-visible:after:outline-focus-ring">
-                                        <bdi className="cn self-start font-semibold text-primary">{r.containerNumber}</bdi>
-                                        <span className="truncate text-sm text-tertiary">{r.shippingLineName}</span>
+                                    <a
+                                        href={`/containers/${r.id}`}
+                                        className="flex items-center gap-3 outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:outline-2 focus-visible:after:outline-focus-ring"
+                                    >
+                                        <ShippingLineLogo line={{ name: r.shippingLineName, logo: r.shippingLineLogo, website: r.shippingLineWebsite }} size="md" />
+                                        <span className="flex min-w-0 flex-col">
+                                            <bdi className="cn self-start font-semibold text-primary">{r.containerNumber}</bdi>
+                                            <span className="truncate text-sm text-tertiary">{r.shippingLineName}</span>
+                                        </span>
                                     </a>
                                 </td>
                                 <td className="px-3 py-3.5 text-secondary">
@@ -126,21 +133,27 @@ export function ContainersList({ rows, filters, totalsLabel = "المصاريف"
                 </table>
             </div>
 
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary md:hidden">
+            <ul className="flex flex-col gap-3 md:hidden">
                 {rows.map((r) => (
                     <li key={r.id}>
-                        <a href={`/containers/${r.id}`} className="flex flex-col gap-1.5 py-4 outline-focus-ring focus-visible:outline-2 active:bg-primary_hover">
-                            <span className="flex items-center justify-between gap-3">
-                                <bdi className="cn text-lg font-semibold text-primary">{r.containerNumber}</bdi>
-                                <StatusDot status={r.status} short />
-                            </span>
-                            <span className="flex items-center justify-between gap-3 text-md text-secondary">
-                                <Traders names={r.traderNames} />
-                                <Since row={r} />
-                            </span>
-                            <span className="flex items-center justify-between gap-3 text-sm text-tertiary">
-                                <span className="truncate">{[r.goods, r.shippingLineName].filter(Boolean).join(" · ")}</span>
-                                <Totals totals={r.totals} />
+                        <a
+                            href={`/containers/${r.id}`}
+                            className="flex gap-3 rounded-2xl bg-primary p-3.5 shadow-xs ring-1 ring-secondary outline-focus-ring transition-transform duration-150 ease-smooth ring-inset focus-visible:outline-2 active:scale-[0.985]"
+                        >
+                            <ShippingLineLogo line={{ name: r.shippingLineName, logo: r.shippingLineLogo, website: r.shippingLineWebsite }} size="lg" />
+                            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                                <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                    <bdi className="cn text-lg font-semibold text-primary">{r.containerNumber}</bdi>
+                                    <StatusDot status={r.status} short />
+                                </span>
+                                <span className="flex items-center justify-between gap-3 text-md text-secondary">
+                                    <Traders names={r.traderNames} />
+                                    <Since row={r} />
+                                </span>
+                                <span className="flex items-center justify-between gap-3 text-sm text-tertiary">
+                                    <span className="truncate">{[r.goods, r.shippingLineName].filter(Boolean).join(" · ")}</span>
+                                    <Totals totals={r.totals} />
+                                </span>
                             </span>
                         </a>
                     </li>

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ArrowCircleDown, ArrowCircleUp } from "@untitledui/icons";
+import { Plus, Sun } from "@untitledui/icons";
 import type { Metadata } from "next";
 import { CurrentContainers } from "@/components/app/home/current-containers";
 import { ListSkeleton, OverviewSkeleton } from "@/components/app/home/home-skeletons";
@@ -16,25 +16,22 @@ export const metadata: Metadata = { title: "الرئيسية" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-/** Home (PRD §8.3, Part F4.1): greeting, the overview band, late alerts, and the current containers. */
+/** Home: greeting, the main vault (loud, first), late alerts, counts, debts, and the current containers. */
 export default async function HomePage({ searchParams }: { searchParams: Search }) {
     const session = await requireSession();
     const params = parseHomeParams(await searchParams);
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-7">
             <PageHeader
                 title={`${greeting()}، ${session.name}`}
                 description={formatDateLong(todayISO(), { weekday: true })}
+                icon={Sun}
+                iconColor="gold"
                 actions={
-                    <>
-                        <Button size="lg" color="secondary" iconLeading={<ArrowCircleDown data-icon aria-hidden="true" />} href="/money/new/receive-trader">
-                            {t("money.receiveFromTrader")}
-                        </Button>
-                        <Button size="lg" color="secondary" iconLeading={<ArrowCircleUp data-icon aria-hidden="true" />} href="/money/new/pay-party">
-                            {t("money.payParty")}
-                        </Button>
-                    </>
+                    <Button size="xl" iconLeading={<Plus data-icon aria-hidden="true" />} href="/containers/new">
+                        {t("action.newContainer")}
+                    </Button>
                 }
             />
 

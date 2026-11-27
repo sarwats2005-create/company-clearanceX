@@ -1,17 +1,29 @@
-import { ChevronLeft } from "@untitledui/icons";
+import { ArrowCircleDown, ArrowCircleUp, ChevronLeft, CoinsSwap01, SlashCircle01, SwitchHorizontal01 } from "@untitledui/icons";
+import { IconTile } from "@/components/app/icon-tile";
 import type { JournalRow } from "@/features/money/queries";
 import { formatDate, formatMoney } from "@/lib/format";
 import { cx } from "@/utils/cx";
-import { ENTRY_TYPE_LABEL, GROUP_COLOR, RECEIPT_KIND_GROUP } from "./money-kinds";
+import { ENTRY_TYPE_LABEL } from "./money-kinds";
 
 const hrefOf = (r: JournalRow) => (r.receiptNo ? `/money/receipts/${r.id}` : r.containerId ? `/containers/${r.containerId}` : null);
 
 function TypeLabel({ r }: { r: JournalRow }) {
     const isCancel = r.type === "reversal";
-    const dot = isCancel || !r.receiptKind ? "bg-fg-quaternary" : GROUP_COLOR[RECEIPT_KIND_GROUP[r.receiptKind]];
+    // Money in = green arrow down, out = red arrow up, between vaults = blue.
+    const tile = isCancel
+        ? ({ icon: SlashCircle01, color: "gray" } as const)
+        : r.receiptKind === "in"
+          ? ({ icon: ArrowCircleDown, color: "green" } as const)
+          : r.receiptKind === "out"
+            ? ({ icon: ArrowCircleUp, color: "red" } as const)
+            : r.receiptKind === "exchange"
+              ? ({ icon: CoinsSwap01, color: "indigo" } as const)
+              : r.receiptKind === "transfer"
+                ? ({ icon: SwitchHorizontal01, color: "blue" } as const)
+                : ({ icon: ArrowCircleUp, color: "pink" } as const);
     return (
         <span className="inline-flex min-w-0 items-center gap-2 text-sm text-secondary">
-            <span aria-hidden="true" className={cx("size-2 shrink-0 rounded-full", dot)} />
+            <IconTile icon={tile.icon} color={tile.color} size="sm" />
             <span className="truncate">{isCancel ? `إلغاء · ${r.reversesType ? ENTRY_TYPE_LABEL[r.reversesType] : ""}` : ENTRY_TYPE_LABEL[r.type]}</span>
         </span>
     );
@@ -50,7 +62,7 @@ export function JournalList({ rows, empty }: { rows: JournalRow[]; empty?: React
     if (!rows.length) return <>{empty}</>;
     return (
         <>
-            <div className="hidden md:block">
+            <div className="surface hidden overflow-hidden px-3 py-1 md:block">
                 <table className="w-full table-fixed border-collapse text-md">
                     <thead>
                         <tr className="border-b border-secondary text-start text-sm text-tertiary">
@@ -114,7 +126,7 @@ export function JournalList({ rows, empty }: { rows: JournalRow[]; empty?: React
                 </table>
             </div>
 
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary md:hidden">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:hidden">
                 {rows.map((r) => {
                     const href = hrefOf(r);
                     const body = (

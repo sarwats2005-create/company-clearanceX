@@ -43,7 +43,7 @@ export default async function TradersAccountsPage({ searchParams }: { searchPara
                         <p className="text-sm text-tertiary">{tradersText(rows.length)}</p>
                     </>
                 ) : (
-                    <div className="flex flex-col items-center gap-2 border-y border-secondary py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 surface py-16 text-center">
                         <p className="text-lg font-semibold text-primary">{filtered ? "لا يوجد تاجر يطابق البحث" : "لا يوجد تجار بعد"}</p>
                         <p className="text-md text-tertiary">
                             {filtered ? "جرّب اسماً آخر، أو أزل «عليهم ديون فقط»." : "أضف التاجر من هنا، أو من نموذج الحاوية عند تسجيل أول حاوية له."}

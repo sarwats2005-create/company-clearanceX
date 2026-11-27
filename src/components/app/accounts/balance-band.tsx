@@ -10,20 +10,14 @@ export interface BandItem {
     hint?: ReactNode;
 }
 
-/** Big figures side by side between two hairlines (balances, totals), under a small title. */
+/** Big figures side by side in raised cards (balances, totals), under a small title. */
 export function BalanceBand({ items, title }: { items: BandItem[]; title: string }) {
     return (
         <section aria-label={title} className="flex flex-col gap-3">
-            <h2 className="text-sm text-tertiary">{title}</h2>
-            <dl
-                className={cx(
-                    "grid grid-cols-1 divide-y divide-secondary border-y border-secondary sm:divide-y-0",
-                    items.length > 1 && "sm:grid-cols-2",
-                    items.length > 2 && "lg:grid-cols-4",
-                )}
-            >
+            <h2 className="text-md font-semibold text-secondary">{title}</h2>
+            <dl className={cx("grid grid-cols-1 gap-3", items.length > 1 && "sm:grid-cols-2", items.length > 2 && "lg:grid-cols-4")}>
                 {items.map((it, i) => (
-                    <div key={i} className={cx("flex flex-col gap-1 py-4 sm:px-5 sm:first:ps-0", i > 0 && "sm:border-s sm:border-secondary")}>
+                    <div key={i} className="surface flex flex-col gap-1 p-4 md:p-5">
                         <dt className="text-sm text-tertiary">{it.label}</dt>
                         <dd className="text-xl font-semibold md:text-display-xs">{it.value}</dd>
                         {it.hint && <dd className="text-sm text-tertiary">{it.hint}</dd>}

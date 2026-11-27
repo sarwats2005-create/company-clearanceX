@@ -1,4 +1,5 @@
-import { Plus } from "@untitledui/icons";
+import { Container, Plus } from "@untitledui/icons";
+import { CardTitle } from "@/components/app/icon-tile";
 import { ContainersList } from "@/components/app/containers/containers-list";
 import { FilterChipLink } from "@/components/app/filter-chip";
 import { Button } from "@/components/base/buttons/button";
@@ -33,18 +34,19 @@ export async function CurrentContainers({ params }: { params: HomeParams }) {
     const pages = Math.max(Math.ceil(total / pageSize), 1);
 
     return (
-        <section aria-labelledby="current-title" className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-                <div className="flex flex-col gap-0.5">
-                    <h2 id="current-title" className="text-lg font-semibold text-primary">
-                        الحاويات الحالية
-                    </h2>
-                    <p className="text-sm text-tertiary">{total ? containersText(total) : "لا شيء هنا"}</p>
-                </div>
-                <Button size="lg" iconLeading={<Plus data-icon aria-hidden="true" />} href="/containers/new">
-                    {t("action.newContainer")}
-                </Button>
-            </div>
+        <section aria-labelledby="current-title" className="surface flex flex-col gap-4 p-4 md:p-6">
+            <CardTitle
+                id="current-title"
+                icon={Container}
+                color="orange"
+                title="الحاويات الحالية"
+                hint={total ? containersText(total) : "لا شيء هنا"}
+                actions={
+                    <Button size="lg" color="secondary" iconLeading={<Plus data-icon aria-hidden="true" />} href="/containers/new">
+                        {t("action.newContainer")}
+                    </Button>
+                }
+            />
 
             <nav aria-label="تصفية حسب الحالة" className="flex flex-wrap gap-2">
                 {HOME_FILTERS.map((f) => (
@@ -57,7 +59,7 @@ export async function CurrentContainers({ params }: { params: HomeParams }) {
             {rows.length > 0 ? (
                 <ContainersList rows={rows} filters={null} />
             ) : (
-                <div className="flex flex-col items-center gap-2 border-y border-secondary py-12 text-center">
+                <div className="flex flex-col items-center gap-2 rounded-2xl bg-secondary py-12 text-center">
                     <p className="text-md text-tertiary">{total ? "لا توجد حاويات في هذه الصفحة." : EMPTY_TEXT[params.filter]}</p>
                     <Button size="md" color="link-color" href="/containers">
                         عرض كل الحاويات

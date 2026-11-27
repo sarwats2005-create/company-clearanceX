@@ -15,7 +15,7 @@ export function CompanyForm({ initial }: { initial: { name: string; phone: strin
 
     return (
         <form
-            className="flex max-w-xl flex-col gap-5"
+            className="surface flex max-w-2xl flex-col gap-5 p-5 md:p-6"
             onSubmit={(e) => {
                 e.preventDefault();
                 save.run(v);

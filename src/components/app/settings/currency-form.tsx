@@ -13,7 +13,7 @@ export function CurrencyForm({ initial, rateUpdated }: { initial: { defaultUsdIq
 
     return (
         <form
-            className="flex max-w-xl flex-col gap-8"
+            className="surface flex max-w-2xl flex-col gap-8 p-5 md:p-6"
             onSubmit={(e) => {
                 e.preventDefault();
                 save.run(v);

@@ -2,36 +2,26 @@ import { cx } from "@/utils/cx";
 
 const bar = "rounded-md bg-secondary motion-safe:animate-pulse";
 
-/** Same shape as the overview band, so nothing jumps when the numbers arrive. */
+/** Same shape as the overview (vault card, tiles, debts), so nothing jumps when the numbers arrive. */
 export function OverviewSkeleton() {
     return (
-        <div aria-hidden="true">
-            {[0, 1].map((row) => (
-                <div key={row} className="grid grid-cols-2 border-b border-secondary lg:grid-cols-4">
-                    {[0, 1, 2, 3].map((i) => (
-                        <div
-                            key={i}
-                            className={cx(
-                                "flex flex-col gap-3 py-4 lg:pe-6",
-                                i % 2 === 1 ? "border-s border-secondary ps-4" : "pe-4",
-                                i >= 2 && "border-t border-secondary lg:border-t-0",
-                                i === 2 && "lg:border-s",
-                                i > 0 && "lg:ps-6",
-                            )}
-                        >
-                            <span className={cx(bar, "h-4 w-24")} />
-                            <span className={cx(bar, row === 0 ? "h-9 w-14" : "h-7 w-32")} />
-                        </div>
-                    ))}
-                </div>
-            ))}
+        <div aria-hidden="true" className="flex flex-col gap-6">
+            <div className="h-72 rounded-[1.75rem] bg-hero opacity-90 motion-safe:animate-pulse md:h-64" />
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="surface flex h-36 flex-col justify-between p-4">
+                        <span className={cx(bar, "size-10 rounded-xl")} />
+                        <span className={cx(bar, "h-8 w-16")} />
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
 
 export function ListSkeleton() {
     return (
-        <div aria-hidden="true" className="flex flex-col gap-4">
+        <div aria-hidden="true" className="surface flex flex-col gap-4 p-4 md:p-6">
             <div className="flex items-end justify-between gap-3">
                 <div className="flex flex-col gap-2">
                     <span className={cx(bar, "h-6 w-36")} />

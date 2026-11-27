@@ -1,4 +1,4 @@
-import { ArrowCircleDown, Phone01, Settings01, Wallet02 } from "@untitledui/icons";
+import { ArrowCircleDown, Building07, Phone01, Settings01, Wallet02 } from "@untitledui/icons";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -51,6 +51,8 @@ export default async function PartyAccountPage({ params, searchParams }: { param
     return (
         <div className="flex flex-col gap-8">
             <PageHeader
+                icon={Building07}
+                iconColor="teal"
                 eyebrow={<ParentLink href="/accounts/parties">حسابات الجهات</ParentLink>}
                 title={party.name}
                 description={
@@ -104,7 +106,7 @@ export default async function PartyAccountPage({ params, searchParams }: { param
                         تعديل في الإعدادات
                     </Button>
                 </div>
-                <p className={cx("border-y border-secondary py-3 text-md whitespace-pre-line", party.notes ? "text-secondary" : "text-quaternary")}>
+                <p className={cx("surface px-5 py-4 text-md whitespace-pre-line", party.notes ? "text-secondary" : "text-quaternary")}>
                     {party.notes || "لا توجد ملاحظات."}
                 </p>
             </section>

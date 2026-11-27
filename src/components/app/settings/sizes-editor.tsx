@@ -55,7 +55,7 @@ export function SizesEditor({ sizes }: { sizes: Size[] }) {
     return (
         <div className="flex flex-col gap-4">
             <p className="text-md text-tertiary">الطول والحجم يُستخدمان لرسم امتلاء الحاوية المشتركة وتنبيهك إذا زادت الحصص عن السعة.</p>
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:px-5">
                 {sizes.map((s) => (
                     <SizeRow key={s.id} size={s} />
                 ))}

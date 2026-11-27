@@ -8,10 +8,11 @@ import { cx } from "@/utils/cx";
  * in figures and in words, two signature lines, and a large "ملغى" watermark when cancelled.
  * Used by the on-screen preview and by /print/receipt/[id], so both always match.
  */
-export function ReceiptDocument({ r, className }: { r: ReceiptView; className?: string }) {
+export function ReceiptDocument({ r, className, id }: { r: ReceiptView; className?: string; id?: string }) {
     const contact = [r.company.phone, r.company.address].filter(Boolean).join(" · ");
     return (
         <article
+            id={id}
             aria-label={`${r.title} ${r.receiptNo}`}
             className={cx("receipt relative isolate flex flex-col gap-5 overflow-hidden bg-white p-6 text-primary sm:p-8", className)}
         >

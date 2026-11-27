@@ -1,3 +1,4 @@
+import { Edit05 } from "@untitledui/icons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContainerForm } from "@/components/app/container-form/container-form";
@@ -22,6 +23,8 @@ export default async function EditContainerPage({ params }: { params: Promise<{ 
             <FormPageHeader
                 parent={{ href: `/containers/${id}`, label: container.containerNumber }}
                 crumb="تعديل"
+                icon={Edit05}
+                iconColor="orange"
                 title={
                     <>
                         تعديل الحاوية <bdi className="cn">{container.containerNumber}</bdi>

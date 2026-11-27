@@ -8,7 +8,7 @@ import { SESSION_COOKIE, requireSession } from "@/lib/auth";
 import { createSessionRecord } from "@/lib/auth-core";
 import { runAction } from "@/lib/run-action";
 import { TEXT_SIZE_COOKIE, type TextSize, parseTextSize } from "@/lib/text-size";
-import type { ChargeTypeInput, PartyInput } from "./schemas";
+import type { ChargeTypeDefaultLineInput, ChargeTypeInput, PartyInput, ShippingLineBrandInput } from "./schemas";
 import * as service from "./service";
 
 const done = () => revalidatePath("/", "layout");
@@ -64,6 +64,24 @@ export async function saveChargeTypeAction(input: ChargeTypeInput) {
         const id = await withTx((tx) => service.saveChargeType(tx, input, s.userId));
         done();
         return { id };
+    });
+}
+
+export async function setChargeTypeDefaultLineAction(input: ChargeTypeDefaultLineInput) {
+    return runAction(async () => {
+        const s = await requireSession();
+        await withTx((tx) => service.setChargeTypeDefaultLine(tx, input, s.userId));
+        done();
+        return null;
+    });
+}
+
+export async function saveShippingLineBrandAction(input: ShippingLineBrandInput) {
+    return runAction(async () => {
+        const s = await requireSession();
+        await withTx((tx) => service.saveShippingLineBrand(tx, input, s.userId));
+        done();
+        return null;
     });
 }
 

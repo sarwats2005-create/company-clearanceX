@@ -28,6 +28,19 @@ export const SEED = {
     },
     vaults: { main: "القاصة الرئيسية", usd: "قاصة الدولار" },
     shippingLines: ["MSC", "Maersk", "CMA CGM", "COSCO", "Hapag-Lloyd", "ONE", "Evergreen", "Yang Ming", "ZIM", "HMM"],
+    /** Websites of the seeded lines: their site icon is the line's logo until the owner uploads one. */
+    shippingLineWebsites: {
+        MSC: "msc.com",
+        Maersk: "maersk.com",
+        "CMA CGM": "cma-cgm.com",
+        COSCO: "coscoshipping.com",
+        "Hapag-Lloyd": "hapag-lloyd.com",
+        ONE: "one-line.com",
+        Evergreen: "evergreen-line.com",
+        "Yang Ming": "yangming.com",
+        ZIM: "zim.com",
+        HMM: "hmm21.com",
+    } as Record<string, string>,
     ports: [
         ["شنغهاي", "الصين"],
         ["نينغبو", "الصين"],
@@ -46,11 +59,11 @@ export const SEED = {
         { code: "45ft", label: "45 قدم", lengthM: "13.50", volumeM3: "86.00" },
     ],
     chargeTypes: [
-        { name: "كمرك بصرة", currency: "USD", party: "china", isFee: false },
+        { name: "كمرك بصرة", currency: "USD", party: "china", isFee: false, isDefaultLine: true },
         { name: "غرامة شركة الشحن", currency: "USD", party: "china", isFee: false },
         { name: "غرامة ميناء", currency: "IQD", party: "ummQasr", isFee: false },
         { name: "أجور نقل بحري", currency: "USD", party: "china", isFee: false },
-        { name: "أتعاب شركة", currency: "USD", party: null, isFee: true },
+        { name: "أتعاب شركة", currency: "USD", party: null, isFee: true, isDefaultLine: true },
         { name: "أجور نقل الجوي", currency: "USD", party: "china", isFee: false },
         { name: "أتعاب أجور نقل", currency: "USD", party: null, isFee: true },
     ] as const,
@@ -81,7 +94,7 @@ export async function seed(db: DbOrTx, owner: { username: string; password: stri
         .onConflictDoNothing();
     await db
         .insert(shippingLines)
-        .values(SEED.shippingLines.map((name, i) => ({ name, sortOrder: i })))
+        .values(SEED.shippingLines.map((name, i) => ({ name, sortOrder: i, website: SEED.shippingLineWebsites[name] ?? null })))
         .onConflictDoNothing();
     await db
         .insert(portsOfLoading)
@@ -116,6 +129,7 @@ export async function seed(db: DbOrTx, owner: { username: string; password: stri
                 defaultCurrency: c.currency,
                 defaultPartyId: c.party === "china" ? china : c.party === "ummQasr" ? ummQasr : null,
                 isFee: c.isFee,
+                isDefaultLine: "isDefaultLine" in c && c.isDefaultLine,
                 sortOrder: i,
             })),
         )

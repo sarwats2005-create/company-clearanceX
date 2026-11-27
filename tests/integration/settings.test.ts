@@ -160,3 +160,56 @@ describe("default vaults (PRD §8.10 item 4)", () => {
         expect([s.defaultVaultIqdId, s.defaultVaultUsdId]).toEqual([main, usdOnly]);
     });
 });
+
+describe("redesign: default expense lines and shipping line logos", () => {
+    it("seeds customs and the company fee as default lines, and the seeded lines with their websites", async () => {
+        const types = await db.select().from(chargeTypes);
+        expect(types.filter((t) => t.isDefaultLine).map((t) => t.name).sort()).toEqual(["أتعاب شركة", "كمرك بصرة"].sort());
+        const [maersk] = await db.select().from(shippingLines).where(eq(shippingLines.name, "Maersk"));
+        expect(maersk.website).toBe("maersk.com");
+    });
+
+    it("marks a type as a default line with the currency chosen on the expenses page, and unmarks it", async () => {
+        const [port] = await db.select().from(chargeTypes).where(eq(chargeTypes.name, "غرامة ميناء"));
+        expect(port.defaultCurrency).toBe("IQD");
+        await withTx((tx) => settings.setChargeTypeDefaultLine(tx, { id: port.id, isDefaultLine: true, defaultCurrency: "USD" }, ownerId));
+        let [row] = await db.select().from(chargeTypes).where(eq(chargeTypes.id, port.id));
+        expect(row.isDefaultLine).toBe(true);
+        expect(row.defaultCurrency).toBe("USD");
+
+        await withTx((tx) => settings.setChargeTypeDefaultLine(tx, { id: port.id, isDefaultLine: false }, ownerId));
+        [row] = await db.select().from(chargeTypes).where(eq(chargeTypes.id, port.id));
+        expect(row.isDefaultLine).toBe(false);
+        expect(row.defaultCurrency).toBe("USD");
+    });
+
+    it("keeps the default-line mark when a type is edited in Settings without it", async () => {
+        const [customs] = await db.select().from(chargeTypes).where(eq(chargeTypes.name, "كمرك بصرة"));
+        await withTx((tx) =>
+            settings.saveChargeType(
+                tx,
+                { id: customs.id, name: "كمرك بصرة", defaultCurrency: "USD", defaultPartyId: customs.defaultPartyId, isFee: false, isActive: true, defaults: {} },
+                ownerId,
+            ),
+        );
+        const [row] = await db.select().from(chargeTypes).where(eq(chargeTypes.id, customs.id));
+        expect(row.isDefaultLine).toBe(true);
+    });
+
+    it("saves a shipping line's logo and website, cleans the website, and refuses anything that isn't a small image", async () => {
+        const [line] = await db.select().from(shippingLines).where(eq(shippingLines.name, "ZIM"));
+        const logo = "data:image/png;base64,iVBORw0KGgo=";
+        await withTx((tx) => settings.saveShippingLineBrand(tx, { id: line.id, logo, website: "https://www.ZIM.com/en/" }, ownerId));
+        const [row] = await db.select().from(shippingLines).where(eq(shippingLines.id, line.id));
+        expect(row.logo).toBe(logo);
+        expect(row.website).toBe("www.zim.com");
+
+        await expect(withTx((tx) => settings.saveShippingLineBrand(tx, { id: line.id, logo: "data:image/svg+xml;base64,PHN2Zz4=" }, ownerId))).rejects.toThrow();
+        await expect(withTx((tx) => settings.saveShippingLineBrand(tx, { id: line.id, website: "not a site" }, ownerId))).rejects.toThrow();
+
+        await withTx((tx) => settings.saveShippingLineBrand(tx, { id: line.id, logo: null }, ownerId));
+        const [cleared] = await db.select().from(shippingLines).where(eq(shippingLines.id, line.id));
+        expect(cleared.logo).toBeNull();
+        expect(cleared.website).toBe("www.zim.com");
+    });
+});

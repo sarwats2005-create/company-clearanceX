@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, startTransition, useActionState, useState } from "react";
-import { AlertCircle } from "@untitledui/icons";
+import { AlertCircle, Lock01, User01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { Input } from "@/components/base/input/input";
@@ -23,8 +23,8 @@ export function LoginForm({ next }: { next: string }) {
         <form action={action} onSubmit={onSubmit} className="flex flex-col gap-5">
             <input type="hidden" name="next" value={next} />
             <input type="hidden" name="remember" value={remember ? "on" : "off"} />
-            <Input name="username" label="اسم المستخدم" size="lg" autoComplete="username" isRequired autoFocus />
-            <Input name="password" type="password" label="كلمة المرور" size="lg" autoComplete="current-password" isRequired />
+            <Input name="username" label="اسم المستخدم" size="lg" icon={User01} autoComplete="username" isRequired autoFocus />
+            <Input name="password" type="password" label="كلمة المرور" size="lg" icon={Lock01} autoComplete="current-password" isRequired />
             <Checkbox size="md" label="تذكرني على هذا الجهاز" isSelected={remember} onChange={setRemember} />
             {state.error && (
                 <p role="alert" className="flex items-center gap-2 text-md text-error-primary">

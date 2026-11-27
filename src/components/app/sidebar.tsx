@@ -2,51 +2,54 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { IconTile } from "@/components/app/icon-tile";
 import { InitialsAvatar } from "@/components/app/initials-avatar";
-import { Logo } from "@/components/app/logo";
+import { LogoMark } from "@/components/app/logo";
 import { NAV_ITEMS, isActive } from "@/components/app/nav-items";
 import { t } from "@/lib/i18n";
 import { cx } from "@/utils/cx";
 
-/** Desktop sidebar on the start side (right in RTL), light #FAFAFA with a hairline edge (Part F). */
+/** Desktop sidebar on the start side (right in RTL): deep navy gradient, a colored icon tile per item. */
 export function Sidebar({ companyName, userName, footer }: { companyName: string; userName: string; footer?: ReactNode }) {
     const pathname = usePathname();
 
     return (
-        <aside className="fixed inset-y-0 start-0 z-30 hidden w-64 flex-col border-e border-secondary bg-sidebar lg:flex">
-            <div className="px-5 pt-6 pb-8">
-                <Logo name={companyName} />
-            </div>
-            <nav aria-label={t("nav.menu")} className="flex-1 px-3">
-                <ul className="flex flex-col gap-1">
+        <aside className="no-print fixed inset-y-3 start-3 z-30 hidden w-64 flex-col overflow-hidden rounded-[1.75rem] bg-hero shadow-hero lg:flex">
+            <a href="/" className="flex items-center gap-3 px-5 pt-6 pb-7 outline-focus-ring focus-visible:outline-2">
+                <LogoMark className="size-10" onDark />
+                <span className="flex min-w-0 flex-col">
+                    <span className="truncate text-md font-semibold text-white">{companyName}</span>
+                    <span className="text-xs text-white/60">إدارة تخليص الحاويات</span>
+                </span>
+            </a>
+            <nav aria-label={t("nav.menu")} className="flex-1 overflow-y-auto px-3">
+                <ul className="flex flex-col gap-1.5">
                     {NAV_ITEMS.map((item) => {
-                        const active = isActive(pathname, item.href);
-                        const Icon = item.icon;
+                        const active = isActive(pathname, item);
                         return (
                             <li key={item.href}>
                                 <a
                                     href={item.href}
                                     aria-current={active ? "page" : undefined}
                                     className={cx(
-                                        "relative flex h-11 items-center gap-3 rounded-lg px-3 text-md outline-focus-ring transition-colors duration-150 ease-smooth focus-visible:outline-2",
-                                        active
-                                            ? "bg-primary font-semibold text-brand-secondary ring-1 ring-secondary ring-inset"
-                                            : "text-secondary hover:bg-primary_hover hover:text-primary",
+                                        "relative flex h-13 items-center gap-3 rounded-2xl px-2.5 text-md outline-white transition-[background-color,transform] duration-150 ease-smooth focus-visible:outline-2 active:scale-[0.98]",
+                                        active ? "bg-white/15 font-semibold text-white shadow-[inset_0_0_0_1px_rgb(255_255_255/0.16)]" : "text-white/80 hover:bg-white/8 hover:text-white",
                                     )}
                                 >
-                                    {active && <span aria-hidden="true" className="absolute inset-y-2.5 -start-3 w-[3px] rounded-e-full bg-accent-500" />}
-                                    <Icon className={cx("size-5 shrink-0", active ? "text-fg-brand-primary" : "text-fg-quaternary")} strokeWidth={1.75} />
+                                    <IconTile icon={item.icon} color={item.color} size="sm" />
                                     {t(item.label)}
+                                    {active && <span aria-hidden="true" className="ms-auto size-2 rounded-full bg-accent-400" />}
                                 </a>
                             </li>
                         );
                     })}
                 </ul>
             </nav>
-            <div className="flex items-center gap-3 border-t border-secondary px-5 py-4">
-                <InitialsAvatar name={userName} />
+            <div className="m-3 flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-3">
+                <InitialsAvatar name={userName} className="bg-white/15 text-white ring-white/20" />
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-primary">{userName}</p>
+                    <p className="truncate text-sm font-semibold text-white">{userName}</p>
+                    <p className="text-xs text-white/60">المالك</p>
                 </div>
                 {footer}
             </div>

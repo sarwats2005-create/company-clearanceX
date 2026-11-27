@@ -814,6 +814,19 @@ Use background color variables to manage all fill colors for elements in your de
 | bg-success-secondary    | Secondary success state background color for components such as featured icons.                                                                                                               |
 | bg-success-solid        | Default solid (dark) success state background color for components such as featured icons and metric items.                                                                                   |
 
+## Owner's redesign brief (remember this)
+
+The owner rejected the flat "elegant pass" look. Before touching ANY page, component, color, flow or the
+design system, load the project skill `clearancex-redesign` (`.claude/skills/clearancex-redesign/`). It holds:
+
+- `references/owner-requirements.md`: the owner's own words and demands (the source of truth). Add new requests there with a date.
+- `references/ux-research.md`, `references/feature-specs.md`, `references/visual-system.md`: why and how it was built.
+
+In short: the app is for a ~50-year-old owner with little tech experience. The main vault is loud on the home
+page and one tap away; expenses are entered inside the add-container flow with starred default lines; shipping
+lines are picked by logo; every page has icons with labels; anything about money can be sent on WhatsApp as a
+picture (JPEG) or text; gradient backgrounds and raised cards, never flat hairline layouts.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

@@ -54,6 +54,8 @@ export interface ContainerRow {
     arrivedOn: string | null;
     deliveredOn: string | null;
     shippingLineName: string;
+    shippingLineLogo: string | null;
+    shippingLineWebsite: string | null;
     billOfLadingNumber: string | null;
     traderNames: string[];
     goods: string | null;
@@ -140,6 +142,8 @@ export async function listContainers(db: DbOrTx, f: ContainerFilters): Promise<{
                 deliveredOn: containers.deliveredOn,
                 billOfLadingNumber: containers.billOfLadingNumber,
                 shippingLineName: shippingLines.name,
+                shippingLineLogo: shippingLines.logo,
+                shippingLineWebsite: shippingLines.website,
                 traderNames: traderNamesSql,
                 goods: goodsSql,
                 statusSince: statusSinceSql,
@@ -194,6 +198,8 @@ export async function getContainer(db: DbOrTx, id: string) {
         .select({
             container: containers,
             shippingLineName: shippingLines.name,
+            shippingLineLogo: shippingLines.logo,
+            shippingLineWebsite: shippingLines.website,
             portName: portsOfLoading.name,
             sizeLabel: containerSizes.label,
             sizeLengthM: containerSizes.lengthM,
@@ -246,6 +252,8 @@ export async function getContainer(db: DbOrTx, id: string) {
     return {
         ...c.container,
         shippingLineName: c.shippingLineName,
+        shippingLineLogo: c.shippingLineLogo,
+        shippingLineWebsite: c.shippingLineWebsite,
         portName: c.portName,
         sizeLabel: c.sizeLabel,
         size: c.container.containerSizeId ? { lengthM: c.sizeLengthM, volumeM3: c.sizeVolumeM3 } : null,
@@ -271,7 +279,10 @@ export async function checkContainerNumber(db: DbOrTx, raw: string, exceptId?: s
 /** Everything the container form needs to render its pickers (PRD §8.5). */
 export async function getContainerFormOptions(db: DbOrTx) {
     const [lines, ports, sizes, partyRows, traderRows, settings, [last], goods, destinations] = await Promise.all([
-        db.select({ id: shippingLines.id, name: shippingLines.name, isActive: shippingLines.isActive }).from(shippingLines).orderBy(asc(shippingLines.sortOrder), asc(shippingLines.name)),
+        db
+            .select({ id: shippingLines.id, name: shippingLines.name, logo: shippingLines.logo, website: shippingLines.website, isActive: shippingLines.isActive })
+            .from(shippingLines)
+            .orderBy(asc(shippingLines.sortOrder), asc(shippingLines.name)),
         db.select({ id: portsOfLoading.id, name: portsOfLoading.name, country: portsOfLoading.country, isActive: portsOfLoading.isActive }).from(portsOfLoading).orderBy(asc(portsOfLoading.sortOrder), asc(portsOfLoading.name)),
         db
             .select({ id: containerSizes.id, label: containerSizes.label, lengthM: containerSizes.lengthM, volumeM3: containerSizes.volumeM3, isActive: containerSizes.isActive })

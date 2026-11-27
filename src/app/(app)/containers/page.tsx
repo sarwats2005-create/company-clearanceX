@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus } from "@untitledui/icons";
+import { Container, Plus } from "@untitledui/icons";
 import { ContainersFilters } from "@/components/app/containers/containers-filters";
 import { ContainersList } from "@/components/app/containers/containers-list";
 import { DownloadLink } from "@/components/app/download-link";
@@ -24,6 +24,8 @@ export default async function ContainersPage({ searchParams }: { searchParams: P
     return (
         <div className="flex flex-col gap-6">
             <PageHeader
+                icon={Container}
+                iconColor="orange"
                 title="الحاويات"
                 description={filtered ? `نتائج البحث: ${containersText(total)}` : containersText(total)}
                 actions={
@@ -45,9 +47,11 @@ export default async function ContainersPage({ searchParams }: { searchParams: P
             )}
 
             {rows.length > 0 ? (
-                <ContainersList rows={rows} filters={filters} />
+                <div className="md:surface md:px-3 md:py-1">
+                    <ContainersList rows={rows} filters={filters} />
+                </div>
             ) : filtered ? (
-                <div className="flex flex-col items-center gap-2 border-y border-secondary py-16 text-center">
+                <div className="surface flex flex-col items-center gap-2 py-16 text-center">
                     <p className="text-lg font-semibold text-primary">لا توجد حاويات تطابق البحث</p>
                     <p className="text-md text-tertiary">جرّب كلمة أخرى، أو امسح التصفية.</p>
                     <Button size="md" color="link-color" href="/containers">
@@ -55,7 +59,7 @@ export default async function ContainersPage({ searchParams }: { searchParams: P
                     </Button>
                 </div>
             ) : (
-                <div className="flex flex-col items-center gap-3 border-y border-secondary py-16 text-center">
+                <div className="surface flex flex-col items-center gap-3 py-16 text-center">
                     <p className="text-lg font-semibold text-primary">لا توجد حاويات بعد</p>
                     <p className="text-md text-tertiary">ابدأ بإضافة أول حاوية. تحتاج فقط رقم الحاوية وخط الشحن والتاجر.</p>
                 </div>
