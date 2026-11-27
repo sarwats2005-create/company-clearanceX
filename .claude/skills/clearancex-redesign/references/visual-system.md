@@ -50,7 +50,8 @@ confirmed = gray CheckCircle, on the way = orange Route, arrived = blue Anchor, 
 - Font: IBM Plex Sans Arabic; container numbers IBM Plex Mono (`.cn`). Numbers `tabular-nums` (`.num`).
 - Tap targets ≥ 44px (most are 48–56px). Body text ≥ 16px; the owner can enlarge it in Settings → العرض.
 - Motion: `rise-in` for cards appearing, `active:scale-[0.97]` press feedback, 150ms `ease-smooth`. All
-  off with reduced motion.
+  off with reduced motion. Full rules and timings: `motion.md`. Spacing and sizes: `spacing-layout.md`.
+  Phone/tablet/desktop behaviour: `responsive.md`.
 - Colors in code use semantic tokens (`text-primary`, `bg-secondary`, `text-error-primary`…). The
   gradient utilities are the one place raw palette values live.
 

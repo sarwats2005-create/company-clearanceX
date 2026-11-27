@@ -1,5 +1,8 @@
 # What top-rated apps do, and what we took from them
 
+> The deeper review research (what users actually praise and complain about) is in `app-reviews.md`; Google's
+> research and numbers are in `google-material.md`. This file is the short overview.
+
 Researched 2026-11-27. Add new findings at the bottom with their sources. Most sources are design-agency
 write-ups and benchmark rankings, not independent user studies, so treat them as expert opinion.
 
