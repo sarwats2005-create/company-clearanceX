@@ -1,3 +1,4 @@
+import { Container } from "@untitledui/icons";
 import type { Metadata } from "next";
 import { ContainerForm } from "@/components/app/container-form/container-form";
 import { emptyShare, emptyValues } from "@/components/app/container-form/values";
@@ -23,6 +24,8 @@ export default async function NewContainerPage({ searchParams }: { searchParams:
             <FormPageHeader
                 parent={{ href: "/containers", label: "الحاويات" }}
                 title="حاوية جديدة"
+                icon={Container}
+                iconColor="orange"
                 description="رقم الحاوية، خط الشحن، والتاجر. بعد الحفظ تنتقل مباشرة إلى المصاريف."
             />
             <StepBar current={0} className="mb-6 max-w-[720px]" />

@@ -31,18 +31,20 @@ Saved 2026-11-27. Keep the owner's words; add new requests at the bottom with a 
 
 ## Page checklist (every redesign must cover all of these)
 
+Checked = done in the 2026-11-27 redesign. Re-check each one whenever the look changes again.
+
 Main app (`src/app/(app)/`):
-- [ ] Home dashboard (main vault hero first)
-- [ ] Containers list
-- [ ] Add container (short, expenses inside)
-- [ ] Container detail (big actions, WhatsApp share)
-- [ ] Edit container
-- [ ] Money home, money action form, receipt (WhatsApp picture/text), journal
-- [ ] Accounts: traders list + page, parties list + page, vaults list + page
-- [ ] Settings home and every sub-page: company, charge-types, parties, shipping-lines (logos), ports, sizes, expense-categories, receipts, vaults, currency, display, account
-- [ ] Login
-- [ ] Print pages: receipt (A5), container (A4), statement
-- [ ] Shared pieces: sidebar, bottom nav, mobile header, global search, dialogs, empty states, toasts
+- [x] Home dashboard (main vault hero first)
+- [x] Containers list
+- [x] Add container (short, expenses inside)
+- [x] Container detail (big actions, WhatsApp share)
+- [x] Edit container
+- [x] Money home, money action form, receipt (WhatsApp picture/text), journal
+- [x] Accounts: traders list + page, parties list + page, vaults list + page
+- [x] Settings home and every sub-page: company, charge-types, parties, shipping-lines (logos), ports, sizes, expense-categories, receipts, vaults, currency, display, account
+- [x] Login
+- [ ] Print pages: receipt (A5), container (A4), statement (kept plain on purpose for paper; the receipt picture sent on WhatsApp uses the same receipt layout)
+- [x] Shared pieces: sidebar, bottom nav, mobile header, global search, dialogs, empty states, toasts
 
 Earlier mockup canvas the owner saw: https://claude.ai/artifact/BEX51MUjAfCAtFDMv5uZLQ (home desktop + phone, vault page, 3-step add container). A starting point only; it lacked Settings, logos, WhatsApp pictures and the gradient look.
 

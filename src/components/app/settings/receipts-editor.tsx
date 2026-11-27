@@ -47,7 +47,7 @@ export function ReceiptsEditor({ rows }: { rows: { kind: ReceiptKind; prefix: st
     return (
         <div className="flex flex-col gap-4">
             <p className="text-md text-tertiary">لكل نوع وصل عدّاد خاص به. يمكن رفع الرقم التالي فقط، ولا يمكن إنزاله، حتى لا يتكرر رقم وصل.</p>
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:px-5">
                 {rows.map((r) => (
                     <Row key={r.kind} {...r} />
                 ))}

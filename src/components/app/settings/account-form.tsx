@@ -21,7 +21,7 @@ export function AccountForm({ name, username }: { name: string; username: string
     const err = save.fieldErrors;
 
     return (
-        <div className="flex max-w-xl flex-col gap-8">
+        <div className="surface flex max-w-2xl flex-col gap-8 p-5 md:p-6">
             <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-md">
                 <dt className="text-tertiary">الاسم</dt>
                 <dd className="text-primary">{name}</dd>

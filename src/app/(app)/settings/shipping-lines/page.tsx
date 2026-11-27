@@ -1,5 +1,5 @@
 import { SectionShell } from "@/components/app/settings/section-shell";
-import { SimpleListEditor } from "@/components/app/settings/simple-list-editor";
+import { ShippingLinesEditor } from "@/components/app/settings/shipping-lines-editor";
 import { listShippingLines } from "@/features/settings/queries";
 import { requireSession } from "@/lib/auth";
 
@@ -9,8 +9,8 @@ export default async function Page() {
     await requireSession();
     const items = await listShippingLines();
     return (
-        <SectionShell title="خطوط الشحن" description="تظهر في نموذج الحاوية. الخطوط المستخدمة لا تُحذف، بل تُوقف.">
-            <SimpleListEditor kind="shipping_lines" items={items} addLabel="خط شحن جديد" placeholder="مثال: PIL" dirLtr />
+        <SectionShell title="خطوط الشحن" description="تظهر بشعاراتها في نموذج الحاوية. الخطوط المستخدمة لا تُحذف، بل تُوقف.">
+            <ShippingLinesEditor items={items.map((l) => ({ id: l.id, name: l.name, isActive: l.isActive, logo: l.logo, website: l.website }))} />
         </SectionShell>
     );
 }

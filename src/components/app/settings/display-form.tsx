@@ -12,7 +12,7 @@ export function DisplayForm({ initial }: { initial: TextSize }) {
     const save = useAction(setTextSizeAction, { success: "تم تغيير حجم الخط" });
 
     return (
-        <div className="flex max-w-xl flex-col gap-6">
+        <div className="surface flex max-w-2xl flex-col gap-6 p-5 md:p-6">
             <SegmentedControl
                 label="حجم الخط"
                 value={size}

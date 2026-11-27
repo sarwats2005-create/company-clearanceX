@@ -11,7 +11,7 @@ const rowLink =
 export function TradersTable({ rows }: { rows: TraderAccountRow[] }) {
     return (
         <>
-            <div className="hidden md:block">
+            <div className="surface hidden overflow-hidden px-3 py-1 md:block">
                 <table className="w-full table-fixed border-collapse text-md">
                     <thead>
                         <tr className="border-b border-secondary text-sm text-tertiary">
@@ -34,7 +34,7 @@ export function TradersTable({ rows }: { rows: TraderAccountRow[] }) {
                     </thead>
                     <tbody>
                         {rows.map((r) => (
-                            <tr key={r.id} className="relative border-b border-secondary transition-colors duration-100 hover:bg-primary_hover">
+                            <tr key={r.id} className="relative border-b border-secondary transition-colors last:border-b-0 duration-100 hover:bg-primary_hover">
                                 <td className="px-3 py-3.5">
                                     <a href={`/accounts/traders/${r.id}`} className={cx("flex min-w-0 flex-col", rowLink)}>
                                         <span className="truncate font-semibold text-primary">{r.name}</span>
@@ -56,7 +56,7 @@ export function TradersTable({ rows }: { rows: TraderAccountRow[] }) {
                     </tbody>
                 </table>
             </div>
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary md:hidden">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:hidden">
                 {rows.map((r) => (
                     <li key={r.id}>
                         <a
@@ -84,7 +84,7 @@ export function TradersTable({ rows }: { rows: TraderAccountRow[] }) {
 export function PartiesTable({ rows }: { rows: PartyAccountRow[] }) {
     return (
         <>
-            <div className="hidden md:block">
+            <div className="surface hidden overflow-hidden px-3 py-1 md:block">
                 <table className="w-full table-fixed border-collapse text-md">
                     <thead>
                         <tr className="border-b border-secondary text-sm text-tertiary">
@@ -132,7 +132,7 @@ export function PartiesTable({ rows }: { rows: PartyAccountRow[] }) {
                     </tbody>
                 </table>
             </div>
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary md:hidden">
+            <ul className="surface flex flex-col divide-y divide-secondary px-4 md:hidden">
                 {rows.map((r) => (
                     <li key={r.id}>
                         <a

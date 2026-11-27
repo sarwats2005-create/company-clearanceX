@@ -511,10 +511,10 @@ function ChargeRowEditor({
             )}
             data-row-error={Object.keys(errors).length ? "" : undefined}
         >
-            <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 basis-40 items-center gap-3">
                     <IconTile icon={Receipt} color={type.isFee ? "green" : "pink"} size="md" />
-                    <h4 className="min-w-0 text-md font-semibold text-primary">
+                    <h4 className="min-w-0 text-md font-semibold text-balance text-primary">
                         {type.name}
                         {type.isFee && <span className="ms-2 rounded-full bg-success-primary px-2 py-0.5 text-xs text-success-primary">ربح</span>}
                     </h4>

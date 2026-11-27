@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { ArrowDown, ArrowUp, Edit05 } from "@untitledui/icons";
 import { AppDialog } from "@/components/app/app-dialog";
 import { IconButton } from "@/components/app/icon-button";
@@ -14,7 +14,7 @@ import { cx } from "@/utils/cx";
 
 type Kind = "shipping_lines" | "ports_of_loading" | "expense_categories";
 
-interface Item {
+export interface Item {
     id: string;
     name: string;
     isActive: boolean;
@@ -22,7 +22,25 @@ interface Item {
 }
 
 /** Add / rename / order / (de)activate for name-only lists (PRD §8.10 item 5). */
-export function SimpleListEditor({ kind, items, addLabel, placeholder, dirLtr }: { kind: Kind; items: Item[]; addLabel: string; placeholder: string; dirLtr?: boolean }) {
+export function SimpleListEditor<T extends Item>({
+    kind,
+    items,
+    addLabel,
+    placeholder,
+    dirLtr,
+    leading,
+    extra,
+}: {
+    kind: Kind;
+    items: T[];
+    addLabel: string;
+    placeholder: string;
+    dirLtr?: boolean;
+    /** Shown before the name (e.g. a shipping line's logo). */
+    leading?: (item: T) => ReactNode;
+    /** Extra buttons on the row (e.g. "الشعار"). */
+    extra?: (item: T) => ReactNode;
+}) {
     const [name, setName] = useState("");
     const [editing, setEditing] = useState<Item | null>(null);
     const [editName, setEditName] = useState("");
@@ -34,7 +52,7 @@ export function SimpleListEditor({ kind, items, addLabel, placeholder, dirLtr }:
     return (
         <div className="flex flex-col gap-6">
             <form
-                className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                className="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end md:p-5"
                 onSubmit={(e) => {
                     e.preventDefault();
                     add.run(kind, { name });
@@ -56,10 +74,11 @@ export function SimpleListEditor({ kind, items, addLabel, placeholder, dirLtr }:
                 </Button>
             </form>
 
-            <ul className="flex flex-col divide-y divide-secondary border-y border-secondary">
+            <ul className="surface flex flex-col divide-y divide-secondary px-3 md:px-4">
                 {items.map((item, i) => (
-                    <li key={item.id} className="flex min-h-16 items-center gap-2 py-2">
-                        <div className={cx("flex min-w-0 flex-1 flex-col", !item.isActive && "opacity-60")}>
+                    <li key={item.id} className="flex min-h-18 flex-wrap items-center gap-2 py-2.5">
+                        {leading && <span className={cx(!item.isActive && "opacity-60")}>{leading(item)}</span>}
+                        <div className={cx("flex min-w-0 flex-1 flex-col ps-1", !item.isActive && "opacity-60")}>
                             <span className="flex items-center gap-2 text-md text-primary">
                                 <bdi>{item.name}</bdi>
                                 {!item.isActive && (
@@ -70,6 +89,7 @@ export function SimpleListEditor({ kind, items, addLabel, placeholder, dirLtr }:
                             </span>
                             {item.secondary && <span className="text-sm text-tertiary">{item.secondary}</span>}
                         </div>
+                        {extra?.(item)}
                         <IconButton icon={ArrowUp} label="تحريك للأعلى" isDisabled={i === 0 || move.pending} onPress={() => move.run(kind, item.id, "up")} />
                         <IconButton icon={ArrowDown} label="تحريك للأسفل" isDisabled={i === items.length - 1 || move.pending} onPress={() => move.run(kind, item.id, "down")} />
                         <IconButton

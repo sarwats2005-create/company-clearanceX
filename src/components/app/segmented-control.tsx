@@ -34,7 +34,7 @@ export function SegmentedControl<T extends string>({ label, value, onChange, opt
             className={cx("flex flex-col gap-1.5", className)}
         >
             {label && <span className="text-sm font-medium text-secondary">{label}</span>}
-            <div className={cx("flex gap-1 rounded-[10px] bg-secondary p-1 ring-1 ring-secondary ring-inset", fullWidth ? "w-full" : "w-fit max-w-full flex-wrap")}>
+            <div className={cx("flex gap-1 rounded-2xl bg-secondary p-1 ring-1 ring-secondary ring-inset", fullWidth ? "w-full" : "w-fit max-w-full flex-wrap")}>
                 {options.map((o) => (
                     <AriaRadio
                         key={o.value}
@@ -42,10 +42,10 @@ export function SegmentedControl<T extends string>({ label, value, onChange, opt
                         isDisabled={o.isDisabled}
                         className={({ isSelected, isFocusVisible, isDisabled: d }) =>
                             cx(
-                                "flex cursor-pointer items-center justify-center rounded-lg px-4 text-md whitespace-nowrap outline-focus-ring transition-[background-color,color,box-shadow,transform] duration-150 ease-smooth select-none data-pressed:scale-[0.97]",
+                                "flex cursor-pointer items-center justify-center rounded-xl px-4 text-md whitespace-nowrap outline-focus-ring transition-[background-color,color,box-shadow,transform] duration-150 ease-smooth select-none data-pressed:scale-[0.97]",
                                 size === "lg" ? "h-11" : "h-9 text-sm",
                                 fullWidth && "flex-1",
-                                isSelected ? "bg-primary font-semibold text-primary shadow-xs ring-1 ring-secondary" : "text-tertiary hover:text-secondary",
+                                isSelected ? "bg-primary font-semibold text-brand-secondary shadow-card ring-1 ring-secondary" : "text-tertiary hover:text-secondary",
                                 isFocusVisible && "outline-2 outline-offset-2",
                                 d && "cursor-not-allowed opacity-50",
                             )

@@ -4,8 +4,8 @@ import { cx } from "@/utils/cx";
 
 const chipClass = (pressed: boolean, className?: string) =>
     cx(
-        "inline-flex h-10 cursor-pointer items-center gap-2 rounded-full px-3.5 text-sm whitespace-nowrap ring-1 outline-focus-ring transition-[background-color,color,transform] duration-150 ease-smooth ring-inset focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]",
-        pressed ? "bg-brand-primary_alt font-semibold text-brand-secondary ring-brand-300" : "bg-primary text-secondary ring-primary hover:bg-primary_hover",
+        "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full px-4 text-sm whitespace-nowrap ring-1 outline-focus-ring transition-[background-color,color,transform] duration-150 ease-smooth ring-inset focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]",
+        pressed ? "bg-brand-gradient font-semibold text-white shadow-button-brand ring-transparent" : "bg-primary text-secondary shadow-xs ring-secondary hover:bg-primary_hover",
         className,
     );
 

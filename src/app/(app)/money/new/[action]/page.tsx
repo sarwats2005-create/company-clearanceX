@@ -28,7 +28,7 @@ export default async function NewMoneyPage({ params, searchParams }: { params: P
     const meta = MONEY_KIND_META[kind];
     return (
         <>
-            <FormPageHeader parent={{ href: "/money", label: "المالية" }} title={meta.title} description={meta.hint} />
+            <FormPageHeader parent={{ href: "/money", label: "المالية" }} title={meta.title} description={meta.hint} icon={meta.icon} iconColor={meta.color} />
             <MoneyForm
                 key={kind}
                 kind={kind}

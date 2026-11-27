@@ -56,7 +56,7 @@ export function TraderInfo({ trader }: { trader: Trader }) {
                     تعديل المعلومات
                 </Button>
             </div>
-            <dl className="divide-y divide-secondary border-y border-secondary">
+            <dl className="surface divide-y divide-secondary px-5">
                 <Row label="الاسم">{trader.name}</Row>
                 <Row label="رقم الهاتف" ltr>
                     {trader.phone}

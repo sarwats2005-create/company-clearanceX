@@ -1,20 +1,21 @@
 import type { FC, SVGProps } from "react";
 import { ArrowCircleDown, ArrowCircleUp, Building07, CoinsSwap01, Receipt, SwitchHorizontal01, User01 } from "@untitledui/icons";
+import type { TileColor } from "@/components/app/icon-tile";
 import type { EntryType, ReceiptKind } from "@/db/schema";
 import type { MoneyKind } from "@/features/money/schemas";
 
 export type MoneyGroup = "in" | "out" | "internal";
 
-export const MONEY_KIND_META: Record<MoneyKind, { title: string; hint: string; icon: FC<SVGProps<SVGSVGElement>>; group: MoneyGroup }> = {
-    receive_trader: { title: "قبض من تاجر", hint: "تاجر يسدد ما عليه", icon: User01, group: "in" },
-    receive_party: { title: "قبض من جهة", hint: "شركة أو شريك يرجع لنا مبلغاً", icon: Building07, group: "in" },
-    deposit: { title: "إيداع", hint: "المالك يضع مالاً في القاصة", icon: ArrowCircleDown, group: "in" },
-    pay_party: { title: "دفع لجهة", hint: "تسديد ما علينا لشركة أو شريك", icon: Building07, group: "out" },
-    pay_trader: { title: "دفع لتاجر", hint: "إرجاع مبلغ أو سلفة لتاجر", icon: User01, group: "out" },
-    withdraw: { title: "سحب", hint: "المالك يأخذ مالاً من القاصة", icon: ArrowCircleUp, group: "out" },
-    expense: { title: "مصروف عام", hint: "إيجار، رواتب، وقود وغيرها", icon: Receipt, group: "out" },
-    transfer: { title: "تحويل بين القاصات", hint: "نقل مبلغ من قاصة إلى أخرى", icon: SwitchHorizontal01, group: "internal" },
-    exchange: { title: "تصريف عملة", hint: "دينار ⇄ دولار بسعر صرف تكتبه", icon: CoinsSwap01, group: "internal" },
+export const MONEY_KIND_META: Record<MoneyKind, { title: string; hint: string; icon: FC<SVGProps<SVGSVGElement>>; group: MoneyGroup; color: TileColor }> = {
+    receive_trader: { title: "قبض من تاجر", hint: "تاجر يسدد ما عليه", icon: User01, group: "in", color: "green" },
+    receive_party: { title: "قبض من جهة", hint: "شركة أو شريك يرجع لنا مبلغاً", icon: Building07, group: "in", color: "teal" },
+    deposit: { title: "إيداع", hint: "المالك يضع مالاً في القاصة", icon: ArrowCircleDown, group: "in", color: "sky" },
+    pay_party: { title: "دفع لجهة", hint: "تسديد ما علينا لشركة أو شريك", icon: Building07, group: "out", color: "red" },
+    pay_trader: { title: "دفع لتاجر", hint: "إرجاع مبلغ أو سلفة لتاجر", icon: User01, group: "out", color: "orange" },
+    withdraw: { title: "سحب", hint: "المالك يأخذ مالاً من القاصة", icon: ArrowCircleUp, group: "out", color: "pink" },
+    expense: { title: "مصروف عام", hint: "إيجار، رواتب، وقود وغيرها", icon: Receipt, group: "out", color: "purple" },
+    transfer: { title: "تحويل بين القاصات", hint: "نقل مبلغ من قاصة إلى أخرى", icon: SwitchHorizontal01, group: "internal", color: "blue" },
+    exchange: { title: "تصريف عملة", hint: "دينار ⇄ دولار بسعر صرف تكتبه", icon: CoinsSwap01, group: "internal", color: "indigo" },
 };
 
 export const MONEY_GROUPS: { group: MoneyGroup; title: string; kinds: MoneyKind[] }[] = [
@@ -24,6 +25,7 @@ export const MONEY_GROUPS: { group: MoneyGroup; title: string; kinds: MoneyKind[
 ];
 
 /** Money direction: green in, red out, blue between vaults (PRD §8.7), as a strip or a dot. */
+export const GROUP_TILE: Record<MoneyGroup, TileColor> = { in: "green", out: "red", internal: "blue" };
 export const GROUP_COLOR: Record<MoneyGroup, string> = { in: "bg-success-solid", out: "bg-error-solid", internal: "bg-utility-blue-500" };
 
 export const RECEIPT_KIND_GROUP: Record<ReceiptKind, MoneyGroup> = { in: "in", out: "out", transfer: "internal", exchange: "internal" };

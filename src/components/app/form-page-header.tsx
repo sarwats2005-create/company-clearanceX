@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { FC, ReactNode, SVGProps } from "react";
+import { IconTile, type TileColor } from "@/components/app/icon-tile";
 import { ArrowRight, ChevronLeft } from "@untitledui/icons";
 
 /** Header of a focused form page (PRD §8.5.3/§8.5.5): breadcrumb, 16px, title, 4px, description. */
@@ -7,12 +8,16 @@ export function FormPageHeader({
     title,
     crumb,
     description,
+    icon,
+    iconColor = "brand",
 }: {
     parent: { href: string; label: string };
     title: ReactNode;
     /** Short last crumb when the title is long; defaults to the title. */
     crumb?: ReactNode;
     description?: ReactNode;
+    icon?: FC<SVGProps<SVGSVGElement>>;
+    iconColor?: TileColor;
 }) {
     return (
         <header className="mb-5 lg:mb-6">
@@ -29,8 +34,13 @@ export function FormPageHeader({
                     <span className="text-secondary">{crumb ?? title}</span>
                 </span>
             </nav>
-            <h1 className="mt-3 text-display-xs font-semibold text-primary">{title}</h1>
-            {description && <p className="mt-1 text-md text-tertiary">{description}</p>}
+            <div className="mt-3 flex items-center gap-3.5">
+                {icon && <IconTile icon={icon} color={iconColor} size="lg" />}
+                <div className="flex min-w-0 flex-col gap-0.5">
+                    <h1 className="text-display-xs font-semibold text-primary">{title}</h1>
+                    {description && <p className="text-md text-tertiary">{description}</p>}
+                </div>
+            </div>
         </header>
     );
 }
