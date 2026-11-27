@@ -76,7 +76,11 @@ export async function seed(db: DbOrTx, owner: { username: string; password: stri
     if (!existing) {
         await db.insert(users).values({ name: owner.name, username: owner.username.trim().toLowerCase(), passwordHash: await hashPassword(owner.password) });
     }
+    await seedLists(db);
+}
 
+/** The starting lists and settings (also used by "start fresh" when the owner wants the original settings back). */
+export async function seedLists(db: DbOrTx) {
     await db
         .insert(parties)
         .values([

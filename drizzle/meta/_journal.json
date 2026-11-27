@@ -22,6 +22,13 @@
       "when": 1795796988136,
       "tag": "0002_security_sessions_login_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795818478296,
+      "tag": "0003_restore_points",
+      "breakpoints": true
     }
   ]
 }

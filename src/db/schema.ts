@@ -54,7 +54,9 @@ export const entryTypeEnum = pgEnum("entry_type", [
 ]);
 export const receiptKindEnum = pgEnum("receipt_kind", ["in", "out", "transfer", "exchange"]);
 export const userRoleEnum = pgEnum("user_role", ["owner"]);
-export const auditActionEnum = pgEnum("audit_action", ["create", "update", "cancel", "status", "login", "archive"]);
+export const auditActionEnum = pgEnum("audit_action", ["create", "update", "cancel", "status", "login", "archive", "restore", "reset"]);
+/** manual = saved by the owner; the others are saved automatically just before a restore or a fresh start. */
+export const restorePointKindEnum = pgEnum("restore_point_kind", ["manual", "before_restore", "before_reset"]);
 
 export type Currency = (typeof currencyEnum.enumValues)[number];
 export type ContainerStatus = (typeof containerStatusEnum.enumValues)[number];
@@ -65,6 +67,7 @@ export type VaultKind = (typeof vaultKindEnum.enumValues)[number];
 export type AccountKind = (typeof accountKindEnum.enumValues)[number];
 export type EntryType = (typeof entryTypeEnum.enumValues)[number];
 export type ReceiptKind = (typeof receiptKindEnum.enumValues)[number];
+export type RestorePointKind = (typeof restorePointKindEnum.enumValues)[number];
 
 const money = (name: string) => numeric(name, { precision: 18, scale: 2 });
 const rate = (name: string) => numeric(name, { precision: 14, scale: 4 });
@@ -461,4 +464,35 @@ export const auditLog = pgTable(
         at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
     },
     (t) => [index("audit_log_at_idx").on(t.at)],
+);
+
+// ── Restore points ───────────────────────────────────────────────────────────
+/**
+ * A full copy of the business data at one moment ("نقطة استرجاع"). Rows are written ONLY by the database
+ * function cc_create_restore_point (src/db/sql/0003_restore_points.sql), never by the app, so a point always
+ * holds real data. Logins, sessions, the audit log and the points themselves are never inside a point.
+ */
+export const restorePoints = pgTable(
+    "restore_points",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        label: text("label").notNull(),
+        kind: restorePointKindEnum("kind").notNull().default("manual"),
+        /** Layout of `data`, so a future version knows how to read an old point. */
+        formatVersion: integer("format_version").notNull().default(1),
+        /** { tableName: [row, …] } for every business table. */
+        data: jsonb("data").notNull(),
+        /** { tableName: rowCount } shown on the page ("12 حاوية · 340 حركة"). */
+        counts: jsonb("counts").$type<Record<string, number>>().notNull(),
+        /** SHA-256 of `data`: a damaged point is refused instead of half-restored. */
+        checksum: text("checksum").notNull(),
+        sizeBytes: integer("size_bytes").notNull(),
+        /** The Baghdad calendar day it was saved: "start fresh" needs a manual point from today. */
+        createdOn: date("created_on", { mode: "string" })
+            .notNull()
+            .default(sql`(now() AT TIME ZONE 'Asia/Baghdad')::date`),
+        userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+        createdAt: createdAt(),
+    },
+    (t) => [index("restore_points_created_idx").on(t.createdAt)],
 );

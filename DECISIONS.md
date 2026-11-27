@@ -97,3 +97,17 @@ Full details, findings and owner to-dos: `SECURITY.md`.
 4. **scrypt N=2^15, r=8, p=3** (OWASP equivalent minimum), re-hashed at login. The new-password minimum is 10 characters (NIST: length over composition rules).
 5. **Database guards live in `src/db/sql/0002_hardening.sql`** (runs every start, idempotent): audit log append-only, CHECK constraints added `NOT VALID` then validated, so a deploy never fails on old rows.
 6. **Least-privilege role is opt-in** (`scripts/sql/create-app-role.sql`) because it needs a password only the owner should choose. `setup.ts` warns at start while the app still uses the owner role.
+
+## Restore points and start fresh (2026-11-27)
+- Points are stored in the same database (`restore_points.data` jsonb, compressed by Postgres) and built by the
+  database itself (`cc_create_restore_point`), so the data never leaves Postgres, numbers keep every digit, and the
+  app can't plant a fake point. A SHA-256 checksum refuses a damaged point before anything is wiped.
+- Restore, start fresh and delete are SECURITY DEFINER functions with the owner's rules inside them: an automatic
+  point before every restore/reset, reset only with a manual point from today (Asia/Baghdad), no deleting today's
+  point. Wiping uses TRUNCATE so the row-level immutability triggers stay in force for normal use.
+- Restore copies only columns that exist both now and in the point, so a point from before a new column still
+  restores (new columns get their default). A test fails if a new table isn't added to `cc_restore_tables()` or to
+  the deliberately-excluded list.
+- Restore and start fresh ask for the password again and count wrong tries toward the login limits.
+- A point in the same database is not a backup against losing the database: Neon's point-in-time restore is still
+  the owner's job (SECURITY.md §3).

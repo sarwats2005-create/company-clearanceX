@@ -24,6 +24,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO cl
 -- 4. History can only grow: no changing or deleting it.
 REVOKE UPDATE, DELETE, TRUNCATE ON journal_lines, container_charge_allocations, audit_log FROM clearance_app;
 REVOKE DELETE, TRUNCATE ON journal_entries, container_charges, entry_containers FROM clearance_app;
+-- Restore points are written only by the database's own functions (src/db/sql/0003_restore_points.sql).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON restore_points FROM clearance_app;
 
 -- 5. Never let the app create objects in the schema (default since Postgres 15; stated explicitly).
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;

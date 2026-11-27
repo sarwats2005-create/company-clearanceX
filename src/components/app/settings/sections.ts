@@ -1,5 +1,5 @@
 import type { FC, SVGProps } from "react";
-import { Anchor, Building07, Container, CurrencyDollarCircle, Lock01, MarkerPin01, Receipt, ReceiptCheck, Safe, Tag01, Type01, Users01 } from "@untitledui/icons";
+import { Anchor, Building07, ClockRewind, Container, CurrencyDollarCircle, Lock01, MarkerPin01, Receipt, ReceiptCheck, Safe, Tag01, Type01, Users01 } from "@untitledui/icons";
 import type { TileColor } from "@/components/app/icon-tile";
 
 export interface SettingsSection {
@@ -17,7 +17,7 @@ export interface SettingsGroup {
 
 /**
  * Settings in small groups, each item with its own colored icon (like a phone's Settings app, which this
- * owner already knows how to use). Opening balances, import, backup and audit log arrive in Phase 2.
+ * owner already knows how to use). Opening balances, import and the audit log viewer arrive in Phase 2.
  */
 export const SETTINGS_GROUPS: SettingsGroup[] = [
     {
@@ -43,6 +43,18 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
             { slug: "shipping-lines", title: "خطوط الشحن", description: "الخطوط وشعاراتها: MSC، Maersk، CMA CGM…", icon: Anchor, color: "blue" },
             { slug: "ports", title: "موانئ التحميل", description: "الموانئ التي تُحمَّل منها الحاويات", icon: MarkerPin01, color: "sky" },
             { slug: "sizes", title: "أحجام الحاويات", description: "الطول والحجم لتقسيم الحاويات المشتركة", icon: Container, color: "orange" },
+        ],
+    },
+    {
+        title: "الحماية",
+        sections: [
+            {
+                slug: "restore",
+                title: "نقاط الاسترجاع",
+                description: "احفظ نسخة من كل بياناتك وارجع إليها، أو ابدأ من جديد",
+                icon: ClockRewind,
+                color: "teal",
+            },
         ],
     },
     {

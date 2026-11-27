@@ -51,3 +51,4 @@ Earlier mockup canvas the owner saw: https://claude.ai/artifact/BEX51MUjAfCAtFDM
 ## Later requests
 
 - 2026-11-27: "The skill creation is the last step for now; complete the redesign request." Do the redesign in the app itself.
+- 2026-11-27: "Add system restore points and system reset like a reset option for a fresh start from zero but this option only comes when the user made a restore point on that specific day." Built as Settings → نقاط الاسترجاع (see `feature-specs.md` §6). The reset card only unlocks after the owner saves a point himself that same day (Baghdad time).

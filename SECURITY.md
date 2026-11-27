@@ -40,6 +40,7 @@ passwords, CSRF, headers, CSV injection), the Next.js 16 security guides, and Ne
 - **The audit log can't be changed or deleted** (new trigger).
 - 15 CHECK rules refuse impossible values: negative or two-sided ledger lines, zero/negative charges and rates, receipt numbers below 1, negative quantities and weights, oversized or non-image logos, malformed usernames, session ids or password hashes. They were added `NOT VALID` and then validated, so a deploy can never fail on old rows.
 - Queries time out after 30 seconds. A transaction left open is closed after 60 seconds, and a lost connection doesn't crash the server.
+- **Restore points** (Settings → نقاط الاسترجاع): the database itself makes each copy, checks it with a SHA-256 checksum before restoring, and saves an automatic copy before every restore or fresh start. "Start fresh" is refused unless the owner saved a point that same day, and today's point can't be deleted. Restore and start fresh ask for the password again (wrong tries count toward the login limits). Logins, devices and the audit log are never copied or wiped. The app's restricted user can't write points or empty tables itself; it can only call these guarded functions.
 - A ready-made **restricted database user** (`scripts/sql/create-app-role.sql`): the running app gets data access only, can't drop or alter tables or remove the safety triggers, and can only add to history. Turning it on is in the owner to-do list below.
 
 **Data that goes out**
@@ -72,7 +73,7 @@ passwords, CSRF, headers, CSV injection), the Next.js 16 security guides, and Ne
 Do these once. ★ = most important.
 
 1. ★ **Turn on two-step login (2FA)** on every account that can reach the app or its data: GitHub, Railway, Neon, Cloudflare and the email that receives their password resets. Anyone who gets into one of these gets the data, whatever the app does.
-2. ★ **Backups (Neon).** Use a Neon plan with a long restore window (7–30 days of point-in-time restore), and once a month create a named branch as a snapshot (Neon → Branches → Create branch). Once, test restoring to a branch before you ever need it.
+2. ★ **Backups (Neon).** Restore points live inside the same database, so they protect against mistakes, not against losing the database. Use a Neon plan with a long restore window (7–30 days of point-in-time restore), and once a month create a named branch as a snapshot (Neon → Branches → Create branch). Once, test restoring to a branch before you ever need it.
 3. ★ **Restricted database user.** In Neon's SQL Editor, as the owner, run `scripts/sql/create-app-role.sql` with your own long random password. In Railway, set `DATABASE_URL` to the **pooled** string with user `clearance_app` and that password. Keep `DATABASE_URL_UNPOOLED` as the owner's direct string (used only to update tables at start). The startup warning "the app connects as the database owner" disappears when it's done.
 4. **Cloudflare.** Since the domain goes through Cloudflare, set `TRUST_CLOUDFLARE=1` in Railway so login limits see the real visitor IP. In Cloudflare: SSL/TLS mode **Full (strict)**, "Always Use HTTPS" on. Better still, disable the public `*.up.railway.app` address in Railway (Settings → Networking) so the app is reachable only through Cloudflare.
 5. **Neon IP allow-list** (paid plans): allow only Railway's outbound addresses. Never `0.0.0.0/0`.
@@ -86,6 +87,7 @@ Do these once. ★ = most important.
 - New external images or scripts must be added to the CSP in `src/proxy.ts` deliberately. Never add `'unsafe-inline'` to `script-src`.
 - New money tables get the same immutability triggers. New value rules go into `src/db/sql/0002_hardening.sql` via `cc_add_check`.
 - Run `pnpm audit:deps`, `pnpm test` and `pnpm build` before every deploy.
+- A new table goes into `cc_restore_tables()` in `src/db/sql/0003_restore_points.sql` (or, if it holds logins or history, into the excluded list in `tests/integration/restore.test.ts`).
 - Use the `security-review` skill on every branch before merging.
 
 ## 5. Reporting a problem

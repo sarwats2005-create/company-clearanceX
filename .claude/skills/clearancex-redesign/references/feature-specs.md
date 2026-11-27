@@ -64,3 +64,14 @@ Code: `vault-hero.tsx`, `home/overview.tsx`, `accounts/vaults/[id]/page.tsx`, ro
   in big white numbers, "فتح القاصة" pill, and 5 round actions (قبض، دفع، تحويل، تصريف، مصروف).
 - The vault has its own nav item **القاصة** (sidebar and phone tab bar) → `/vault` redirects to the
   main vault page. That page uses the same hero with إيداع / سحب / تحويل / تصريف.
+
+## 6. Restore points and "start fresh" (Settings → نقاط الاسترجاع)
+
+Owner's rule: the fresh-start option only appears once he has saved a restore point **that same day**.
+
+- **Save** (main job, first and big): optional name, one button. A point is a full copy of every business table: lists, settings, traders, containers, money. Logins, devices, the audit log and the points themselves are never inside a point, so a restore never brings back an old password.
+- **List**: name, date and time, "حاويات · حركات مالية · تجار" counts, a "تلقائية" pill on automatic points, "اليوم" on today's manual point. Each has "استرجاع"; old manual points also have "حذف".
+- **Restore**: dialog with what will happen (ticked lines), then the password. Before restoring, an automatic point of the current data is saved, so every restore can be undone.
+- **Start fresh**: locked card ("يظهر فقط بعد أن تحفظ نقطة استرجاع اليوم") until a manual point exists today. Then a red card opens a dialog with two big choices: "امسح الحاويات والمال فقط" (default: lists, traders and settings stay, balances go to zero, receipt numbers restart at 1) or "امسح كل شيء" (back to the original starting lists). Password required. An automatic point is saved first.
+- **Delete**: only manual points, and not on the day they were saved (today's point is the undo for a fresh start). Automatic points delete themselves after 30 days (the newest 5 always stay). At most 30 manual points.
+- **Where it is enforced**: inside the database (`src/db/sql/0003_restore_points.sql`), not only in the page. The app's restricted user can't write points or truncate tables itself.

@@ -833,7 +833,8 @@ This app holds a business's money records for life. Before changing auth, sessio
 the database schema or dependencies, read `SECURITY.md` and follow its "Rules for future changes" (§4): every server
 action starts with `requireSession()` + zod validation, no `sql.raw`/`dangerouslySetInnerHTML`/`eval`, CSP changes
 only in `src/proxy.ts`, new value rules in `src/db/sql/0002_hardening.sql`, and run `pnpm audit:deps`, `pnpm test`
-and `pnpm build` before deploying.
+and `pnpm build` before deploying. A new table must be added to `cc_restore_tables()` in
+`src/db/sql/0003_restore_points.sql` (restore points), or deliberately excluded in `tests/integration/restore.test.ts`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

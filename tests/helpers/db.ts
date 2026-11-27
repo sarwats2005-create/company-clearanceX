@@ -3,6 +3,7 @@ import { db, pool } from "@/db";
 import { parties, receiptSequences, traders, vaults } from "@/db/schema";
 
 const TABLES = [
+    "restore_points",
     "audit_log",
     "container_charge_allocations",
     "container_charges",
