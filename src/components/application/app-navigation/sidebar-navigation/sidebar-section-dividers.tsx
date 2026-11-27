@@ -51,14 +51,14 @@ export const SidebarNavigationSectionDividers = ({ activeUrl, items }: SidebarNa
             <MobileNavigationHeader>{content}</MobileNavigationHeader>
 
             {/* Desktop sidebar navigation */}
-            <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:py-1 lg:pl-1">{content}</div>
+            <div className="hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex lg:py-1 lg:ps-1">{content}</div>
 
             {/* Placeholder to take up physical space because the real sidebar has `fixed` position. */}
             <div
                 style={{
                     paddingLeft: MAIN_SIDEBAR_WIDTH + 4, // Add 4px to account for the padding in the sidebar wrapper
                 }}
-                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:left-0 lg:block"
+                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:start-0 lg:block"
             />
         </>
     );

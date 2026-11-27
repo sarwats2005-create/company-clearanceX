@@ -62,7 +62,7 @@ export const RangePresetButton = ({ value, className, children, ...props }: Rang
         <button
             {...props}
             className={cx(
-                "cursor-pointer rounded-md px-3 py-2 text-left text-sm font-medium text-white outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2 focus-visible:outline-offset-2",
+                "cursor-pointer rounded-md px-3 py-2 text-start text-sm font-medium text-white outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2 focus-visible:outline-offset-2",
                 isSelected ? "bg-secondary text-secondary_hover hover:bg-secondary_hover" : "text-secondary hover:bg-primary_hover hover:text-secondary_hover",
                 className,
             )}
@@ -125,13 +125,13 @@ export const RangeCalendar = ({ presets, visibleDuration, showOutOfRangeDates = 
             >
                 <div className="flex flex-col gap-3 px-6 py-5 md:gap-2">
                     <header className={cx("relative flex items-center", visibleDurationMonths > 1 ? "justify-start" : "justify-between")}>
-                        <Button slot="previous" iconLeading={ChevronLeft} size="sm" color="tertiary" className="size-8" />
+                        <Button slot="previous" iconLeading={ChevronRight} size="sm" color="tertiary" className="size-8" />
 
                         <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-semibold text-fg-secondary">
                             <RangeCalendarTitle part="start" />
                         </h2>
 
-                        {visibleDurationMonths === 1 && <Button slot="next" iconLeading={ChevronRight} size="sm" color="tertiary" className="size-8" />}
+                        {visibleDurationMonths === 1 && <Button slot="next" iconLeading={ChevronLeft} size="sm" color="tertiary" className="size-8" />}
                     </header>
 
                     {!isDesktop && (
@@ -167,13 +167,13 @@ export const RangeCalendar = ({ presets, visibleDuration, showOutOfRangeDates = 
                 </div>
 
                 {visibleDurationMonths > 1 && (
-                    <div className="flex flex-col gap-3 border-l border-secondary px-6 py-5">
+                    <div className="flex flex-col gap-3 border-s border-secondary px-6 py-5">
                         <header className="relative flex items-center justify-end">
                             <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-semibold text-fg-secondary">
                                 <RangeCalendarTitle part="end" />
                             </h2>
 
-                            <Button slot="next" iconLeading={ChevronRight} size="sm" color="tertiary" className="size-8" />
+                            <Button slot="next" iconLeading={ChevronLeft} size="sm" color="tertiary" className="size-8" />
                         </header>
 
                         <AriaCalendarGrid weekdayStyle="short" offset={{ months: 1 }} className="w-max">

@@ -54,7 +54,7 @@ TextAreaBase.displayName = "TextAreaBase";
 
 interface TextFieldProps extends AriaTextFieldProps {
     /** Label text for the textarea */
-    label?: string;
+    label?: ReactNode;
     /** Helper text displayed below the textarea */
     hint?: ReactNode;
     /** Tooltip message displayed after the label. */

@@ -106,7 +106,7 @@ export const InputFile = ({
                         placeholder={placeholder}
                         value={fileNames}
                         readOnly
-                        inputClassName={cx("cursor-pointer", isLoading && "pr-9")}
+                        inputClassName={cx("cursor-pointer", isLoading && "pe-9")}
                         wrapperClassName="cursor-pointer"
                         onClick={handleClick}
                     />
@@ -114,7 +114,7 @@ export const InputFile = ({
                         <svg
                             fill="none"
                             viewBox="0 0 16 16"
-                            className="pointer-events-none absolute top-1/2 right-3 z-20 size-4 -translate-y-1/2 text-fg-quaternary"
+                            className="pointer-events-none absolute top-1/2 end-3 z-20 size-4 -translate-y-1/2 text-fg-quaternary"
                         >
                             <circle className="stroke-current opacity-30" cx="8" cy="8" r="6.5" strokeWidth="1.5" />
                             <circle

@@ -55,14 +55,14 @@ export const Calendar = ({ highlightedDates, className, children, ...props }: Ca
                 {({ state }) => (
                     <>
                         <header className="flex items-center justify-between">
-                            <Button slot="previous" iconLeading={ChevronLeft} size="sm" color="tertiary" className="size-8" />
+                            <Button slot="previous" iconLeading={ChevronRight} size="sm" color="tertiary" className="size-8" />
                             <AriaHeading className="text-sm font-semibold text-fg-secondary" />
-                            <Button slot="next" iconLeading={ChevronRight} size="sm" color="tertiary" className="size-8" />
+                            <Button slot="next" iconLeading={ChevronLeft} size="sm" color="tertiary" className="size-8" />
                         </header>
 
                         {children || (
                             <div className="flex gap-3">
-                                <InputDateBase aria-label="Date" size="sm" className="flex-1" />
+                                <InputDateBase aria-label="التاريخ" size="sm" className="flex-1" />
                                 <Button
                                     slot={null}
                                     size="sm"
@@ -72,16 +72,16 @@ export const Calendar = ({ highlightedDates, className, children, ...props }: Ca
                                         state.setFocusedDate(today(getLocalTimeZone()));
                                     }}
                                 >
-                                    Today
+                                    اليوم
                                 </Button>
                             </div>
                         )}
 
-                        <AriaCalendarGrid weekdayStyle="short" className="w-max">
+                        <AriaCalendarGrid weekdayStyle="narrow" className="w-max">
                             <AriaCalendarGridHeader className="border-b-4 border-transparent">
                                 {(day) => (
                                     <AriaCalendarHeaderCell className="p-0">
-                                        <div className="flex size-10 items-center justify-center text-sm font-medium text-secondary">{day.slice(0, 2)}</div>
+                                        <div className="flex size-10 items-center justify-center text-sm font-medium text-secondary">{day}</div>
                                     </AriaCalendarHeaderCell>
                                 )}
                             </AriaCalendarGridHeader>

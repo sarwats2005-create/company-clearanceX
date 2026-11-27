@@ -34,39 +34,39 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
     const [value, setValue] = useControlledState(valueProp, defaultValue || null, onChange);
     const [focusedValue, setFocusedValue] = useState<DateValue | null>(null);
 
-    const formattedStartDate = value?.start ? formatter.format(value.start.toDate(getLocalTimeZone())) : "Select date";
-    const formattedEndDate = value?.end ? formatter.format(value.end.toDate(getLocalTimeZone())) : "Select date";
+    const formattedStartDate = value?.start ? formatter.format(value.start.toDate(getLocalTimeZone())) : "اختر التاريخ";
+    const formattedEndDate = value?.end ? formatter.format(value.end.toDate(getLocalTimeZone())) : "اختر التاريخ";
 
     const presets = useMemo(
         () => ({
-            today: { label: "Today", value: { start: now, end: now } },
-            yesterday: { label: "Yesterday", value: { start: now.subtract({ days: 1 }), end: now.subtract({ days: 1 }) } },
-            thisWeek: { label: "This week", value: { start: startOfWeek(now, locale), end: endOfWeek(now, locale) } },
+            today: { label: "اليوم", value: { start: now, end: now } },
+            yesterday: { label: "أمس", value: { start: now.subtract({ days: 1 }), end: now.subtract({ days: 1 }) } },
+            thisWeek: { label: "هذا الأسبوع", value: { start: startOfWeek(now, locale), end: endOfWeek(now, locale) } },
             lastWeek: {
-                label: "Last week",
+                label: "الأسبوع الماضي",
                 value: {
                     start: startOfWeek(now, locale).subtract({ weeks: 1 }),
                     end: endOfWeek(now, locale).subtract({ weeks: 1 }),
                 },
             },
-            thisMonth: { label: "This month", value: { start: startOfMonth(now), end: endOfMonth(now) } },
+            thisMonth: { label: "هذا الشهر", value: { start: startOfMonth(now), end: endOfMonth(now) } },
             lastMonth: {
-                label: "Last month",
+                label: "الشهر الماضي",
                 value: {
                     start: startOfMonth(now).subtract({ months: 1 }),
                     end: endOfMonth(now).subtract({ months: 1 }),
                 },
             },
-            thisYear: { label: "This year", value: { start: startOfMonth(now.set({ month: 1 })), end: endOfMonth(now.set({ month: 12 })) } },
+            thisYear: { label: "هذه السنة", value: { start: startOfMonth(now.set({ month: 1 })), end: endOfMonth(now.set({ month: 12 })) } },
             lastYear: {
-                label: "Last year",
+                label: "السنة الماضية",
                 value: {
                     start: startOfMonth(now.set({ month: 1 }).subtract({ years: 1 })),
                     end: endOfMonth(now.set({ month: 12 }).subtract({ years: 1 })),
                 },
             },
             allTime: {
-                label: "All time",
+                label: "كل الفترات",
                 value: {
                     start: now.set({ year: 2000, month: 1, day: 1 }),
                     end: now,
@@ -77,10 +77,10 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
     );
 
     return (
-        <AriaDateRangePicker aria-label="Date range picker" shouldCloseOnSelect={false} {...props} value={value} onChange={setValue}>
+        <AriaDateRangePicker aria-label="اختيار فترة" shouldCloseOnSelect={false} {...props} value={value} onChange={setValue}>
             <AriaGroup>
                 <Button size={size} color="secondary" iconLeading={CalendarIcon}>
-                    {!value ? <span className="text-placeholder">Select dates</span> : `${formattedStartDate} – ${formattedEndDate}`}
+                    {!value ? <span className="text-placeholder">اختر الفترة</span> : `${formattedStartDate} – ${formattedEndDate}`}
                 </Button>
             </AriaGroup>
             <AriaPopover
@@ -92,14 +92,14 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                         isEntering &&
                             "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                         isExiting &&
-                            "duration-100 ease-in animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
+                            "duration-100 ease-smooth animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
                     )
                 }
             >
-                <AriaDialog aria-label="Date range picker" className="flex rounded-2xl bg-primary shadow-xl ring ring-secondary_alt focus:outline-hidden">
+                <AriaDialog aria-label="اختيار فترة" className="flex rounded-2xl bg-primary shadow-xl ring ring-secondary_alt focus:outline-hidden">
                     {({ close }) => (
                         <>
-                            <div className="hidden w-38 flex-col gap-0.5 border-r border-solid border-secondary p-3 lg:flex">
+                            <div className="hidden w-38 flex-col gap-0.5 border-e border-solid border-secondary p-3 lg:flex">
                                 {Object.values(presets).map((preset) => (
                                     <RangePresetButton
                                         key={preset.label}
@@ -139,7 +139,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                                 close();
                                             }}
                                         >
-                                            Cancel
+                                            إلغاء
                                         </Button>
                                         <Button
                                             size="sm"
@@ -149,7 +149,7 @@ export const DateRangePicker = ({ value: valueProp, defaultValue, onChange, onAp
                                                 close();
                                             }}
                                         >
-                                            Apply
+                                            تطبيق
                                         </Button>
                                     </div>
                                 </div>

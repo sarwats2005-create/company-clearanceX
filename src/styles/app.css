@@ -1,0 +1,51 @@
+/* App-wide rules for the Arabic RTL clearance app. Imported after the kit's globals. */
+
+html {
+    /* Text size setting (cookie cc_text_size) sets data-text-size on <html>. */
+    font-size: 112.5%;
+}
+html[data-text-size="sm"] {
+    font-size: 100%;
+}
+html[data-text-size="lg"] {
+    font-size: 125%;
+}
+
+body {
+    line-height: 1.6;
+}
+
+/* Never letter-space Arabic; numbers are tabular everywhere they matter. */
+.num,
+table td,
+table th {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Container numbers: IBM Plex Mono with a touch of tracking (Latin only). */
+.cn {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    html {
+        font-size: 100%;
+    }
+}

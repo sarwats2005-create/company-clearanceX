@@ -83,7 +83,7 @@ const DefaultActions = ({ activeUrl }: { activeUrl?: string }) => {
                         tooltipPlacement="bottom"
                     />
 
-                    <div className="absolute -top-0.25 -right-0.25 flex size-3.5 items-center justify-center rounded-full bg-fg-error-primary text-[10px] font-bold text-white">
+                    <div className="absolute -top-0.25 -end-0.25 flex size-3.5 items-center justify-center rounded-full bg-fg-error-primary text-[10px] font-bold text-white">
                         2
                     </div>
                 </div>
@@ -164,8 +164,8 @@ export const HeaderNavigationBase = ({
                 <section
                     className={cx("flex h-16 w-full items-center justify-center bg-primary", (!hideBorder || showSecondaryNav) && "border-b border-secondary")}
                 >
-                    <div className={cx("flex w-full max-w-container items-center pr-3 pl-4 md:px-8", centered && "gap-8")}>
-                        <div className={cx("flex items-center", centered ? "flex-1" : "mr-4")}>
+                    <div className={cx("flex w-full max-w-container items-center pe-3 ps-4 md:px-8", centered && "gap-8")}>
+                        <div className={cx("flex items-center", centered ? "flex-1" : "me-4")}>
                             <a
                                 aria-label="Go to homepage"
                                 href="/"
@@ -187,7 +187,7 @@ export const HeaderNavigationBase = ({
                             </ul>
                         </nav>
 
-                        <div className={cx("flex items-center gap-3", centered ? "flex-1 justify-end" : "ml-auto")}>
+                        <div className={cx("flex items-center gap-3", centered ? "flex-1 justify-end" : "ms-auto")}>
                             {hasCustomActions ? actions : <DefaultActions activeUrl={activeUrl} />}
                         </div>
                     </div>

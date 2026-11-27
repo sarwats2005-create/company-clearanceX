@@ -27,7 +27,7 @@ export const SidebarNavigationSectionsSubheadings = ({ activeUrl = "/", items }:
             }
             className="flex h-full w-full max-w-full flex-col justify-between overflow-auto bg-primary pt-4 shadow-xs ring-secondary ring-inset lg:w-(--width) lg:rounded-xl lg:ring-1"
         >
-            <div className="flex items-center justify-between gap-5 px-4 lg:pl-5">
+            <div className="flex items-center justify-between gap-5 px-4 lg:ps-5">
                 <UntitledLogo className="h-6" />
                 <ButtonUtility size="xs" color="tertiary" tooltip="Search" icon={SearchLg} />
             </div>
@@ -63,14 +63,14 @@ export const SidebarNavigationSectionsSubheadings = ({ activeUrl = "/", items }:
             <MobileNavigationHeader>{content}</MobileNavigationHeader>
 
             {/* Desktop sidebar navigation */}
-            <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:py-1 lg:pl-1">{content}</div>
+            <div className="hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex lg:py-1 lg:ps-1">{content}</div>
 
             {/* Placeholder to take up physical space because the real sidebar has `fixed` position. */}
             <div
                 style={{
                     paddingLeft: MAIN_SIDEBAR_WIDTH + 4,
                 }}
-                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:left-0 lg:block"
+                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:start-0 lg:block"
             />
         </>
     );

@@ -167,7 +167,7 @@ const MultiSelectRoot = ({
     isDisabled,
     isRequired,
     isInvalid,
-    placeholder = "Select",
+    placeholder = "اختر",
     label,
     hint,
     tooltip,
@@ -230,7 +230,7 @@ const MultiSelectRoot = ({
                     >
                         <span
                             className={cx(
-                                "flex w-full items-center truncate text-left",
+                                "flex w-full items-center truncate text-start",
                                 sizes[size].root,
                                 "*:data-icon:shrink-0 *:data-icon:text-fg-quaternary",
                             )}
@@ -250,7 +250,7 @@ const MultiSelectRoot = ({
 
                             <ChevronDown
                                 aria-hidden="true"
-                                className={cx("ml-auto shrink-0 text-fg-quaternary", size === "lg" ? "size-5" : "size-4 stroke-[2.25px]")}
+                                className={cx("ms-auto shrink-0 text-fg-quaternary", size === "lg" ? "size-5" : "size-4 stroke-[2.25px]")}
                             />
                         </span>
                     </AriaButton>
@@ -266,7 +266,7 @@ const MultiSelectRoot = ({
                                 state.isEntering &&
                                     "duration-150 ease-out animate-in fade-in placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                                 state.isExiting &&
-                                    "duration-100 ease-in animate-out fade-out placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
+                                    "duration-100 ease-smooth animate-out fade-out placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
                                 popoverClassName,
                             )
                         }
@@ -291,7 +291,7 @@ const MultiSelectRoot = ({
                                 )}
 
                                 <AriaListBox
-                                    aria-label={label || "Options"}
+                                    aria-label={typeof label === "string" && label ? label : "الخيارات"}
                                     items={items}
                                     selectionMode="multiple"
                                     selectedKeys={selectedKeys}

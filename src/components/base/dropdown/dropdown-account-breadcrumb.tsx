@@ -63,7 +63,7 @@ export const DropdownAccountBreadcrumb = () => {
                             textValue={account.name}
                             className={(state) =>
                                 cx(
-                                    "relative w-full cursor-pointer rounded-md px-2 py-2 text-left outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover focus:z-10 focus-visible:outline-2 focus-visible:outline-offset-2",
+                                    "relative w-full cursor-pointer rounded-md px-2 py-2 text-start outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover focus:z-10 focus-visible:outline-2 focus-visible:outline-offset-2",
                                     state.isSelected && "bg-primary_hover",
                                 )
                             }
@@ -79,7 +79,7 @@ export const DropdownAccountBreadcrumb = () => {
                                             <p className="truncate text-sm text-tertiary">{account.email}</p>
                                         </figcaption>
                                     </figure>
-                                    <RadioButtonBase isSelected={isSelected} className="absolute top-2 right-2" />
+                                    <RadioButtonBase isSelected={isSelected} className="absolute top-2 end-2" />
                                 </>
                             )}
                         </AriaMenuItem>

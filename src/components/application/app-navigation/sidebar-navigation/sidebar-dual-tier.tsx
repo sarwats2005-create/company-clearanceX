@@ -57,7 +57,7 @@ export const SidebarNavigationDualTier = ({
                     } as React.CSSProperties
                 }
                 className={cx(
-                    "relative flex w-full flex-col border-r border-secondary pt-4 transition duration-300 lg:w-(--width) lg:pt-5",
+                    "relative flex w-full flex-col border-e border-secondary pt-4 transition duration-300 lg:w-(--width) lg:pt-5",
                     hideBorder && !isSecondarySidebarVisible && "border-transparent",
                 )}
             >
@@ -125,7 +125,7 @@ export const SidebarNavigationDualTier = ({
                     animate={{ width: SECONDARY_SIDEBAR_WIDTH, borderColor: "var(--color-border-secondary)" }}
                     exit={{ width: 0, borderColor: "rgba(0,0,0,0)", transition: { borderColor: { type: "tween", delay: 0.05 } } }}
                     transition={{ type: "spring", damping: 26, stiffness: 220, bounce: 0 }}
-                    className={cx("relative h-full overflow-x-hidden overflow-y-auto bg-primary", !hideBorder && "box-content border-r-[1.5px]")}
+                    className={cx("relative h-full overflow-x-hidden overflow-y-auto bg-primary", !hideBorder && "box-content border-e-[1.5px]")}
                 >
                     <ul style={{ width: SECONDARY_SIDEBAR_WIDTH }} className="flex h-full flex-col p-4 pt-5">
                         {currentItem.items.map((item) => (
@@ -148,7 +148,7 @@ export const SidebarNavigationDualTier = ({
 
             {/* Desktop sidebar navigation */}
             <div
-                className="z-50 hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex"
+                className="z-50 hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex"
                 onPointerEnter={() => setIsHovering(true)}
                 onPointerLeave={() => setIsHovering(false)}
             >
@@ -161,7 +161,7 @@ export const SidebarNavigationDualTier = ({
                 style={{
                     paddingLeft: MAIN_SIDEBAR_WIDTH,
                 }}
-                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:left-0 lg:block"
+                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:start-0 lg:block"
             />
         </>
     );

@@ -72,22 +72,22 @@ export const InputBase = ({
 
     const sizes = sortCx({
         sm: {
-            root: cx("px-3 py-2 text-sm", hasLeadingIcon && "pl-9", hasTrailingIcon && "pr-9"),
-            iconLeading: "left-3 size-4 stroke-[2.25px]",
-            iconTrailing: "right-3",
-            shortcut: "pr-1.5",
+            root: cx("px-3 py-2 text-sm", hasLeadingIcon && "ps-9", hasTrailingIcon && "pe-9"),
+            iconLeading: "start-3 size-4 stroke-[2.25px]",
+            iconTrailing: "end-3",
+            shortcut: "pe-1.5",
         },
         md: {
-            root: cx("px-3 py-2 text-md", hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9"),
-            iconLeading: "left-3 size-5",
-            iconTrailing: "right-3",
-            shortcut: "pr-2",
+            root: cx("px-3 py-2 text-md", hasLeadingIcon && "ps-10", hasTrailingIcon && "pe-9"),
+            iconLeading: "start-3 size-5",
+            iconTrailing: "end-3",
+            shortcut: "pe-2",
         },
         lg: {
-            root: cx("px-3.5 py-2.5 text-md", hasLeadingIcon && "pl-10.5", hasTrailingIcon && "pr-9.5"),
-            iconLeading: "left-3.5 size-5",
-            iconTrailing: "right-3.5",
-            shortcut: "pr-2.5",
+            root: cx("px-3.5 py-3 text-md", hasLeadingIcon && "ps-10.5", hasTrailingIcon && "pe-9.5"),
+            iconLeading: "start-3.5 size-5",
+            iconTrailing: "end-3.5",
+            shortcut: "pe-2.5",
         },
     });
 
@@ -169,7 +169,7 @@ export const InputBase = ({
             {/* Password visibility toggle */}
             {type === "password" && (
                 <AriaButton
-                    aria-label="Toggle password visibility"
+                    aria-label="إظهار أو إخفاء كلمة المرور"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     className={cx(
                         "absolute flex cursor-pointer items-center justify-center text-fg-quaternary transition duration-100 ease-linear hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover focus:outline-hidden",
@@ -184,7 +184,7 @@ export const InputBase = ({
             {shortcut && (
                 <div
                     className={cx(
-                        "pointer-events-none absolute inset-y-0.5 right-0.5 z-10 hidden items-center rounded-r-[inherit] bg-linear-to-r from-transparent to-bg-primary to-40% pl-8 md:flex",
+                        "pointer-events-none absolute inset-y-0.5 end-0.5 z-10 hidden items-center rounded-e-[inherit] bg-linear-to-r from-transparent to-bg-primary to-40% ps-8 md:flex",
                         sizes[inputSize].shortcut,
                     )}
                 >
@@ -243,11 +243,13 @@ export interface InputProps
             | "tooltipClassName"
         > {
     /** Label text for the input */
-    label?: string;
+    label?: ReactNode;
     /** Helper text displayed below the input */
     hint?: ReactNode;
     /** Whether to hide required indicator from label */
     hideRequiredIndicator?: boolean;
+    /** id of a <datalist> with suggestions */
+    list?: string;
 }
 
 export const Input = ({
@@ -267,6 +269,7 @@ export const Input = ({
     wrapperClassName,
     tooltipClassName,
     type = "text",
+    list,
     ...props
 }: InputProps) => {
     return (
@@ -293,6 +296,7 @@ export const Input = ({
                             tooltipClassName,
                             tooltip,
                             type,
+                            list,
                         }}
                     />
 

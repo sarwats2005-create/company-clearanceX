@@ -95,28 +95,28 @@ const DropdownItem = ({ label, children, addon, icon: Icon, avatarUrl, unstyled,
                         !state.isDisabled && "group-hover:bg-primary_hover",
                         state.isFocused && "bg-primary_hover",
                         state.isFocusVisible && "outline-2 -outline-offset-2",
-                        state.hasSubmenu && "pr-1.5",
+                        state.hasSubmenu && "pe-1.5",
                     )}
                 >
-                    {state.selectionMode !== "none" && !avatarUrl && !Icon && <SelectionIndicator {...state} className="mr-2" />}
+                    {state.selectionMode !== "none" && !avatarUrl && !Icon && <SelectionIndicator {...state} className="me-2" />}
 
                     {avatarUrl && (
-                        <div className="mr-2 flex size-4 items-center justify-center">
+                        <div className="me-2 flex size-4 items-center justify-center">
                             <Avatar aria-hidden="true" size="xs" src={avatarUrl} alt={label} className="size-5" />
                         </div>
                     )}
 
-                    {Icon && <Icon aria-hidden="true" className="mr-2 size-4 shrink-0 stroke-[2.25px] text-fg-quaternary" />}
+                    {Icon && <Icon aria-hidden="true" className="me-2 size-4 shrink-0 stroke-[2.25px] text-fg-quaternary" />}
 
                     <span className={cx("grow truncate text-sm font-semibold text-secondary", state.isFocused && "text-secondary_hover")}>
                         {label || (typeof children === "function" ? children(state) : children)}
                     </span>
 
-                    {addon && <span className="ml-1 shrink-0 pr-1 text-xs font-medium text-quaternary">{addon}</span>}
+                    {addon && <span className="ms-1 shrink-0 pe-1 text-xs font-medium text-quaternary">{addon}</span>}
 
-                    {state.selectionMode !== "none" && (avatarUrl || Icon) && <SelectionIndicator {...state} className="ml-1" />}
+                    {state.selectionMode !== "none" && (avatarUrl || Icon) && <SelectionIndicator {...state} className="ms-1" />}
 
-                    {state.hasSubmenu && <ChevronRight aria-hidden="true" className="ml-auto size-4 shrink-0 stroke-[2.25px] text-fg-quaternary" />}
+                    {state.hasSubmenu && <ChevronRight aria-hidden="true" className="ms-auto size-4 shrink-0 stroke-[2.25px] text-fg-quaternary rtl:-scale-x-100" />}
                 </div>
             )}
         </AriaMenuItem>
@@ -141,7 +141,7 @@ interface DropdownPopoverProps extends AriaPopoverProps {}
 const DropdownPopover = (props: DropdownPopoverProps) => {
     return (
         <AriaPopover
-            placement="bottom right"
+            placement="bottom end"
             {...props}
             className={(state) =>
                 cx(
@@ -149,7 +149,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
                     state.isEntering &&
                         "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                     state.isExiting &&
-                        "duration-100 ease-in animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
+                        "duration-100 ease-smooth animate-out fade-out placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5",
                     typeof props.className === "function" ? props.className(state) : props.className,
                 )
             }
@@ -167,7 +167,7 @@ const DropdownDotsButton = (props: AriaButtonProps & RefAttributes<HTMLButtonEle
     return (
         <AriaButton
             {...props}
-            aria-label="Open menu"
+            aria-label={props["aria-label"] ?? "خيارات"}
             className={(state) =>
                 cx(
                     "cursor-pointer rounded-md text-fg-quaternary outline-focus-ring transition duration-100 ease-linear",
@@ -177,7 +177,7 @@ const DropdownDotsButton = (props: AriaButtonProps & RefAttributes<HTMLButtonEle
                 )
             }
         >
-            <DotsVertical className="size-5 transition-inherit-all" />
+            <DotsVertical className="size-5 transition-inherit-all" aria-hidden="true" />
         </AriaButton>
     );
 };

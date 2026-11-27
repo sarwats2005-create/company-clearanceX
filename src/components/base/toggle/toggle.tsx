@@ -20,21 +20,21 @@ export const ToggleBase = ({ className, isHovered, isDisabled, isFocusVisible, i
         default: {
             sm: {
                 root: "h-5 w-9 p-0.5",
-                switch: cx("size-4", isSelected && "translate-x-4"),
+                switch: cx("size-4", isSelected && "translate-x-4 rtl:-translate-x-4"),
             },
             md: {
                 root: "h-6 w-11 p-0.5",
-                switch: cx("size-5", isSelected && "translate-x-5"),
+                switch: cx("size-5", isSelected && "translate-x-5 rtl:-translate-x-5"),
             },
         },
         slim: {
             sm: {
                 root: "h-4 w-8",
-                switch: cx("size-4", isSelected && "translate-x-4"),
+                switch: cx("size-4", isSelected && "translate-x-4 rtl:-translate-x-4"),
             },
             md: {
                 root: "h-5 w-10",
-                switch: cx("size-5", isSelected && "translate-x-5"),
+                switch: cx("size-5", isSelected && "translate-x-5 rtl:-translate-x-5"),
             },
         },
     };
@@ -103,7 +103,7 @@ export const Toggle = ({ label, hint, className, size = "sm", slim, ...ariaSwitc
             {...ariaSwitchProps}
             className={(state) =>
                 cx(
-                    "relative flex w-max items-start",
+                    "relative flex w-max max-w-full items-start",
                     state.isDisabled && "cursor-not-allowed",
                     styles[size].root,
                     typeof className === "function" ? className(state) : className,
@@ -123,7 +123,7 @@ export const Toggle = ({ label, hint, className, size = "sm", slim, ...ariaSwitc
                     />
 
                     {(label || hint) && (
-                        <div className={cx("flex flex-col", styles[size].textWrapper)}>
+                        <div className={cx("flex min-w-0 flex-col", styles[size].textWrapper)}>
                             {label && <p className={cx("text-secondary select-none", styles[size].label)}>{label}</p>}
                             {hint && (
                                 <span className={cx("text-tertiary", styles[size].hint)} onClick={(event) => event.stopPropagation()}>
