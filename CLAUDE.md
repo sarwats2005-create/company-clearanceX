@@ -827,6 +827,14 @@ page and one tap away; expenses are entered inside the add-container flow with s
 lines are picked by logo; every page has icons with labels; anything about money can be sent on WhatsApp as a
 picture (JPEG) or text; gradient backgrounds and raised cards, never flat hairline layouts.
 
+## Security (remember this)
+
+This app holds a business's money records for life. Before changing auth, sessions, server actions, routes, headers,
+the database schema or dependencies, read `SECURITY.md` and follow its "Rules for future changes" (§4): every server
+action starts with `requireSession()` + zod validation, no `sql.raw`/`dangerouslySetInnerHTML`/`eval`, CSP changes
+only in `src/proxy.ts`, new value rules in `src/db/sql/0002_hardening.sql`, and run `pnpm audit:deps`, `pnpm test`
+and `pnpm build` before deploying.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
