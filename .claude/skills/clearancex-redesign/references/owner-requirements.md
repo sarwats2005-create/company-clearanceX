@@ -52,3 +52,15 @@ Earlier mockup canvas the owner saw: https://claude.ai/artifact/BEX51MUjAfCAtFDM
 
 - 2026-11-27: "The skill creation is the last step for now; complete the redesign request." Do the redesign in the app itself.
 - 2026-11-27: "Add system restore points and system reset like a reset option for a fresh start from zero but this option only comes when the user made a restore point on that specific day." Built as Settings → نقاط الاسترجاع (see `feature-specs.md` §6). The reset card only unlocks after the owner saves a point himself that same day (Baghdad time).
+- 2026-11-27: **Money workflow for the Umm Qasr partnership** ("شراكة تخليص أم قصر"). The owner's words: the partnership is "a branch of ours (the owner) but not directly our vault, so they must get their own balance as well". When the partnership pays a container's expenses, the customer owes **the partnership** for them. The "أتعاب شركة" fee is owed by the customer to **the owner**. Answers from the question rounds:
+  - Who collects: **both happen**. Sometimes the customer pays everything to the owner, sometimes the partnership's part straight to the partnership.
+  - The partnership has **its own vault, dinar only**, shown in the app like the main vault.
+  - Customer view: **depends who views**. The receipt or statement sent to the customer shows one total; inside the app the owner sees the split (owed to the partnership vs owed to the owner).
+  - The fee is **100% the owner's**. The partnership only gets back the expenses it paid.
+  - Customer pays the owner while owing both: **the owner chooses** on the receive-money screen which debt it pays (partnership, fee, or a split).
+  - Partnership money the owner collects: **the owner owes it to the partnership until he records moving it** to the partnership's vault.
+  - Paying expenses: **usually from the partnership's vault, sometimes the owner pays from the main vault on the partnership's behalf**. The app lets him choose.
+  - Dollar expenses paid by the partnership: **converted to dinar** at a rate typed in (its vault is dinar only).
+  - Money moves **both ways** between the partnership's vault and the main vault (handovers, profit taken out, cash topped up), each with a receipt.
+  - The China clearance company ("شركة التخليص - الصين") stays an **outside company**: the customer owes the owner, and the owner owes China (unchanged).
+  - The container already entered was **test data**. Only new entries need the new way.
