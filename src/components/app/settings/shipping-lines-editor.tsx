@@ -117,7 +117,7 @@ export function ShippingLinesEditor({ items }: { items: Line[] }) {
                             onChange={setWebsite}
                             inputClassName="[direction:ltr] text-end"
                             isInvalid={!!save.fieldErrors.website}
-                            hint={save.fieldErrors.website ?? "إن لم ترفع صورة، نعرض شعار هذا الموقع."}
+                            hint={save.fieldErrors.website ?? "إن لم ترفع صورة، نعرض شعار الخط المحفوظ في البرنامج، أو شعار هذا الموقع."}
                         />
                         {save.fieldErrors.logo && <p className="text-sm text-error-primary">{save.fieldErrors.logo}</p>}
                     </div>

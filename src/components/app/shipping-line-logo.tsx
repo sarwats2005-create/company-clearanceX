@@ -18,6 +18,47 @@ export function websiteIconUrl(website: string) {
     return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
 }
 
+/**
+ * Sharp logos of the common lines, shipped with the app (public/shipping-lines). The owner asked for them on
+ * 2026-11-28 because the website icons were blurry or missing. Matched by website first, so a renamed line
+ * keeps its logo, then by name.
+ */
+const BUILT_IN: Record<string, string> = {
+    msc: "msc.svg",
+    maersk: "maersk.svg",
+    "cma-cgm": "cma-cgm.svg",
+    cmacgm: "cma-cgm.svg",
+    cosco: "cosco.svg",
+    coscoshipping: "cosco.svg",
+    "hapag-lloyd": "hapag-lloyd.svg",
+    hapaglloyd: "hapag-lloyd.svg",
+    one: "one.svg",
+    "one-line": "one.svg",
+    evergreen: "evergreen.svg",
+    "evergreen-line": "evergreen.svg",
+    "yang-ming": "yang-ming.png",
+    yangming: "yang-ming.png",
+    zim: "zim.svg",
+    hmm: "hmm.svg",
+    hmm21: "hmm.svg",
+};
+
+/** "www.Hapag-Lloyd.com/en" → "hapag-lloyd"; "Yang Ming" → "yang-ming". */
+function key(text: string) {
+    return text
+        .trim()
+        .toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .replace(/[/.].*$/, "")
+        .replace(/\s+/g, "-");
+}
+
+export function builtInLogo(line: ShippingLineBrand): string | null {
+    const file = (line.website && BUILT_IN[key(line.website)]) || BUILT_IN[key(line.name)];
+    return file ? `/shipping-lines/${file}` : null;
+}
+
 const MONO_COLORS = ["tile-brand", "tile-blue", "tile-teal", "tile-orange", "tile-purple", "tile-pink", "tile-indigo", "tile-green"];
 
 function monogram(name: string) {
@@ -46,12 +87,12 @@ const SIZE = {
 } as const;
 
 /**
- * A shipping line's logo on a white tile: the logo the owner uploaded, else the icon of the line's website,
- * else its letters on a color. Decorative: the line's name is always written next to it.
+ * A shipping line's logo on a white tile: the logo the owner uploaded, else the app's own logo for the common
+ * lines, else the icon of the line's website, else its letters on a color. Decorative: the line's name is always written next to it.
  */
 export function ShippingLineLogo({ line, size = "md", className }: { line: ShippingLineBrand; size?: keyof typeof SIZE; className?: string }) {
     const [failed, setFailed] = useState(false);
-    const src = line.logo || (line.website && !failed ? websiteIconUrl(line.website) : null);
+    const src = line.logo || builtInLogo(line) || (line.website && !failed ? websiteIconUrl(line.website) : null);
 
     if (!src) {
         return (
@@ -81,7 +122,7 @@ export function ShippingLineLogo({ line, size = "md", className }: { line: Shipp
                 referrerPolicy="no-referrer"
                 onError={() => setFailed(true)}
                 // The icon service answers "no icon" with a tiny 16px globe: show the letters instead.
-                onLoad={(e) => !line.logo && e.currentTarget.naturalWidth <= 16 && setFailed(true)}
+                onLoad={(e) => src.startsWith("https://") && e.currentTarget.naturalWidth <= 16 && setFailed(true)}
                 className="size-full object-contain"
             />
         </span>

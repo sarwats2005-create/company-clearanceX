@@ -34,12 +34,15 @@ Code: `shipping-line-logo.tsx`, `container-form/shipping-line-picker.tsx`,
 `settings/shipping-lines-editor.tsx`, columns `shipping_lines.logo`, `shipping_lines.website`.
 
 - Logo source, in order: the picture the owner uploaded (resized in the browser to ≤160px PNG, stored
-  as a data URL, server accepts PNG/JPEG/WebP ≤ ~150 KB) → the icon of the line's website (via
+  as a data URL, server accepts PNG/JPEG/WebP ≤ ~150 KB) → the app's own sharp logo for the 10 common lines
+  (`public/shipping-lines/`, matched by website domain, then by name) → the icon of the line's website (via
   Google's public favicon service; only the domain is sent) → the line's letters on a color.
   The favicon service answers "no icon" with a 16px globe, so anything ≤16px counts as no logo.
 - Seeded lines get their websites (msc.com, maersk.com, …) by migration `0001`.
-- **We don't ship carrier logo files in the repo**: the owner uploads them (Settings → خطوط الشحن →
-  "الشعار"), which keeps trademark files out of our code.
+- **Built-in logos (owner's OK, 2026-11-28)**: the website icons were blurry (MSC, ONE) or missing (letters
+  on a color), so the owner asked for proper logos. The 10 common lines ship as cleaned SVGs (scripts and
+  external links removed; Yang Ming as a 192px PNG), cut to the square symbol where the line has one (Maersk
+  star, Hapag-Lloyd chevrons, Evergreen globe, Yang Ming emblem). The owner can still upload his own, which wins.
 - The add-container form picks the line from a grid of logo tiles (React Aria radio group, keyboard
   friendly) with a "+ خط جديد" tile. Logos also show in container lists, the container page and info.
 

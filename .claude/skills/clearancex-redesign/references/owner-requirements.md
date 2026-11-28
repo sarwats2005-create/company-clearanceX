@@ -64,3 +64,10 @@ Earlier mockup canvas the owner saw: https://claude.ai/artifact/BEX51MUjAfCAtFDM
   - Money moves **both ways** between the partnership's vault and the main vault (handovers, profit taken out, cash topped up), each with a receipt.
   - The China clearance company ("شركة التخليص - الصين") stays an **outside company**: the customer owes the owner, and the owner owes China (unchanged).
   - The container already entered was **test data**. Only new entries need the new way.
+
+## 2026-11-28: Shipping line logos
+
+Owner (with a phone screenshot of the add-container page): "The shipping's line logo's are not sat great take care of it".
+MSC and ONE were blurry website icons; the rest showed letters on colors. Fixed with sharp built-in logos for the 10 lines.
+Also fixed: the bottom save bar let the form's text show through behind the buttons on his phone (bars are now almost solid).
+

@@ -51,4 +51,4 @@ ends with a review checklist and its sources.
 - Don't hide things behind menus to make a screen look clean. For this owner, a visible big button beats a tidy "⋯" menu.
 - Don't use English UI words. English appears only in container numbers and shipping-line names.
 - Don't add a feature without the matching setting, or a setting without a way to change it from the page where it's used (the expense-types rule in §1 of the specs is the model).
-- Don't ship trademarked carrier logo files inside the repo without the owner's OK; see `references/feature-specs.md` §3 for the upload approach.
+- Don't add more carrier logo files beyond the 10 the owner approved (2026-11-28) without asking; new lines use the upload or website icon (`references/feature-specs.md` §3).

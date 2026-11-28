@@ -88,7 +88,8 @@ table th {
 
 /* Frosted glass, for cards and bars sitting on top of gradients. */
 @utility glass {
-    background-color: rgb(255 255 255 / 0.72);
+    /* Almost solid: on phones where the blur is weak or missing, text behind must not show through. */
+    background-color: rgb(255 255 255 / 0.94);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
 }
